@@ -372,8 +372,11 @@ details summary::-webkit-details-marker{display:none}
   textarea.inp{height:auto}
   .btn{height:36px}
   .toolbar{gap:8px}
-  .search{flex:1;min-width:0}
-  .search .inp{width:100%}
+  .search{flex:1 1 100%;min-width:0;order:-1}
+  .search .inp{width:100%;height:36px;border-radius:10px;background-color:rgba(118,118,128,.12);border:none}
+  .search .inp:focus{box-shadow:none}
+  .search svg{top:11px}
+  .ctb .spacer{display:none}
   .ctags{flex-wrap:nowrap;overflow-x:auto;margin:0 -12px 12px;padding:0 12px;scrollbar-width:none}
   .ctags::-webkit-scrollbar{display:none}
   .ctags button{flex-shrink:0}
@@ -411,11 +414,12 @@ details summary::-webkit-details-marker{display:none}
   .modal .fi{display:flex;align-items:center;gap:12px;min-height:44px;margin:0;padding:0 16px;position:relative}
   .modal .fi+.fi::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:.5px solid rgba(60,60,67,.2)}
   .modal .fi>label{flex:none;padding:0;font-size:17px;color:#000}
-  .modal .fi .inp{flex:1;min-width:0;border:none!important;box-shadow:none!important;background:transparent;text-align:right;height:44px;padding:0;font-size:17px;color:rgba(60,60,67,.7)}
-  .modal .fi select.inp{text-align-last:right;padding-right:18px;background-position:right 0 center}
+  .modal .fi .inp{flex:1;min-width:0;border:none!important;box-shadow:none!important;background-color:transparent;text-align:right;height:44px;padding:0 18px 0 0;font-size:17px;color:rgba(60,60,67,.7)}
+  .modal .fi select.inp{text-align-last:right;background-position:right 0 center}
+  .modal .fi input[type=date].inp{padding-right:0}
   .modal .fi.full{display:block;padding:10px 16px 12px}
   .modal .fi.full>label{font-size:13px;color:rgba(60,60,67,.6);padding-bottom:8px}
-  .modal .fi.full .inp{text-align:left;height:auto;min-height:24px;color:#000}
+  .modal .fi.full .inp{text-align:left;height:auto;min-height:24px;color:#000;padding-right:0}
   .modal .fi.full textarea.inp{min-height:60px}
   .modal .chips label{height:30px;border-radius:15px;font-size:15px}
   .modal .ms{border:none;border-radius:0}
@@ -771,20 +775,21 @@ function filtered(){
 }
 function renderCases(){
   newBtn();
+  const isMob=matchMedia('(max-width:768px)').matches,view=isMob?'table':ui.view;
   const base=filtered();
   const order=new Map(S.cases.map((c,i)=>[c.id,i]));
   const list=base.filter(c=>!ui.fStatus||c.status===ui.fStatus).sort((a,b)=>order.get(b.id)-order.get(a.id));
   const cnt=s=>base.filter(c=>c.status===s).length;
-  M().innerHTML=`<div class="toolbar">
+  M().innerHTML=`<div class="toolbar ctb">
     <div class="seg"><button data-sc="mine" class="${ui.scope==='mine'?'on':''}">我的</button><button data-sc="all" class="${ui.scope==='all'?'on':''}">全部</button></div>
     ${ui.scope==='all'?`<div class="seg">${[['','不限'],['00',NAMES['00']],['mimi',NAMES['mimi']],['mizu','Mizu']].map(([v,t])=>`<button data-fo="${v}" class="${ui.fOwner===v?'on':''}">${esc(t)}</button>`).join('')}</div>`:''}
     <div class="search">${ico('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>')}<input class="inp" id="q" placeholder="搜尋案名或規格" value="${esc(ui.q)}"></div>
     <span class="spacer"></span>
-    <div class="seg"><button data-v="table" class="${ui.view==='table'?'on':''}">表格</button><button data-v="kanban" class="${ui.view==='kanban'?'on':''}">看板</button></div></div>
-  ${ui.view==='table'?`<div class="ctags"><button data-fs="" class="${!ui.fStatus?'on':''}">全部<span class="n">${base.length}</span></button>${STATUSES.filter(s=>cnt(s)).map(s=>`<button data-fs="${s}" class="${ui.fStatus===s?'on':''}">${s}<span class="n">${cnt(s)}</span></button>`).join('')}</div>`:''}
+    <div class="seg only-desk"><button data-v="table" class="${view==='table'?'on':''}">表格</button><button data-v="kanban" class="${view==='kanban'?'on':''}">看板</button></div></div>
+  ${view==='table'?`<div class="ctags"><button data-fs="" class="${!ui.fStatus?'on':''}">全部<span class="n">${base.length}</span></button>${STATUSES.filter(s=>cnt(s)).map(s=>`<button data-fs="${s}" class="${ui.fStatus===s?'on':''}">${s}<span class="n">${cnt(s)}</span></button>`).join('')}</div>`:''}
   <div id="cv"></div>`;
   const cv=document.getElementById('cv');
-  if(ui.view==='table'){
+  if(view==='table'){
     cv.innerHTML=`<div class="card only-mob">${list.map(c=>`<div class="item" data-open="${c.id}"><div class="main"><div class="ttl">${esc(c.title)}</div><div class="meta">${otag(c.owner)}${stag(c.status)}${c.owner==='mizu'?`<span>收款 ${esc(NAMES[c.lead])}</span>`:''}</div></div>
       <div class="rt"><div class="num" style="color:var(--text);font-weight:500">${money(c.amount)}</div><div class="small">${c.ms.publish.date?'上線 '+md(c.ms.publish.date):'上線未定'}</div></div></div>`).join('')||'<div class="empty">沒有符合的案件</div>'}</div>
     <div class="card tbl only-desk"><table><thead><tr><th>案名</th><th>歸屬</th><th>收款人</th><th>規格</th><th>狀態</th><th>上線日</th><th class="r">實拿金額</th><th>匯款</th></tr></thead><tbody>
@@ -1091,7 +1096,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 01:53</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 01:57</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
