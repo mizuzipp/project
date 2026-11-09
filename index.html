@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MIZU 接案管理</title>
+<link rel="icon" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<style>
+:root{
+  --primary:#9254DE;--primary-hover:#B37FEB;--primary-active:#722ED1;--primary-bg:#F9F0FF;--primary-border:#D3ADF7;
+  --text:rgba(0,0,0,.88);--text2:rgba(0,0,0,.65);--text3:rgba(0,0,0,.45);--text4:rgba(0,0,0,.25);
+  --border:#D9D9D9;--split:#F0F0F0;--layout:#F5F5F5;--fill:#FAFAFA;
+  --error:#FF4D4F;--warning:#FAAD14;--success:#52C41A;
+  --c00:#FA8C16;--cmimi:#EB2F96;--cmizu:#9254DE;
+  --shadow:0 1px 2px 0 rgba(0,0,0,.03),0 1px 6px -1px rgba(0,0,0,.02),0 2px 4px 0 rgba(0,0,0,.02);
+  --shadow2:0 6px 16px 0 rgba(0,0,0,.08),0 3px 6px -4px rgba(0,0,0,.12),0 9px 28px 8px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Helvetica Neue",Helvetica,Arial,sans-serif;background:var(--layout);color:var(--text);font-size:14px;line-height:1.5715;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;font-weight:600}
+button,input,select,textarea{font-family:inherit;font-size:14px;color:var(--text)}
+button{cursor:pointer}
+.hidden{display:none!important}
+a{color:var(--primary);text-decoration:none}
+
+/* buttons */
+.btn{height:32px;padding:4px 15px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--text);display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 0 rgba(0,0,0,.02);transition:all .2s;white-space:nowrap}
+.btn:hover{color:var(--primary-hover);border-color:var(--primary-hover)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 2px 0 rgba(146,84,222,.1)}
+.btn.primary:hover{background:var(--primary-hover);border-color:var(--primary-hover);color:#fff}
+.btn.danger{color:var(--error);border-color:var(--error)}
+.btn.danger:hover{color:#ff7875;border-color:#ff7875}
+.btn.text{border:none;box-shadow:none;background:none;color:var(--text2)}
+.btn.text:hover{background:rgba(0,0,0,.04);color:var(--text)}
+.btn.sm{height:24px;padding:0 7px;border-radius:4px;font-size:13px}
+.btn.lg{height:40px;font-size:16px;border-radius:8px;padding:6px 15px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.inp{height:32px;padding:4px 11px;border:1px solid var(--border);border-radius:6px;background:#fff;transition:all .2s;outline:none}
+.inp:hover{border-color:var(--primary-hover)}
+.inp:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(146,84,222,.1)}
+textarea.inp{height:auto;padding:5px 11px;resize:vertical}
+.inp:disabled{background:rgba(0,0,0,.04);color:var(--text4);cursor:not-allowed}
+.inp:disabled:hover{border-color:var(--border)}
+select.inp{padding-right:28px;appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center}
+select.inp:disabled{background-color:rgba(0,0,0,.04)}
+
+/* login */
+#login{min-height:100vh;display:flex;background:#fff}
+.lg-art{flex:1.1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;
+  background:radial-gradient(120% 90% at 20% 10%,#FCE7F3 0%,transparent 55%),radial-gradient(100% 80% at 90% 90%,#E9DDFB 0%,transparent 60%),#F7F1FD}
+.lg-art::before,.lg-art::after{content:"";position:absolute;border-radius:50%;filter:blur(2px)}
+.lg-art::before{width:340px;height:340px;background:rgba(255,255,255,.55);top:-80px;right:-60px}
+.lg-art::after{width:220px;height:220px;background:rgba(211,173,247,.25);bottom:-40px;left:-40px}
+.lg-art img{width:240px;height:240px;border-radius:50%;box-shadow:0 24px 60px -12px rgba(114,46,209,.25);position:relative;z-index:1;border:6px solid #fff}
+.lg-art .brand-t{margin-top:28px;font-size:34px;font-weight:700;letter-spacing:.18em;color:#3B1E6B;position:relative;z-index:1}
+.lg-art .brand-s{margin-top:6px;color:#7C5BA6;font-size:15px;letter-spacing:.04em;position:relative;z-index:1}
+.lg-form{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px}
+.lg-box{width:360px;max-width:100%}
+.lg-box h2{font-size:26px;font-weight:600;letter-spacing:.01em}
+.lg-box .sub{color:var(--text3);margin:6px 0 32px}
+.lbl{font-size:14px;margin-bottom:10px;color:var(--text2)}
+.who{display:flex;gap:12px;margin-bottom:24px}
+.who button{flex:1;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;transition:all .2s;text-align:left;font-size:15px;position:relative}
+.who button:hover{border-color:var(--primary-hover)}
+.who button.sel{border-color:var(--primary);background:var(--primary-bg);box-shadow:0 0 0 3px rgba(146,84,222,.12)}
+.who button.sel::after{content:"";position:absolute;right:12px;top:50%;width:16px;height:16px;margin-top:-8px;border-radius:50%;background:var(--primary) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5'%3E%3Cpath d='m6 12 4 4 8-8'/%3E%3C/svg%3E") center/10px no-repeat}
+.field{margin-bottom:8px;position:relative}
+.field .inp{width:100%;height:44px;font-size:15px;border-radius:10px;padding-right:44px}
+.eye{position:absolute;right:6px;top:6px;width:32px;height:32px;border:none;background:none;color:var(--text3);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.eye:hover{background:rgba(0,0,0,.04);color:var(--text)}
+.err{color:var(--error);min-height:22px;font-size:13px;margin-bottom:12px}
+.lg-box .btn.lg{height:44px;border-radius:10px}
+.lg-foot{margin-top:20px;font-size:12px;color:var(--text3);text-align:center}
+@media (max-width:820px){#login{flex-direction:column}.lg-art{flex:none;padding:48px 0 36px}.lg-art img{width:120px;height:120px;border-width:4px}.lg-art .brand-t{font-size:24px;margin-top:16px}}
+
+/* avatar dropdown */
+.dropdown{position:fixed;background:#fff;border-radius:8px;box-shadow:var(--shadow2);padding:4px;min-width:180px;z-index:70}
+.dropdown .dh{padding:10px 12px 8px;border-bottom:1px solid var(--split);margin-bottom:4px;display:flex;gap:10px;align-items:center}
+.dropdown button{display:flex;align-items:center;gap:8px;width:100%;border:none;background:none;padding:8px 12px;border-radius:4px;text-align:left}
+.dropdown button:hover{background:rgba(0,0,0,.04)}
+.dropdown button.dg{color:var(--error)}
+.dropdown svg{width:15px;height:15px}
+
+/* checkable status tags */
+.ctags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.ctags button{height:28px;padding:0 10px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--text2);display:inline-flex;gap:6px;align-items:center;transition:all .2s}
+.ctags button:hover{color:var(--primary)}
+.ctags button.on{background:var(--primary);color:#fff}
+.ctags button .n{font-size:12px;color:var(--text4)}
+.ctags button.on .n{color:rgba(255,255,255,.75)}
+.search{position:relative}
+.search svg{position:absolute;left:10px;top:9px;width:14px;height:14px;color:var(--text4)}
+.search .inp{padding-left:30px;width:220px}
+.gev{color:var(--text3)}
+.gev .dot{background:transparent!important;border:1.5px solid var(--text4)}
+
+/* layout */
+#app{display:flex;min-height:100vh}
+.sider{width:220px;flex-shrink:0;background:#fff;border-right:1px solid var(--split);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sider .brand{height:64px;display:flex;align-items:center;gap:10px;padding:0 20px;border-bottom:1px solid var(--split)}
+.sider .brand img{width:36px;height:36px;border-radius:50%}
+.sider .brand b{font-size:17px;letter-spacing:.08em}
+.menu{padding:8px;flex:1}
+.menu a{display:flex;align-items:center;gap:10px;height:40px;padding:0 16px;margin:4px 0;border-radius:8px;color:var(--text);transition:background .2s}
+.menu a:hover{background:rgba(0,0,0,.04)}
+.menu a.on{background:var(--primary-bg);color:var(--primary-active);font-weight:500}
+.menu svg{width:16px;height:16px;flex-shrink:0}
+.me-box{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--split);cursor:pointer}
+.me-box:hover{background:var(--fill)}
+.me-box .nm{font-weight:500}
+.me-box .st{font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+.content{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{height:64px;background:#fff;border-bottom:1px solid var(--split);display:flex;align-items:center;padding:0 24px;gap:12px;position:sticky;top:0;z-index:20}
+.topbar h1{font-size:18px}
+.topbar .spacer{flex:1}
+.sync{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px}
+.sync i{width:6px;height:6px;border-radius:50%;background:var(--success)}
+.sync.busy i{background:var(--warning)}
+.sync.err i{background:var(--error)}
+.sync.demo i{background:var(--text4)}
+main{padding:24px;max-width:1280px;width:100%}
+
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background-size:cover;background-position:center}
+
+.row{display:grid;gap:16px;margin-bottom:16px}
+.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.c21{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.card{background:#fff;border-radius:8px;box-shadow:var(--shadow);border:1px solid var(--split)}
+.card-h{min-height:56px;padding:0 24px;border-bottom:1px solid var(--split);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-h h3{font-size:16px}
+.card-b{padding:20px 24px}
+.card-b.flush{padding:0}
+.stat{padding:20px 24px}
+.stat .t{color:var(--text3);font-size:14px}
+.stat .v{font-size:28px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.stat .h{color:var(--text3);font-size:12px;margin-top:2px}
+.muted{color:var(--text3)}
+.small{font-size:12px}
+
+/* tags */
+.tag{display:inline-flex;align-items:center;height:22px;padding:0 7px;font-size:12px;line-height:20px;border-radius:4px;border:1px solid;white-space:nowrap}
+.tag+.tag{margin-left:4px}
+.tg-default{background:#FAFAFA;border-color:#D9D9D9;color:var(--text)}
+.tg-blue{background:#E6F4FF;border-color:#91CAFF;color:#0958D9}
+.tg-cyan{background:#E6FFFB;border-color:#87E8DE;color:#08979C}
+.tg-geekblue{background:#F0F5FF;border-color:#ADC6FF;color:#1D39C4}
+.tg-purple{background:#F9F0FF;border-color:#D3ADF7;color:#531DAB}
+.tg-orange{background:#FFF7E6;border-color:#FFD591;color:#D46B08}
+.tg-gold{background:#FFFBE6;border-color:#FFE58F;color:#D48806}
+.tg-lime{background:#FCFFE6;border-color:#EAFF8F;color:#7CB305}
+.tg-green{background:#F6FFED;border-color:#B7EB8F;color:#389E0D}
+.otag{background:color-mix(in srgb,var(--oc) 8%,#fff);border-color:color-mix(in srgb,var(--oc) 40%,#fff);color:color-mix(in srgb,var(--oc) 85%,#000)}
+
+/* list items */
+.item{display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid var(--split);cursor:pointer;transition:background .2s}
+.item:last-child{border-bottom:none}
+.item:hover{background:var(--fill)}
+.item .main{flex:1;min-width:0}
+.item .ttl{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .meta{font-size:12px;color:var(--text3);display:flex;gap:8px;align-items:center;margin-top:2px;flex-wrap:wrap}
+.item .rt{text-align:right;white-space:nowrap;font-size:13px;color:var(--text2)}
+.item.over .rt{color:var(--error)}
+.sec{padding:10px 24px;font-size:12px;color:var(--text3);background:var(--fill);border-bottom:1px solid var(--split);display:flex;align-items:center;gap:6px}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.cb{width:16px;height:16px;border-radius:4px;border:1px solid var(--border);background:#fff;flex-shrink:0;padding:0;transition:all .2s;position:relative}
+.cb:hover{border-color:var(--primary)}
+.cb.on{background:var(--primary);border-color:var(--primary)}
+.cb.on::after{content:"";position:absolute;left:4.5px;top:1.5px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.empty{padding:24px;text-align:center;color:var(--text3);font-size:13px}
+
+.agenda .day{padding:10px 24px;border-bottom:1px solid var(--split)}
+.agenda .day:last-child{border-bottom:none}
+.agenda .dh{font-size:12px;color:var(--text3);margin-bottom:4px}
+.agenda .dh b{color:var(--text);font-size:14px;margin-right:6px}
+.agenda .day.today .dh b{color:var(--primary)}
+.ev{display:flex;align-items:center;gap:6px;font-size:13px;padding:2px 0;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev:hover{color:var(--primary)}
+.ev .dot{flex-shrink:0}
+.ev.done{color:var(--text4);text-decoration:line-through}
+
+/* toolbar & table */
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.toolbar .spacer{flex:1}
+.seg{display:inline-flex;background:rgba(0,0,0,.04);border-radius:6px;padding:2px}
+.seg button{border:none;background:none;height:28px;padding:0 12px;border-radius:4px;color:var(--text2);transition:all .2s}
+.seg button:hover{color:var(--text)}
+.seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-weight:600;padding:12px 16px;background:var(--fill);border-bottom:1px solid var(--split);white-space:nowrap;font-size:13px}
+td{padding:12px 16px;border-bottom:1px solid var(--split);vertical-align:middle}
+tbody tr{cursor:pointer;transition:background .2s}
+tbody tr:hover{background:var(--fill)}
+.r{text-align:right}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.kanban{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;align-items:flex-start}
+.col{width:240px;flex-shrink:0;background:var(--fill);border:1px solid var(--split);border-radius:8px;padding:8px}
+.col.drop{border-color:var(--primary);background:var(--primary-bg)}
+.col .ch{display:flex;justify-content:space-between;align-items:center;padding:4px 4px 8px}
+.kc{background:#fff;border:1px solid var(--split);border-radius:6px;padding:10px 12px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow);transition:box-shadow .2s}
+.kc:hover{box-shadow:var(--shadow2)}
+.kc .kt{font-weight:500;margin-bottom:6px}
+.kc .km{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text3)}
+
+/* calendar */
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.cal .wh{padding:10px 12px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--split);text-align:right}
+.cal .dc{min-height:116px;padding:6px 8px;border-bottom:1px solid var(--split);border-right:1px solid var(--split)}
+.cal .dc:nth-child(7n){border-right:none}
+.cal .dc.out .dn{color:var(--text4)}
+.cal .dn{text-align:right;font-size:13px;margin-bottom:4px}
+.cal .dc.today .dn span{background:var(--primary);color:#fff;border-radius:4px;padding:0 6px}
+.cal .ev{font-size:12px}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--text2);align-items:center}
+.legend .dot{margin-right:6px;width:8px;height:8px}
+
+/* finance */
+.hero{padding:28px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.hero .big{font-size:30px;font-weight:600;letter-spacing:-.01em}
+.hero .lbl{color:var(--text3);margin-bottom:4px}
+.hero .sub{color:var(--text3);font-size:13px;margin-top:6px}
+.switch{width:44px;height:22px;border-radius:11px;background:rgba(0,0,0,.25);border:none;position:relative;padding:0;transition:background .2s;flex-shrink:0}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 2px 4px rgba(0,35,11,.2)}
+.switch.on{background:var(--success)}
+.switch.on::after{left:24px}
+details summary{cursor:pointer;color:var(--primary);list-style:none;padding:12px 24px;border-top:1px solid var(--split);font-size:13px}
+details summary::-webkit-details-marker{display:none}
+
+.trend{padding:12px 24px 8px}
+.tr-plot{position:relative;height:220px;margin:8px 0 0 52px}
+.tr-gl{position:absolute;left:0;right:0;border-top:1px solid var(--split)}
+.tr-gl.base{border-top-color:var(--border)}
+.tr-gl span{position:absolute;right:100%;margin-right:8px;transform:translateY(-50%);font-size:12px;color:var(--text3);white-space:nowrap}
+.tr-cols{position:absolute;inset:0;display:flex}
+.tr-col{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:2px;cursor:pointer;border-radius:6px 6px 0 0;transition:background .15s}
+.tr-col:hover{background:rgba(0,0,0,.03)}
+.tr-col.cur{background:var(--primary-bg)}
+.tr-bar{width:min(16px,32%);border-radius:4px 4px 0 0}
+.tr-x{display:flex;margin-left:52px;padding-top:6px}
+.tr-x span{flex:1;text-align:center;font-size:12px;color:var(--text3)}
+.tr-x span.cur{color:var(--text);font-weight:600}
+.tip{position:absolute;pointer-events:none;background:#fff;box-shadow:var(--shadow2);border-radius:8px;padding:8px 12px;font-size:12px;z-index:5;white-space:nowrap;line-height:1.8}
+.tip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.sw-l{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+/* modal */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:60px 16px;z-index:50;overflow:auto}
+.modal{background:#fff;border-radius:8px;width:720px;max-width:100%;box-shadow:var(--shadow2)}
+.modal.sm{width:440px}
+.mh{padding:16px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.mh h2{font-size:16px}
+.mb{padding:4px 24px 12px;max-height:calc(100vh - 240px);overflow:auto}
+.mf{padding:12px 24px 16px;display:flex;gap:8px;justify-content:flex-end;align-items:center}
+.x{background:none;border:none;font-size:18px;color:var(--text3);width:28px;height:28px;border-radius:4px}
+.x:hover{background:rgba(0,0,0,.06);color:var(--text)}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.form .full{grid-column:1/-1}
+.fi{margin-bottom:16px}
+.fi>label{display:block;padding-bottom:6px;font-size:14px}
+.fi .inp{width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{display:inline-flex;align-items:center;height:28px;padding:0 12px;border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all .2s;background:#fff}
+.chips label:hover{color:var(--primary)}
+.chips label.on{border-color:var(--primary);color:var(--primary);background:var(--primary-bg)}
+.chips input{display:none}
+.ms{border:1px solid var(--split);border-radius:8px;overflow:hidden}
+.msr{display:grid;grid-template-columns:90px minmax(0,1fr) 160px 70px;gap:12px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--split)}
+.msr:last-child{border-bottom:none}
+.msr .chk{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px}
+.hint{font-size:12px;color:var(--text3);margin-top:6px}
+.lockbadge{font-size:12px;color:var(--text3);font-weight:400}
+
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;color:var(--text);padding:9px 14px;border-radius:8px;z-index:90;box-shadow:var(--shadow2);display:flex;gap:8px;align-items:center;transition:opacity .3s}
+.toast i{width:16px;height:16px;border-radius:50%;background:var(--success);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;font-style:normal}
+.toast.err i{background:var(--error)}
+
+/* profile */
+.prof{display:flex;gap:20px;align-items:center;padding:24px}
+.swatches{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sw{width:24px;height:24px;border-radius:6px;cursor:pointer;position:relative;border:1px solid rgba(0,0,0,.06)}
+.sw.on::after{content:"";position:absolute;inset:-4px;border:2px solid var(--primary);border-radius:8px}
+.sw-custom{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3);margin-left:4px}
+.sw-custom input{width:28px;height:28px;border:none;padding:0;background:none;cursor:pointer}
+.emojis{display:flex;gap:6px;flex-wrap:wrap}
+.emojis button{width:36px;height:36px;border-radius:6px;border:1px solid var(--split);background:#fff;font-size:19px;padding:0}
+.emojis button.on{border-color:var(--primary);background:var(--primary-bg)}
+
+.loading{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:12px;color:var(--text3)}
+.spin{width:28px;height:28px;border:3px solid var(--primary-bg);border-top-color:var(--primary);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+@media (max-width:960px){
+  #app{flex-direction:column}
+  .sider{width:100%;height:auto;position:static;flex-direction:row;align-items:center}
+  .sider .brand{border:none;padding:0 12px}
+  .menu{display:flex;overflow-x:auto;padding:4px}
+  .menu a{padding:0 10px;white-space:nowrap}
+  .me-box{border:none}
+  .me-box>div{display:none}
+  .topbar{position:static}
+  main{padding:16px}
+  .c3,.c21,.c2,.form{grid-template-columns:1fr}
+  .msr{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div id="boot" class="loading"><div class="spin"></div>載入中…</div>
+<div id="login" class="hidden"></div>
+<div id="app" class="hidden">
+  <aside class="sider">
+    <div class="brand"><img src="logo.png" alt=""><b>MIZU</b></div>
+    <nav class="menu" id="nav"></nav>
+    <div class="me-box" id="meBox"></div>
+  </aside>
+  <div class="content">
+    <div class="topbar"><h1 id="pageTitle"></h1><span class="spacer"></span><span class="sync" id="sync"></span><span id="topAct"></span></div>
+    <main id="main"></main>
+  </div>
+</div>
+<div id="modalRoot"></div>
+
+<script>
+const LOGO=document.querySelector('.sider .brand img').src;
+const DEMO_CASES=[];
+
+const STATUSES=['確定合作','On hold','過腳本中','剪輯中','過稿中','待發布','未發布已結帳','待匯款','已結案'];
+const ST_COLOR={'確定合作':'blue','On hold':'default','過腳本中':'cyan','剪輯中':'geekblue','過稿中':'purple','待發布':'orange','待匯款':'gold','未發布已結帳':'lime','已結案':'green'};
+const RANK={'確定合作':0,'On hold':0,'過腳本中':1,'剪輯中':2,'過稿中':3,'待發布':4,'待匯款':5,'未發布已結帳':5,'已結案':6};
+const SPECS=['Reels','配音','Threads','抖音','限動','廣告主','素材授權','圖文'];
+const MS=[['shoot','拍攝'],['script','腳本'],['review','校稿'],['approve','廠商過稿'],['publish','上線'],['payment','匯款']];
+const MSL=Object.fromEntries(MS);
+const EXP_CATS=['交通','道具 / 服裝','餐飲','場地 / 其他'];
+const COLORS=['#F5222D','#FF4D4F','#FA541C','#FA8C16','#FAAD14','#FADB14','#D4B106','#A0D911','#52C41A','#389E0D','#13C2C2','#08979C',
+  '#1677FF','#4096FF','#2F54EB','#597EF7','#722ED1','#9254DE','#B37FEB','#EB2F96','#F759AB','#FF85C0','#A0522D','#8C8C8C','#595959','#262626'];
+const BGS=['#FFF1F0','#FFF2E8','#FFF7E6','#FFFBE6','#FEFFE6','#FCFFE6','#F6FFED','#E6FFFB','#E6F4FF','#F0F5FF','#F9F0FF','#FFF0F6','#F5F5F5','#FFFFFF'];
+const EMOJIS=['🐻','🐰','🦊','🐱','🐶','🐼','🐨','🐥','🦄','🐹','🍓','🍑','🍵','☕️','🧋','🍰','🌷','🌸','🌙','⭐️','✨','🎬','📸','🎀'];
+const NAV=[['home','首頁','<path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>'],
+  ['cases','案件','<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/>'],
+  ['calendar','日曆','<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
+  ['finance','財務','<path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'],
+  ['expenses','支出','<path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/>']];
+const PAGES={home:'首頁',cases:'案件',calendar:'日曆',finance:'財務',expenses:'支出',profile:'個人設定'};
+const ico=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+
+
+const pad=n=>String(n).padStart(2,'0');
+const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const TODAY=fmt(new Date());
+const addDays=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return fmt(d)};
+const rel=n=>addDays(TODAY,n);
+const ym=s=>s?s.slice(0,7):'';
+const diffDays=(a,b)=>Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/864e5);
+const WK='日一二三四五六';
+const md=s=>{const d=new Date(s+'T00:00:00');return `${d.getMonth()+1}/${d.getDate()}（${WK[d.getDay()]}）`};
+const ymLabel=m=>{const [y,mm]=m.split('-');return `${y} 年 ${+mm} 月`};
+const shiftMonth=(m,n)=>{let [y,mm]=m.split('-').map(Number);mm+=n;while(mm>12){mm-=12;y++}while(mm<1){mm+=12;y--}return `${y}-${pad(mm)}`};
+const money=n=>'NT$ '+Math.round(n||0).toLocaleString('en-US');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+
+
+const API_URL='https://script.google.com/macros/s/AKfycby2YesERQ-mQto67REVYZgdeaub1or2IG0acFHvI4mhaEDus5k92GHIbca4skkHN6e2Gw/exec';
+const GAS=!!API_URL;
+async function call(fn,...args){
+  let r;
+  try{r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn,args})})}
+  catch(e){throw new Error('連不上 Google，請檢查網路')}
+  const j=await r.json().catch(()=>({ok:false,error:'伺服器回應怪怪的，請重新整理'}));
+  if(!j.ok)throw new Error(j.error);
+  return j.data;
+}
+const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const DEMO_KEY='mizu_preview_v2';
+let S=null,me=null,token=null,lastSync=null,syncState='ok';
+const NAMES={'00':'00','mimi':'米米','mizu':'Mizu'};
+
+function demoData(){
+  return {users:{'00':{name:'00',pw:'mizu00',color:'#FA8C16',emoji:'🐻',bg:'#FFF7E6',photo:'',status:''},
+    'mimi':{name:'米米',pw:'mizumimi',color:'#EB2F96',emoji:'🐰',bg:'#FFF0F6',photo:'',status:''}},
+    cases:JSON.parse(JSON.stringify(DEMO_CASES)),expenses:[],settlements:{}};
+}
+const Data={
+  async boot(){
+    if(GAS){S={users:await call('apiPublic'),cases:[],expenses:[],settlements:{}};token=LS.get('mizu_tok');
+      if(token){try{await Data.reload();return true}catch(e){token=null;LS.del('mizu_tok')}}return false}
+    const raw=LS.get(DEMO_KEY);S=raw?JSON.parse(raw):demoData();me=LS.get('mizu_demo_me');return !!me;
+  },
+  async login(u,pw){
+    if(GAS){const t=await call('apiLogin',u,pw);if(!t)return false;token=t;LS.set('mizu_tok',t);await Data.reload();return true}
+    if(S.users[u].pw!==pw)return false;me=u;LS.set('mizu_demo_me',u);return true;
+  },
+  async logout(){if(GAS){try{await call('apiLogout',token)}catch(e){}LS.del('mizu_tok');token=null}else LS.del('mizu_demo_me');me=null},
+  async reload(){if(!GAS)return;const d=await call('apiLoad',token);me=d.me;S={users:d.users,cases:d.cases,expenses:d.expenses,settlements:d.settlements};lastSync=new Date();syncState='ok'},
+  saveLocal(){if(!GAS)LS.set(DEMO_KEY,JSON.stringify(S))},
+  async run(fn,...a){
+    if(!GAS){Data.saveLocal();return}
+    syncState='busy';renderSync();
+    try{await call(fn,token,...a);syncState='ok';lastSync=new Date();if(fn==='apiSaveCase'||fn==='apiDeleteCase')for(const k in gcal)delete gcal[k]}
+    catch(e){syncState='err';toast(String(e.message||e).replace(/^Error:\s+/,''),true);await Data.reload().catch(()=>{});route()}
+    renderSync();
+  }
+};
+function renderSync(){
+  const el=document.getElementById('sync');if(!el)return;
+  if(!GAS){el.className='sync demo';el.innerHTML='<i></i>預覽模式・資料不會寫回 Google Sheet';return}
+  el.className='sync '+(syncState==='busy'?'busy':syncState==='err'?'err':'');
+  el.innerHTML=syncState==='busy'?'<i></i>儲存中…':syncState==='err'?'<i></i>同步失敗':`<i></i>已同步 Google Sheet${lastSync?' · '+pad(lastSync.getHours())+':'+pad(lastSync.getMinutes()):''}`;
+}
+
+
+const other=u=>u==='00'?'mimi':'00';
+const canEdit=c=>c.owner===me||c.owner==='mizu';
+function mine(c){
+  if(c.owner===me)return true;
+  if(c.owner!=='mizu')return false;
+  if(c.lead===me)return true;
+  return c.status!=='已結案'&&MS.some(([k])=>responsible(c,k).includes(me)&&!c.ms[k].done);
+}
+function responsible(c,k){
+  if(c.owner!=='mizu')return [c.owner];
+  if(k==='shoot')return ['00','mimi'];
+  if(k==='script')return ['00'];
+  if(k==='review')return ['mimi'];
+  return [c.lead];
+}
+function taskLabel(c,k){return k==='approve'?(c.owner==='mizu'?'跟廠商過稿':'廠商過稿'):k==='payment'?'追匯款':k==='publish'?'發布上線':MSL[k]}
+const shares=c=>c.owner!=='mizu'?{[c.owner]:c.amount||0,[other(c.owner)]:0}:
+  c.split==='fixed'?{'00':+c.fixed['00']||0,'mimi':+c.fixed['mimi']||0}:{'00':(c.amount||0)/2,'mimi':(c.amount||0)/2};
+const collector=c=>c.owner==='mizu'?c.lead:c.owner;
+const pubMonth=c=>ym(c.ms.publish.date);
+const isPaid=c=>c.ms.payment.done;
+function applyDone(c,k,val){
+  c.ms[k].done=val;if(!val)return null;
+  const map={script:'過腳本中',shoot:'剪輯中',review:'過稿中',approve:'待發布'};
+  let next=map[k]||null;
+  if(k==='publish')next=c.ms.payment.done?'已結案':'待匯款';
+  if(k==='payment')next=c.ms.publish.done?'已結案':'未發布已結帳';
+  if(next&&RANK[next]>RANK[c.status]){c.status=next;return next}
+  return null;
+}
+function tasksFor(u){
+  const out=[];
+  S.cases.forEach(c=>{if(c.status==='On hold'||c.status==='已結案')return;
+    MS.forEach(([k])=>{const m=c.ms[k];if(m.date&&!m.done&&responsible(c,k).includes(u))out.push({c,k,date:m.date})})});
+  return out.sort((a,b)=>a.date.localeCompare(b.date));
+}
+function incomeFor(u,m){
+  let personal=0,mizu=0;
+  S.cases.forEach(c=>{if(pubMonth(c)!==m)return;if(c.owner===u)personal+=c.amount||0;else if(c.owner==='mizu')mizu+=shares(c)[u]});
+  return {personal,mizu,total:personal+mizu};
+}
+function settlement(m){
+  const mc=S.cases.filter(c=>c.owner==='mizu'&&pubMonth(c)===m);
+  const ex=S.expenses.filter(e=>ym(e.date)===m);
+  const owe={'00':0,'mimi':0},paid={'00':0,'mimi':0};
+  mc.forEach(c=>{owe[c.lead]+=shares(c)[other(c.lead)]});
+  ex.forEach(e=>paid[e.payer]+=e.amount||0);
+  const net=owe['00']-owe['mimi']-paid['00']/2+paid['mimi']/2;
+  return {mc,ex,owe,paid,net,total:mc.reduce((s,c)=>s+(c.amount||0),0),exTotal:paid['00']+paid['mimi']};
+}
+
+
+function avatar(u,size=32){
+  const x=S.users[u];
+  if(x.photo)return `<div class="av" style="width:${size}px;height:${size}px;background-image:url('${x.photo}')"></div>`;
+  return `<div class="av" style="width:${size}px;height:${size}px;background:${x.bg};font-size:${Math.round(size*.52)}px;border:1px solid rgba(0,0,0,.04)">${x.emoji}</div>`;
+}
+const ocol=o=>o==='mizu'?'var(--cmizu)':o==='00'?'var(--c00)':'var(--cmimi)';
+const otag=o=>`<span class="tag otag" style="--oc:${ocol(o)}">${esc(NAMES[o])}</span>`;
+const stag=s=>`<span class="tag tg-${ST_COLOR[s]||'default'}">${s}</span>`;
+function applyColors(){
+  const r=document.documentElement.style;
+  r.setProperty('--c00',S.users['00'].color);r.setProperty('--cmimi',S.users['mimi'].color);
+  const th=(me&&S.users[me]&&S.users[me].prefs&&S.users[me].prefs.theme)||'#9254DE';
+  r.setProperty('--primary',th);r.setProperty('--primary-hover',`color-mix(in srgb,${th} 72%,#fff)`);r.setProperty('--primary-active',`color-mix(in srgb,${th} 82%,#000)`);
+  r.setProperty('--primary-bg',`color-mix(in srgb,${th} 8%,#fff)`);r.setProperty('--primary-border',`color-mix(in srgb,${th} 40%,#fff)`);
+  NAMES['00']=S.users['00'].name;NAMES['mimi']=S.users['mimi'].name;
+}
+function toast(t,err){
+  const el=document.createElement('div');el.className='toast'+(err?' err':'');el.innerHTML=`<i>${err?'!':'✓'}</i>${esc(t)}`;document.body.appendChild(el);
+  setTimeout(()=>{el.style.opacity=0;setTimeout(()=>el.remove(),300)},2600);
+}
+function monthPicker(m,id){return `<button class="btn" id="${id}p">‹</button><span style="min-width:110px;text-align:center;font-weight:500">${ymLabel(m)}</span><button class="btn" id="${id}n">›</button><button class="btn" id="${id}t">本月</button>`}
+function bindMonth(id,get,set){
+  document.getElementById(id+'p').onclick=()=>{set(shiftMonth(get(),-1));route()};
+  document.getElementById(id+'n').onclick=()=>{set(shiftMonth(get(),1));route()};
+  document.getElementById(id+'t').onclick=()=>{set(ym(TODAY));route()};
+}
+
+
+let loginSel='00';
+function renderLogin(){
+  applyColors();
+  document.getElementById('boot').classList.add('hidden');
+  const el=document.getElementById('login');el.classList.remove('hidden');
+  el.innerHTML=`<div class="lg-art"><img src="${LOGO}" alt="MIZU"><div class="brand-t">MIZU</div><div class="brand-s">00 × 米米 的接案小基地</div></div>
+    <div class="lg-form"><div class="lg-box">
+    <h2>歡迎回來 👋</h2><div class="sub">登入看看今天有什麼要做</div>
+    <div class="lbl">我是</div>
+    <div class="who">${['00','mimi'].map(u=>`<button data-u="${u}" class="${loginSel===u?'sel':''}">${avatar(u,36)}<span>${esc(S.users[u].name)}</span></button>`).join('')}</div>
+    <div class="lbl">密碼</div>
+    <div class="field"><input class="inp" id="pin" type="password" autocomplete="current-password" placeholder="輸入密碼"><button class="eye" id="eye" type="button" title="顯示密碼">${ico('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>')}</button></div>
+    <div class="err" id="perr"></div>
+    <button class="btn primary lg block" id="go">登入</button>
+    ${GAS?'':'<div class="lg-foot">預覽模式密碼：00 → mizu00・米米 → mizumimi</div>'}</div></div>`;
+  el.querySelectorAll('.who button').forEach(b=>b.onclick=()=>{loginSel=b.dataset.u;el.querySelectorAll('.who button').forEach(x=>x.classList.toggle('sel',x===b));document.getElementById('pin').focus()});
+  document.getElementById('eye').onclick=()=>{const p=document.getElementById('pin');p.type=p.type==='password'?'text':'password'};
+  const go=async()=>{
+    const b=document.getElementById('go');b.disabled=true;b.textContent='登入中…';
+    try{
+      if(await Data.login(loginSel,document.getElementById('pin').value)){el.classList.add('hidden');startApp()}
+      else{document.getElementById('perr').textContent='密碼不對，再試一次';b.disabled=false;b.textContent='登入'}
+    }catch(e){document.getElementById('perr').textContent=String(e.message||e);b.disabled=false;b.textContent='登入'}
+  };
+  document.getElementById('go').onclick=go;
+  document.getElementById('pin').onkeydown=e=>{if(e.key==='Enter')go()};
+  setTimeout(()=>document.getElementById('pin')?.focus(),50);
+}
+let poll=null;
+function startApp(){
+  applyPrefsOnce();
+  document.getElementById('boot').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  route();
+  if(GAS&&!poll)poll=setInterval(async()=>{if(document.hidden||document.getElementById('modalRoot').innerHTML)return;try{await Data.reload();route()}catch(e){}},60000);
+}
+async function logout(){await Data.logout();document.getElementById('app').classList.add('hidden');renderLogin()}
+
+
+const ui={scope:'mine',view:'table',fStatus:'',fOwner:'',fSpec:'',q:'',calM:ym(TODAY),calScope:'mine',finM:ym(TODAY),expM:ym(TODAY),laterOpen:false,histQ:''};
+let page='home';
+function route(){
+  applyColors();
+  const r=(location.hash||'').slice(1);
+  if(PAGES[r])page=r;
+  document.getElementById('nav').innerHTML=NAV.map(([k,t,p])=>`<a href="#${k}" data-p="${k}" class="${k===page?'on':''}">${ico(p)}${t}</a>`).join('');
+  document.querySelectorAll('#nav a').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
+  const u=S.users[me];
+  document.getElementById('meBox').innerHTML=`${avatar(me,32)}<div style="flex:1;min-width:0"><div class="nm">${esc(u.name)}</div><div class="st">${esc(u.status||'設定・登出')}</div></div><span class="muted" style="font-size:12px">⌃</span>`;
+  document.getElementById('meBox').onclick=e=>{e.stopPropagation();openMeMenu()};
+  document.getElementById('pageTitle').textContent=PAGES[page];
+  document.getElementById('topAct').innerHTML='';
+  renderSync();
+  ({home:renderHome,cases:renderCases,calendar:renderCalendar,finance:renderFinance,expenses:renderExpenses,profile:renderProfile})[page]();
+  window.scrollTo?.(0,window.scrollY);
+}
+window.addEventListener('hashchange',()=>{if(me)route()});
+function go(p){page=p;try{history.replaceState(null,'','#'+p)}catch(x){}route()}
+function openMeMenu(){
+  closeMenu();
+  const box=document.getElementById('meBox').getBoundingClientRect();
+  const d=document.createElement('div');d.className='dropdown';d.id='meMenu';
+  d.style.left=(box.left+8)+'px';d.style.bottom=(window.innerHeight-box.top+6)+'px';
+  if(window.innerWidth<=960){d.style.left='auto';d.style.right='12px';d.style.bottom='auto';d.style.top=(box.bottom+6)+'px'}
+  d.innerHTML=`<div class="dh">${avatar(me,36)}<div><div style="font-weight:500">${esc(S.users[me].name)}</div><div class="muted small">${GAS?'已登入':'預覽模式'}</div></div></div>
+    <button data-a="profile">${ico('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>')}個人設定</button>
+    <button data-a="logout" class="dg">${ico('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>')}登出</button>`;
+  document.body.appendChild(d);
+  d.onclick=e=>{const a=e.target.closest('button')?.dataset.a;if(!a)return;closeMenu();if(a==='profile')go('profile');if(a==='logout')logout()};
+  setTimeout(()=>document.addEventListener('click',closeMenu,{once:true}),0);
+}
+function closeMenu(){document.getElementById('meMenu')?.remove()}
+const M=()=>document.getElementById('main');
+const newBtn=()=>{document.getElementById('topAct').innerHTML='<button class="btn primary" id="newCase">＋ 新增案件</button>';document.getElementById('newCase').onclick=()=>openCase(null)};
+const bindOpen=root=>root.querySelectorAll('[data-open]').forEach(el=>el.onclick=e=>{if(e.target.closest('.cb'))return;openCase(el.dataset.open)});
+
+
+function taskItem(t){
+  const over=t.date<TODAY,dd=diffDays(TODAY,t.date);
+  const when=over?`逾期 ${-dd} 天`:dd===0?'今天':dd===1?'明天':md(t.date);
+  return `<div class="item ${over?'over':''}" data-open="${t.c.id}"><button class="cb" data-cid="${t.c.id}" data-k="${t.k}" title="標記完成"></button>
+    <div class="main"><div class="ttl">${esc(taskLabel(t.c,t.k))}・${esc(t.c.title)}</div><div class="meta">${otag(t.c.owner)}${t.k==='shoot'&&t.c.owner==='mizu'?'<span>兩人一起</span>':''}</div></div>
+    <div class="rt">${when}</div></div>`;
+}
+function renderHome(){
+  newBtn();
+  const inc=incomeFor(me,ym(TODAY));
+  const pending=S.cases.filter(c=>collector(c)===me&&c.ms.publish.done&&!isPaid(c));
+  const active=S.cases.filter(c=>mine(c)&&c.status!=='已結案');
+  const ts=tasksFor(me),in7=addDays(TODAY,7);
+  const over=ts.filter(t=>t.date<TODAY),soon=ts.filter(t=>t.date>=TODAY&&t.date<=in7),later=ts.filter(t=>t.date>in7);
+  const days=[...Array(7)].map((_,i)=>rel(i));
+  const evs=d=>{const o=[];S.cases.forEach(c=>MS.forEach(([k])=>{if(c.ms[k].date===d&&responsible(c,k).includes(me))o.push({c,k,done:c.ms[k].done})}));return o};
+  const h=new Date().getHours();
+  M().innerHTML=`
+  <div style="margin-bottom:16px"><div style="font-size:20px;font-weight:600">${h<11?'早安':h<18?'午安':'晚安'}，${esc(S.users[me].name)}</div>
+    <div class="muted">${S.users[me].prefs&&S.users[me].prefs.greet?esc(S.users[me].prefs.greet)+'　':''}今天 ${md(TODAY)}・有 ${over.length+soon.filter(t=>t.date===TODAY).length} 件事要處理</div></div>
+  <div class="row c3">
+    <div class="card stat"><div class="t">我本月實拿</div><div class="v">${money(inc.total)}</div><div class="h">個人案 ${money(inc.personal)}・Mizu ${money(inc.mizu)}</div></div>
+    <div class="card stat"><div class="t">待收款（我負責追的）</div><div class="v" style="color:${pending.length?'#D48806':'inherit'}">${money(pending.reduce((s,c)=>s+(c.amount||0),0))}</div><div class="h">${pending.length} 筆已上線、廠商還沒匯</div></div>
+    <div class="card stat"><div class="t">進行中案件</div><div class="v">${active.length}</div><div class="h">自己的 + Mizu</div></div>
+  </div>
+  <div class="row c21">
+    <div class="card"><div class="card-h"><h3>待辦</h3><span class="muted small">只顯示你要做的事・打勾就完成</span></div>
+      <div class="sec"><span class="dot" style="background:var(--error)"></span>已逾期 ${over.length}</div>${over.map(taskItem).join('')||'<div class="empty">沒有逾期的事 ✨</div>'}
+      <div class="sec"><span class="dot" style="background:var(--warning)"></span>7 天內 ${soon.length}</div>${soon.map(taskItem).join('')||'<div class="empty">這週沒有排程</div>'}
+      <div class="sec" id="tl" style="cursor:pointer"><span class="dot" style="background:var(--text4)"></span>之後 ${later.length}　<span style="color:var(--primary)">${ui.laterOpen?'收起':'展開'}</span></div>${ui.laterOpen?later.map(taskItem).join(''):''}
+    </div>
+    <div class="card agenda"><div class="card-h"><h3>本週時程</h3><a href="#calendar" id="toCal" class="small">月曆 →</a></div>
+      ${days.map(d=>{const e=evs(d),dt=new Date(d+'T00:00:00');return `<div class="day ${d===TODAY?'today':''}"><div class="dh"><b>${dt.getMonth()+1}/${dt.getDate()}</b>週${WK[dt.getDay()]}${d===TODAY?'・今天':''}</div>
+        ${e.map(x=>`<div class="ev ${x.done?'done':''}" data-open="${x.c.id}"><span class="dot" style="background:${ocol(x.c.owner)}"></span>${esc(MSL[x.k])}・${esc(x.c.title)}</div>`).join('')||'<div class="muted small">—</div>'}</div>`}).join('')}
+    </div>
+  </div>`;
+  M().querySelectorAll('.cb[data-cid]').forEach(b=>b.onclick=async e=>{
+    e.stopPropagation();b.classList.add('on');
+    const c=S.cases.find(x=>x.id===b.dataset.cid);const ch=applyDone(c,b.dataset.k,true);c.updatedBy=me;
+    toast(`${taskLabel(c,b.dataset.k)}完成`+(ch?`，狀態改為「${ch}」`:''));
+    setTimeout(route,250);await Data.run('apiSaveCase',c);
+  });
+  bindOpen(M());
+  document.getElementById('tl').onclick=()=>{ui.laterOpen=!ui.laterOpen;renderHome()};
+  document.getElementById('toCal').onclick=e=>{e.preventDefault();page='calendar';route()};
+}
+
+
+function filtered(){
+  return S.cases.filter(c=>(ui.scope==='all'?(!ui.fOwner||c.owner===ui.fOwner):mine(c))
+    &&(!ui.q||(c.title+c.brand+c.note+c.specs.join()).toLowerCase().includes(ui.q.toLowerCase())));
+}
+function renderCases(){
+  newBtn();
+  const base=filtered();
+  const order=new Map(S.cases.map((c,i)=>[c.id,i]));
+  const list=base.filter(c=>!ui.fStatus||c.status===ui.fStatus).sort((a,b)=>order.get(b.id)-order.get(a.id));
+  const cnt=s=>base.filter(c=>c.status===s).length;
+  M().innerHTML=`<div class="toolbar">
+    <div class="seg"><button data-sc="mine" class="${ui.scope==='mine'?'on':''}">我的</button><button data-sc="all" class="${ui.scope==='all'?'on':''}">全部</button></div>
+    ${ui.scope==='all'?`<div class="seg">${[['','不限'],['00',NAMES['00']],['mimi',NAMES['mimi']],['mizu','Mizu']].map(([v,t])=>`<button data-fo="${v}" class="${ui.fOwner===v?'on':''}">${esc(t)}</button>`).join('')}</div>`:''}
+    <div class="search">${ico('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>')}<input class="inp" id="q" placeholder="搜尋案名或規格" value="${esc(ui.q)}"></div>
+    <span class="spacer"></span>
+    <div class="seg"><button data-v="table" class="${ui.view==='table'?'on':''}">表格</button><button data-v="kanban" class="${ui.view==='kanban'?'on':''}">看板</button></div></div>
+  ${ui.view==='table'?`<div class="ctags"><button data-fs="" class="${!ui.fStatus?'on':''}">全部<span class="n">${base.length}</span></button>${STATUSES.filter(s=>cnt(s)).map(s=>`<button data-fs="${s}" class="${ui.fStatus===s?'on':''}">${s}<span class="n">${cnt(s)}</span></button>`).join('')}</div>`:''}
+  <div id="cv"></div>`;
+  const cv=document.getElementById('cv');
+  if(ui.view==='table'){
+    cv.innerHTML=`<div class="card tbl"><table><thead><tr><th>案名</th><th>歸屬</th><th>收款人</th><th>規格</th><th>狀態</th><th>上線日</th><th class="r">實拿金額</th><th>匯款</th></tr></thead><tbody>
+    ${list.map(c=>`<tr data-open="${c.id}"><td style="max-width:280px"><div style="font-weight:500">${esc(c.title)}</div>${c.brand||!canEdit(c)?`<div class="muted small">${esc(c.brand)}${canEdit(c)?'':(c.brand?'・':'')+'僅檢視'}</div>`:''}</td>
+    <td>${otag(c.owner)}</td><td>${c.owner==='mizu'?esc(NAMES[c.lead]):'<span class="muted">—</span>'}</td><td class="muted small" style="max-width:180px">${c.specs.join('、')||'—'}</td>
+    <td>${stag(c.status)}</td><td class="num">${c.ms.publish.date?md(c.ms.publish.date):'<span class="muted">未定</span>'}</td><td class="r num">${money(c.amount)}</td>
+    <td>${isPaid(c)?'<span style="color:#389E0D">已匯</span>':c.ms.publish.done?'<span style="color:#D48806">待匯款</span>':'<span class="muted">—</span>'}</td></tr>`).join('')||'<tr><td colspan="8" class="empty">沒有符合的案件</td></tr>'}
+    </tbody></table></div>`;
+  }else{
+    const cols=STATUSES;
+    cv.innerHTML=`<div class="kanban">${cols.map(s=>{const cs=list.filter(c=>c.status===s);return `<div class="col" data-col="${s}"><div class="ch">${stag(s)}<span class="muted small">${cs.length}</span></div>
+    ${cs.map(c=>`<div class="kc" data-open="${c.id}" draggable="${canEdit(c)}" data-id="${c.id}"><div class="kt">${esc(c.title)}</div>
+    <div class="km">${otag(c.owner)}<span class="num">${money(c.amount)}</span></div>${c.ms.publish.date?`<div class="km" style="margin-top:6px">上線 ${md(c.ms.publish.date)}</div>`:''}</div>`).join('')}</div>`}).join('')}</div>
+    <div class="muted small">拖曳卡片可以改狀態（對方的個人案不能拖）</div>`;
+    let dragId=null;
+    cv.querySelectorAll('.kc[draggable=true]').forEach(k=>k.ondragstart=e=>{dragId=k.dataset.id;e.dataTransfer.setData('text/plain',dragId)});
+    cv.querySelectorAll('.col').forEach(col=>{
+      col.ondragover=e=>{e.preventDefault();col.classList.add('drop')};
+      col.ondragleave=()=>col.classList.remove('drop');
+      col.ondrop=async e=>{e.preventDefault();col.classList.remove('drop');const c=S.cases.find(x=>x.id===dragId);
+        if(c&&c.status!==col.dataset.col){c.status=col.dataset.col;c.updatedBy=me;toast(`「${c.title}」改為 ${c.status}`);renderCases();await Data.run('apiSaveCase',c)}};
+    });
+  }
+  bindOpen(cv);
+  M().querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{ui.scope=b.dataset.sc;renderCases()});
+  M().querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{ui.view=b.dataset.v;renderCases()});
+  const q=document.getElementById('q');q.oninput=()=>{ui.q=q.value;clearTimeout(q._t);q._t=setTimeout(()=>{renderCases();const n=document.getElementById('q');n.focus();n.setSelectionRange(n.value.length,n.value.length)},300)};
+  M().querySelectorAll('[data-fs]').forEach(b=>b.onclick=()=>{ui.fStatus=b.dataset.fs;renderCases()});
+  M().querySelectorAll('[data-fo]').forEach(b=>b.onclick=()=>{ui.fOwner=b.dataset.fo;renderCases()});
+}
+
+function openCase(id){
+  const isNew=!id;
+  const c=isNew?{id:uid(),title:'',brand:'',owner:me,lead:me,specs:[],status:'確定合作',amount:0,split:'half',fixed:{'00':0,'mimi':0},ms:Object.fromEntries(MS.map(([k])=>[k,{date:'',done:false}])),contact:'',link:'',note:''}
+    :JSON.parse(JSON.stringify(S.cases.find(x=>x.id===id)));
+  const ro=!isNew&&!canEdit(c),dis=ro?'disabled':'';
+  const root=document.getElementById('modalRoot');
+  const close=()=>root.innerHTML='';
+  const draw=()=>{
+    root.innerHTML=`<div class="mask" id="mk"><div class="modal">
+    <div class="mh"><h2>${isNew?'新增案件':esc(c.title)} ${ro?`<span class="lockbadge">・${esc(NAMES[c.owner])}的個人案，只能檢視</span>`:''}</h2><button class="x" id="cx">✕</button></div>
+    <div class="mb"><div class="form">
+      <div class="fi full"><label>案名</label><input class="inp" id="f_title" value="${esc(c.title)}" placeholder="例：711元進莊薑母鴨湯品" ${dis}></div>
+      <div class="fi"><label>歸屬</label><select class="inp" id="f_owner" ${dis}>${(ro?[c.owner]:[me,'mizu']).map(o=>`<option value="${o}" ${c.owner===o?'selected':''}>${esc(NAMES[o])}</option>`).join('')}</select></div>
+      <div class="fi"><label>狀態</label><select class="inp" id="f_status" ${dis}>${STATUSES.map(s=>`<option ${c.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      ${c.owner==='mizu'?`<div class="fi"><label>接案／發布人（款項匯給這個人）</label><select class="inp" id="f_lead" ${dis}>${['00','mimi'].map(o=>`<option value="${o}" ${c.lead===o?'selected':''}>${esc(NAMES[o])}</option>`).join('')}</select></div>
+      <div class="fi"><label>分帳方式</label><select class="inp" id="f_split" ${dis}><option value="half" ${c.split==='half'?'selected':''}>對半分</option><option value="fixed" ${c.split==='fixed'?'selected':''}>固定金額</option></select></div>
+      ${c.split==='fixed'?`<div class="fi"><label>${esc(NAMES['00'])} 拿</label><input class="inp" type="number" id="f_fx00" value="${c.fixed['00']||0}" ${dis}></div><div class="fi"><label>${esc(NAMES['mimi'])} 拿</label><input class="inp" type="number" id="f_fxmimi" value="${c.fixed['mimi']||0}" ${dis}></div>`:''}`:''}
+      <div class="fi"><label>實拿金額</label><input class="inp" type="number" id="f_amount" value="${c.amount||''}" placeholder="NT$" ${dis}></div>
+      <div class="fi full"><label>規格</label><div class="chips">${SPECS.map(s=>`<label class="${c.specs.includes(s)?'on':''}"><input type="checkbox" value="${s}" ${c.specs.includes(s)?'checked':''} ${dis}>${s}</label>`).join('')}</div></div>
+      <div class="fi full"><label>時程</label><div class="ms">${MS.map(([k,l])=>`<div class="msr"><span>${l}</span><span>${responsible(c,k).map(otag).join('')}</span>
+        <input class="inp" type="date" data-msd="${k}" value="${c.ms[k].date}" ${dis}><label class="chk"><input type="checkbox" data-msk="${k}" ${c.ms[k].done?'checked':''} ${dis}>完成</label></div>`).join('')}</div>
+        <div class="hint">隸屬月份看上線日${c.ms.publish.date?'：'+ymLabel(ym(c.ms.publish.date)):''}。勾「完成」會自動跳到下一個狀態。</div></div>
+      <div class="fi full"><label>相關連結</label><input class="inp" id="f_link" value="${esc(c.link)}" placeholder="brief、雲端資料夾" ${dis}></div>
+      <div class="fi full"><label>備註</label><textarea class="inp" id="f_note" rows="2" ${dis}>${esc(c.note)}</textarea></div>
+    </div></div>
+    <div class="mf">${!isNew&&!ro?'<button class="btn danger" id="cdel">刪除</button>':''}<span style="flex:1"></span>${c.updatedBy?`<span class="muted small" style="margin-right:8px">最後修改：${esc(NAMES[c.updatedBy])}</span>`:''}
+      <button class="btn" id="cc">${ro?'關閉':'取消'}</button>${ro?'':'<button class="btn primary" id="cs">儲存</button>'}</div>
+    </div></div>`;
+    const $=i=>document.getElementById(i);
+    $('cx').onclick=$('cc').onclick=close;
+    $('mk').onmousedown=e=>{if(e.target.id==='mk')close()};
+    if(ro)return;
+    root.querySelectorAll('.chips label').forEach(l=>l.querySelector('input').onchange=e=>l.classList.toggle('on',e.target.checked));
+    ['f_owner','f_split','f_lead'].forEach(i=>{if($(i))$(i).onchange=()=>{collect();draw()}});
+    $('cs').onclick=save;
+    if($('cdel'))$('cdel').onclick=()=>confirmBox(`確定要刪除「${c.title}」嗎？`,async()=>{S.cases=S.cases.filter(x=>x.id!==c.id);close();toast('已刪除');route();await Data.run('apiDeleteCase',c.id)});
+  };
+  const collect=()=>{
+    const v=i=>document.getElementById(i)?.value;
+    c.title=v('f_title').trim();c.owner=v('f_owner');c.status=v('f_status');
+    if(document.getElementById('f_lead'))c.lead=v('f_lead');
+    if(c.owner!=='mizu')c.lead=c.owner;
+    if(document.getElementById('f_split'))c.split=v('f_split');
+    if(document.getElementById('f_fx00'))c.fixed={'00':+v('f_fx00')||0,'mimi':+v('f_fxmimi')||0};
+    c.amount=+v('f_amount')||0;c.link=v('f_link');c.note=v('f_note');
+    c.specs=[...document.querySelectorAll('.chips input:checked')].map(x=>x.value);
+    document.querySelectorAll('[data-msd]').forEach(x=>c.ms[x.dataset.msd].date=x.value);
+    c._done={};document.querySelectorAll('[data-msk]').forEach(x=>c._done[x.dataset.msk]=x.checked);
+  };
+  const save=async()=>{
+    collect();
+    if(!c.title){toast('請填案名',true);return}
+    if(c.owner==='mizu'&&c.split==='fixed'&&(c.fixed['00']+c.fixed['mimi'])!==c.amount){toast('固定金額加總跟實拿金額不一樣',true);return}
+    const nd=c._done;delete c._done;
+    const was=S.cases.find(x=>x.id===c.id);
+    const prev=was?{...was.ms}:null;
+    let changed=null;
+    MS.forEach(([k])=>{const before=prev?prev[k].done:false;c.ms[k].done=before;if(nd[k]!==before){const r=applyDone(c,k,nd[k]);if(r)changed=r}});
+    c.updatedBy=me;
+    const i=S.cases.findIndex(x=>x.id===c.id);if(i>=0)S.cases[i]=c;else S.cases.push(c);
+    close();toast((isNew?'已新增':'已儲存')+(changed?`，狀態改為「${changed}」`:''));route();
+    await Data.run('apiSaveCase',c);
+  };
+  draw();
+}
+function confirmBox(msg,ok){
+  const r=document.createElement('div');
+  r.innerHTML=`<div class="mask" style="z-index:60;align-items:center"><div class="modal sm"><div class="mh"><h2>${esc(msg)}</h2></div><div class="mf"><button class="btn" data-n>取消</button><button class="btn primary" data-y style="background:var(--error);border-color:var(--error)">確定</button></div></div></div>`;
+  document.body.appendChild(r);
+  r.querySelector('[data-n]').onclick=()=>r.remove();
+  r.querySelector('[data-y]').onclick=()=>{r.remove();ok()};
+}
+
+
+const gcal={};
+function renderCalendar(){
+  newBtn();
+  const [y,mm]=ui.calM.split('-').map(Number);
+  const first=new Date(y,mm-1,1);
+  const start=addDays(fmt(first),-first.getDay());
+  let cells=[...Array(42)].map((_,i)=>addDays(start,i));
+  if(!cells.slice(35).some(d=>ym(d)===ui.calM))cells=cells.slice(0,35);
+  const from=cells[0],to=cells[cells.length-1],gk=from+'_'+to;
+  if(GAS&&!gcal[gk]){gcal[gk]='loading';call('apiCalendar',token,from,to).then(r=>{gcal[gk]=r;if(page==='calendar')renderCalendar()}).catch(()=>{gcal[gk]=[]})}
+  const gev=Array.isArray(gcal[gk])?gcal[gk]:[];
+  const evs=d=>{const o=[];S.cases.forEach(c=>{if(ui.calScope==='mine'&&!mine(c))return;MS.forEach(([k])=>{if(c.ms[k].date===d){if(ui.calScope==='mine'&&!responsible(c,k).includes(me))return;o.push({c,k,done:c.ms[k].done})}})});return o};
+  const gevs=d=>gev.filter(e=>e.date===d&&(ui.calScope==='all'||e.who===me||e.who==='mizu')).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+  M().innerHTML=`<div class="toolbar"><div class="seg"><button data-sc="mine" class="${ui.calScope==='mine'?'on':''}">我的</button><button data-sc="all" class="${ui.calScope==='all'?'on':''}">全部</button></div>
+    <div class="legend" style="margin-left:8px"><span><span class="dot" style="background:var(--c00)"></span>${esc(NAMES['00'])}</span><span><span class="dot" style="background:var(--cmimi)"></span>${esc(NAMES['mimi'])}</span><span><span class="dot" style="background:var(--cmizu)"></span>Mizu</span><span class="gev"><span class="dot" style="border-color:var(--text3)"></span>Google 日曆其他行程</span>${gcal[gk]==='loading'?'<span class="muted small">讀取 Google 日曆中…</span>':''}</div>
+    <span class="spacer"></span>${monthPicker(ui.calM,'cm')}</div>
+  <div class="card"><div class="cal">${[...WK].map(w=>`<div class="wh">${w}</div>`).join('')}
+  ${cells.map(d=>`<div class="dc ${ym(d)!==ui.calM?'out':''} ${d===TODAY?'today':''}"><div class="dn"><span>${+d.slice(8)}</span></div>${evs(d).map(x=>`<div class="ev ${x.done?'done':''}" data-open="${x.c.id}" title="${esc(MSL[x.k]+'・'+x.c.title)}"><span class="dot" style="background:${ocol(x.c.owner)}"></span>${esc(MSL[x.k])}・${esc(x.c.title)}</div>`).join('')}${gevs(d).map(e=>`<div class="ev gev" title="${esc(e.title)}"><span class="dot" style="border-color:${ocol(e.who)}"></span>${e.time?e.time+' ':''}${esc(e.title)}</div>`).join('')}</div>`).join('')}</div></div>
+  <div class="muted small" style="margin-top:10px">${GAS?'案件時程會自動寫進 Google 日曆：'+esc(NAMES['00'])+' 的個人案 → TZU、'+esc(NAMES['mimi'])+' 的個人案 → Miranda、Mizu 案 → mizu 米事':'預覽模式不會讀寫 Google 日曆'}</div>`;
+  bindOpen(M());
+  M().querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{ui.calScope=b.dataset.sc;renderCalendar()});
+  bindMonth('cm',()=>ui.calM,v=>ui.calM=v);
+}
+
+
+function shortMoney(v){return v>=10000?(Math.round(v/1000)/10)+' 萬':v.toLocaleString('en-US')}
+function trendCard(y,curM){
+  const ms=[...Array(12)].map((_,i)=>`${y}-${pad(i+1)}`);
+  const d=ms.map(m=>({m,a:incomeFor('00',m),b:incomeFor('mimi',m)}));
+  const mx=Math.max(1,...d.map(x=>Math.max(x.a.total,x.b.total)));
+  const raw=mx/4,mag=Math.pow(10,Math.floor(Math.log10(raw))),step=[1,2,2.5,5,10].map(k=>k*mag).find(s=>s>=raw);
+  const top=Math.ceil(mx/step)*step,ticks=[];for(let v=0;v<=top+1e-6;v+=step)ticks.push(v);
+  const ta=d.reduce((s,x)=>s+x.a.total,0),tb=d.reduce((s,x)=>s+x.b.total,0);
+  return `<div class="card" style="margin-bottom:16px"><div class="card-h"><h3>${y} 每月收入</h3>
+    <div class="legend"><span><span class="sw-l" style="background:var(--c00)"></span>${esc(NAMES['00'])}　<b class="num">${money(ta)}</b></span><span><span class="sw-l" style="background:var(--cmimi)"></span>${esc(NAMES['mimi'])}　<b class="num">${money(tb)}</b></span></div></div>
+  <div class="trend" id="trend"><div class="tr-plot">
+    ${ticks.map(v=>`<div class="tr-gl ${v===0?'base':''}" style="bottom:${v/top*100}%"><span>${v?shortMoney(v):'0'}</span></div>`).join('')}
+    <div class="tr-cols">${d.map((x,i)=>`<div class="tr-col ${x.m===curM?'cur':''}" data-i="${i}">
+      ${x.a.total?`<div class="tr-bar" style="height:${x.a.total/top*100}%;background:var(--c00)"></div>`:''}${x.b.total?`<div class="tr-bar" style="height:${x.b.total/top*100}%;background:var(--cmimi)"></div>`:''}</div>`).join('')}</div>
+    <div class="tip hidden" id="tip"></div></div>
+    <div class="tr-x">${d.map(x=>`<span class="${x.m===curM?'cur':''}">${+x.m.slice(5)}月</span>`).join('')}</div>
+    <div class="muted small" style="margin-top:8px">個人案 + Mizu 分到的，依上線月份。滑過看細節，點一下切到那個月</div></div>
+  <details><summary>看數字</summary><div class="tbl"><table><thead><tr><th>月份</th><th class="r">${esc(NAMES['00'])}</th><th class="r">${esc(NAMES['mimi'])}</th><th class="r">合計</th></tr></thead><tbody>
+    ${d.map(x=>`<tr><td>${+x.m.slice(5)} 月</td><td class="r num">${money(x.a.total)}</td><td class="r num">${money(x.b.total)}</td><td class="r num">${money(x.a.total+x.b.total)}</td></tr>`).join('')}
+  </tbody></table></div></details></div>`;
+}
+function bindTrend(y){
+  const el=document.getElementById('trend');if(!el)return;
+  const tip=document.getElementById('tip'),plot=el.querySelector('.tr-plot');
+  el.querySelectorAll('.tr-col').forEach(c=>{
+    const i=+c.dataset.i,m=`${y}-${pad(i+1)}`,a=incomeFor('00',m),b=incomeFor('mimi',m);
+    c.onmouseenter=()=>{
+      tip.innerHTML=`<b>${y} 年 ${i+1} 月</b><br><i style="background:var(--c00)"></i>${esc(NAMES['00'])}　<b>${money(a.total)}</b> <span class="muted">（個人 ${money(a.personal)}・Mizu ${money(a.mizu)}）</span><br><i style="background:var(--cmimi)"></i>${esc(NAMES['mimi'])}　<b>${money(b.total)}</b> <span class="muted">（個人 ${money(b.personal)}・Mizu ${money(b.mizu)}）</span>`;
+      tip.classList.remove('hidden');
+      const pr=plot.getBoundingClientRect(),cr=c.getBoundingClientRect();
+      let x=cr.left-pr.left+cr.width/2-tip.offsetWidth/2;x=Math.max(-40,Math.min(x,pr.width-tip.offsetWidth));
+      tip.style.left=x+'px';tip.style.top='-8px';
+    };
+    c.onmouseleave=()=>tip.classList.add('hidden');
+    c.onclick=()=>{ui.finM=m;route()};
+  });
+}
+function renderFinance(){
+  const m=ui.finM,st=settlement(m),sd=S.settlements[m];
+  const from=st.net>=0?'00':'mimi',to=other(from);
+  const i00=incomeFor('00',m),imi=incomeFor('mimi',m);
+  const pend=S.cases.filter(c=>c.ms.publish.done&&!isPaid(c)).sort((a,b)=>(a.ms.payment.date||'9999').localeCompare(b.ms.payment.date||'9999'));
+  M().innerHTML=`<div class="toolbar"><span class="muted">依上線月份計算</span><span class="spacer"></span>${monthPicker(m,'fm')}</div>
+  <div class="card" style="margin-bottom:16px"><div class="hero">
+    <div style="flex:1;min-width:240px"><div class="lbl">${ymLabel(m)} Mizu 月結</div>
+      <div class="big">${Math.abs(st.net)<1?'不用轉帳':`${esc(NAMES[from])} 要轉 ${money(Math.abs(st.net))} 給 ${esc(NAMES[to])}`}</div>
+      <div class="sub">Mizu 案 ${st.mc.length} 件共 ${money(st.total)}${st.exTotal?`・代墊 ${money(st.exTotal)} 已對半抵掉`:''}</div></div>
+    <div style="display:flex;align-items:center;gap:10px"><button class="switch ${sd?.done?'on':''}" id="sdone"></button><span>${sd?.done?`已轉帳<span class="muted small">（${esc(NAMES[sd.by]||'')}）</span>`:'還沒轉'}</span></div>
+  </div>
+  <details><summary>看 Mizu 案件明細</summary><div class="tbl"><table><thead><tr><th>案名</th><th>上線</th><th class="r">金額</th><th>收款人</th><th class="r">${esc(NAMES['00'])}</th><th class="r">${esc(NAMES['mimi'])}</th></tr></thead><tbody>
+    ${st.mc.map(c=>{const sh=shares(c);return `<tr data-open="${c.id}"><td>${esc(c.title)}</td><td class="num">${md(c.ms.publish.date)}</td><td class="r num">${money(c.amount)}</td><td>${otag(c.lead)}</td><td class="r num">${money(sh['00'])}</td><td class="r num">${money(sh['mimi'])}</td></tr>`}).join('')||'<tr><td colspan="6" class="empty">這個月沒有 Mizu 案</td></tr>'}
+  </tbody></table></div></details></div>
+  <div class="row c3">
+    <div class="card stat"><div class="t">${esc(NAMES['00'])} 本月實拿</div><div class="v">${money(i00.total)}</div><div class="h">個人 ${money(i00.personal)}・Mizu ${money(i00.mizu)}</div></div>
+    <div class="card stat"><div class="t">${esc(NAMES['mimi'])} 本月實拿</div><div class="v">${money(imi.total)}</div><div class="h">個人 ${money(imi.personal)}・Mizu ${money(imi.mizu)}</div></div>
+    <div class="card stat"><div class="t">還沒匯款（全部月份）</div><div class="v" style="color:#D48806">${money(pend.reduce((s,c)=>s+(c.amount||0),0))}</div><div class="h">${pend.length} 筆已上線</div></div>
+  </div>
+  ${trendCard(m.slice(0,4),m)}
+  <div class="card"><div class="card-h"><h3>待收款</h3><span class="muted small">依預計匯款日排序</span></div>
+    ${pend.map(c=>{const pd=c.ms.payment.date,dd=pd?diffDays(TODAY,pd):null;
+      const when=dd==null?'<span class="muted">未填匯款日</span>':dd<0?`<span style="color:var(--error)">逾期 ${-dd} 天</span>`:dd===0?'<span style="color:#D48806">今天</span>':dd<=7?`<span style="color:#D48806">${md(pd)}</span>`:md(pd);
+      return `<div class="item" data-open="${c.id}"><div class="main"><div class="ttl">${esc(c.title)}</div><div class="meta">${otag(c.owner)}<span>追款：${esc(NAMES[collector(c)])}</span></div></div>
+    <div class="rt"><div class="num" style="color:var(--text);font-weight:500">${money(c.amount)}</div><div class="small">${when}</div></div></div>`}).join('')||'<div class="empty">全部都收到了 🎉</div>'}
+  </div>`;
+  bindOpen(M());
+  bindMonth('fm',()=>ui.finM,v=>ui.finM=v);
+  bindTrend(m.slice(0,4));
+  document.getElementById('sdone').onclick=async()=>{const on=!(sd&&sd.done);S.settlements[m]=on?{done:true,by:me,at:TODAY}:null;toast(on?'已標記轉帳':'已取消標記');renderFinance();await Data.run('apiSetSettlement',m,on)};
+}
+
+
+function renderExpenses(){
+  document.getElementById('topAct').innerHTML='<button class="btn primary" id="add">＋ 記一筆</button>';
+  document.getElementById('add').onclick=()=>openExp(null);
+  const m=ui.expM;
+  const list=S.expenses.filter(e=>ym(e.date)===m).sort((a,b)=>b.date.localeCompare(a.date));
+  const tot=p=>list.filter(e=>!p||e.payer===p).reduce((s,e)=>s+e.amount,0);
+  M().innerHTML=`<div class="toolbar"><span class="muted">兩人一起的代墊開銷，月結時自動對半分攤</span><span class="spacer"></span>${monthPicker(m,'em')}</div>
+  <div class="row c3">
+    <div class="card stat"><div class="t">本月總支出</div><div class="v">${money(tot())}</div></div>
+    <div class="card stat"><div class="t">${esc(NAMES['00'])} 墊付</div><div class="v">${money(tot('00'))}</div></div>
+    <div class="card stat"><div class="t">${esc(NAMES['mimi'])} 墊付</div><div class="v">${money(tot('mimi'))}</div></div>
+  </div>
+  <div class="card tbl"><table><thead><tr><th>日期</th><th>分類</th><th>說明</th><th>相關案件</th><th>誰付的</th><th class="r">金額</th></tr></thead><tbody>
+  ${list.map(e=>{const c=S.cases.find(x=>x.id===e.caseId);return `<tr data-eid="${e.id}"><td class="num">${md(e.date)}</td><td><span class="tag tg-default">${e.cat}</span></td><td>${esc(e.note)}</td><td>${c?esc(c.title):'<span class="muted">—</span>'}</td><td>${otag(e.payer)}</td><td class="r num">${money(e.amount)}</td></tr>`}).join('')||'<tr><td colspan="6" class="empty">這個月還沒有支出</td></tr>'}
+  </tbody></table></div>`;
+  bindMonth('em',()=>ui.expM,v=>ui.expM=v);
+  M().querySelectorAll('[data-eid]').forEach(r=>r.onclick=()=>openExp(r.dataset.eid));
+}
+function openExp(id){
+  const isNew=!id;
+  const e=isNew?{id:uid(),date:TODAY,cat:EXP_CATS[0],amount:'',payer:me,caseId:'',note:''}:{...S.expenses.find(x=>x.id===id)};
+  const root=document.getElementById('modalRoot');
+  const opts=S.cases.filter(c=>c.owner==='mizu'&&c.status!=='已結案'||c.id===e.caseId).map(c=>`<option value="${c.id}" ${e.caseId===c.id?'selected':''}>${esc(c.title)}</option>`).join('');
+  root.innerHTML=`<div class="mask" id="mk"><div class="modal sm"><div class="mh"><h2>${isNew?'記一筆支出':'編輯支出'}</h2><button class="x" id="cx">✕</button></div>
+  <div class="mb"><div class="form">
+  <div class="fi"><label>日期</label><input class="inp" type="date" id="e_date" value="${e.date}"></div>
+  <div class="fi"><label>金額</label><input class="inp" type="number" id="e_amt" value="${e.amount}"></div>
+  <div class="fi"><label>分類</label><select class="inp" id="e_cat">${EXP_CATS.map(c=>`<option ${e.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>
+  <div class="fi"><label>誰付的</label><select class="inp" id="e_payer">${['00','mimi'].map(p=>`<option value="${p}" ${e.payer===p?'selected':''}>${esc(NAMES[p])}</option>`).join('')}</select></div>
+  <div class="fi full"><label>相關案件（選填）</label><select class="inp" id="e_case"><option value="">不對應案件</option>${opts}</select></div>
+  <div class="fi full"><label>說明</label><input class="inp" id="e_note" value="${esc(e.note)}" placeholder="例：計程車來回"></div>
+  </div></div>
+  <div class="mf">${isNew?'':'<button class="btn danger" id="ed">刪除</button>'}<span style="flex:1"></span><button class="btn" id="cc">取消</button><button class="btn primary" id="es">儲存</button></div></div></div>`;
+  const $=i=>document.getElementById(i),close=()=>root.innerHTML='';
+  $('cx').onclick=$('cc').onclick=close;
+  $('mk').onmousedown=ev=>{if(ev.target.id==='mk')close()};
+  $('es').onclick=async()=>{
+    e.date=$('e_date').value;e.amount=+$('e_amt').value||0;e.cat=$('e_cat').value;e.payer=$('e_payer').value;e.caseId=$('e_case').value||null;e.note=$('e_note').value;
+    if(!e.amount||!e.date){toast('請填日期和金額',true);return}
+    const i=S.expenses.findIndex(x=>x.id===e.id);if(i>=0)S.expenses[i]=e;else S.expenses.push(e);
+    close();ui.expM=ym(e.date);toast('已儲存');route();await Data.run('apiSaveExpense',e);
+  };
+  if($('ed'))$('ed').onclick=()=>confirmBox('確定刪除這筆支出？',async()=>{S.expenses=S.expenses.filter(x=>x.id!==e.id);close();route();await Data.run('apiDeleteExpense',e.id)});
+}
+
+
+const THEMES=['#9254DE','#722ED1','#2F54EB','#1677FF','#13C2C2','#52C41A','#FA8C16','#FA541C','#F5222D','#EB2F96','#F759AB','#A0522D','#595959'];
+const GREETS=['今天也要元氣滿滿 ✨','慢慢來比較快 🌱','拍好拍滿 📸','今天也是可愛的一天 🎀'];
+const prefs=()=>(S.users[me].prefs||(S.users[me].prefs={}));
+async function savePrefs(patch){Object.assign(prefs(),patch);Data.saveLocal();await Data.run('apiSaveUser',{prefs:prefs()})}
+function applyPrefsOnce(){const p=prefs();if(p.caseView)ui.view=p.caseView;if(p.caseScope)ui.scope=p.caseScope;if(p.calScope)ui.calScope=p.calScope;if(p.laterOpen)ui.laterOpen=true}
+function seg(id,opts,cur){return `<div class="seg" id="${id}">${opts.map(([v,t])=>`<button data-v="${v}" class="${cur===v?'on':''}">${t}</button>`).join('')}</div>`}
+function renderProfile(){
+  const u=S.users[me],y=TODAY.slice(0,4),p=prefs();
+  let tot=0,per=0,miz=0;for(let i=1;i<=12;i++){const r=incomeFor(me,`${y}-${pad(i)}`);tot+=r.total;per+=r.personal;miz+=r.mizu}
+  const n=S.cases.filter(c=>(c.owner===me||c.owner==='mizu')&&pubMonth(c).startsWith(y)).length;
+  const theme=p.theme||'#9254DE';
+  M().innerHTML=`<div class="card" style="margin-bottom:16px;overflow:hidden">
+    <div style="height:96px;background:linear-gradient(120deg,color-mix(in srgb,${u.color} 35%,#fff),color-mix(in srgb,${theme} 30%,#fff))"></div>
+    <div style="display:flex;gap:20px;align-items:flex-end;padding:0 24px 20px;margin-top:-40px;flex-wrap:wrap">
+      <div style="border:4px solid #fff;border-radius:50%;background:#fff">${avatar(me,84)}</div>
+      <div style="flex:1;min-width:200px;padding-bottom:4px"><div style="font-size:22px;font-weight:600">${esc(u.name)}</div>
+        <input class="inp" id="stIn" style="margin-top:6px;width:min(360px,100%)" placeholder="寫一句狀態，會顯示在左下角…" value="${esc(u.status)}"></div>
+      <div style="text-align:right;padding-bottom:4px"><div class="muted">${y} 年累計實拿</div><div style="font-size:30px;font-weight:600;font-variant-numeric:tabular-nums">${money(tot)}</div>
+        <div class="muted small">個人 ${money(per)}・Mizu ${money(miz)}・${n} 件</div></div>
+    </div></div>
+  <div class="card" style="margin-bottom:16px"><div class="card-h"><h3>個人資料</h3><span class="muted small">改了馬上儲存</span></div><div class="card-b">
+    <div class="fi"><label>顯示名稱</label><input class="inp" id="nmIn" style="width:min(320px,100%)" value="${esc(u.name)}"></div>
+    <div class="fi"><label>頭貼</label><div style="display:flex;gap:8px;align-items:center"><label class="btn" style="margin:0">上傳照片<input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/heic" id="ph" style="display:none"></label>${u.photo?'<button class="btn text" id="rp">移除照片，改用 emoji</button>':''}</div></div>
+    <div class="fi"><label>或用 emoji 當頭貼</label><div class="emojis">${EMOJIS.map(e=>`<button data-e="${e}" class="${!u.photo&&u.emoji===e?'on':''}">${e}</button>`).join('')}</div></div>
+    <div class="fi" style="margin-bottom:0"><label>emoji 背景色</label><div class="swatches">${BGS.map(c=>`<div class="sw ${u.bg.toUpperCase()===c?'on':''}" data-bg="${c}" style="background:${c}"></div>`).join('')}</div></div>
+  </div></div>
+  <div class="card" style="margin-bottom:16px"><div class="card-h"><h3>個人化</h3><span class="muted small">改了馬上生效，只影響你自己的畫面</span></div><div class="card-b">
+    <div class="fi"><label>介面主題色</label><div class="swatches" id="thSw">${THEMES.map(c=>`<div class="sw ${theme.toUpperCase()===c?'on':''}" data-c="${c}" style="background:${c}"></div>`).join('')}<label class="sw-custom">自訂<input type="color" id="thC" value="${theme}"></label></div><div class="hint">按鈕、選單和重點文字會用這個顏色</div></div>
+    <div class="fi"><label>代表色</label><div class="swatches" id="rpSw">${COLORS.map(c=>`<div class="sw ${u.color.toUpperCase()===c?'on':''}" data-c="${c}" style="background:${c}"></div>`).join('')}<label class="sw-custom">自訂<input type="color" id="rpC" value="${u.color}"></label></div><div class="hint">日曆和標籤上代表「${esc(u.name)}」的顏色，${esc(NAMES[other(me)])}也會看到</div></div>
+    <div class="fi"><label>首頁打招呼的一句話</label><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input class="inp" id="grIn" style="width:min(320px,100%)" placeholder="例如：今天也要元氣滿滿" value="${esc(p.greet||'')}">${GREETS.map(g=>`<button class="btn sm" data-g="${esc(g)}">${esc(g)}</button>`).join('')}</div></div>
+    <div class="form" style="max-width:720px">
+      <div class="fi"><label>案件頁預設顯示</label>${seg('pfScope',[['mine','我的'],['all','全部']],p.caseScope||'mine')}　${seg('pfView',[['table','表格'],['kanban','看板']],p.caseView||'table')}</div>
+      <div class="fi"><label>日曆預設顯示</label>${seg('pfCal',[['mine','我的'],['all','全部']],p.calScope||'mine')}</div>
+      <div class="fi"><label>首頁「之後」的待辦</label>${seg('pfLater',[['0','收起來'],['1','展開']],p.laterOpen?'1':'0')}</div>
+    </div></div></div>
+  <div class="card" style="margin-bottom:16px"><div class="card-h"><h3>LINE 通知</h3>${u.lineBound?'<span class="tag tg-green">已綁定</span>':'<span class="tag tg-default">還沒綁定</span>'}</div><div class="card-b">
+    ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
+      `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
+    <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
+  <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
+    <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
+    <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
+    <div><button class="btn primary" id="sp">更新密碼</button></div></div></div></div>`;
+  const $=i=>document.getElementById(i);
+  $('lo').onclick=logout;
+  const saveU=async f=>{Object.assign(u,f);Data.saveLocal();route();await Data.run('apiSaveUser',f)};
+  $('nmIn').onchange=()=>{const v=$('nmIn').value.trim();if(v){saveU({name:v});toast('名稱已更新')}};
+  M().querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>saveU({emoji:b.dataset.e,photo:''}));
+  M().querySelectorAll('[data-bg]').forEach(b=>b.onclick=()=>saveU({bg:b.dataset.bg}));
+  if($('rp'))$('rp').onclick=()=>saveU({photo:''});
+  $('ph').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const img=new Image();img.onload=()=>{const cv=document.createElement('canvas'),s=120;cv.width=cv.height=s;const cx=cv.getContext('2d'),m=Math.min(img.width,img.height);cx.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,s,s);saveU({photo:cv.toDataURL('image/jpeg',.8)});toast('頭貼已更新')};img.src=rd.result};rd.readAsDataURL(f)};
+  $('stIn').onchange=async()=>{u.status=$('stIn').value;toast('狀態已更新');route();await Data.run('apiSaveUser',{status:u.status})};
+  const setTheme=async c=>{await savePrefs({theme:c});route()};
+  $('thSw').querySelectorAll('[data-c]').forEach(s=>s.onclick=()=>{prefs().theme=s.dataset.c;route();setTheme(s.dataset.c)});
+  $('thC').onchange=e=>{prefs().theme=e.target.value.toUpperCase();route();setTheme(prefs().theme)};
+  const setRep=async c=>{u.color=c;route();await Data.run('apiSaveUser',{color:c})};
+  $('rpSw').querySelectorAll('[data-c]').forEach(s=>s.onclick=()=>setRep(s.dataset.c));
+  $('rpC').onchange=e=>setRep(e.target.value.toUpperCase());
+  $('grIn').onchange=()=>{savePrefs({greet:$('grIn').value.trim()});toast('已更新')};
+  M().querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{$('grIn').value=b.dataset.g;savePrefs({greet:b.dataset.g});toast('已更新')});
+  const bindSeg=(id,fn)=>$(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{$(id).querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));fn(b.dataset.v)});
+  bindSeg('pfScope',v=>{ui.scope=v;savePrefs({caseScope:v})});
+  bindSeg('pfView',v=>{ui.view=v;savePrefs({caseView:v})});
+  bindSeg('pfCal',v=>{ui.calScope=v;savePrefs({calScope:v})});
+  bindSeg('pfLater',v=>{ui.laterOpen=v==='1';savePrefs({laterOpen:v==='1'})});
+  $('lineCode').onclick=async()=>{
+    const out=$('lineOut');
+    if(!GAS){out.innerHTML='<span class="muted">預覽模式沒辦法綁定，請到正式版網址操作</span>';return}
+    out.innerHTML='<span class="muted">產生中…</span>';
+    try{const r=await call('apiLineCode',token);
+      out.innerHTML=`<span>用 LINE 傳 <b style="font-size:18px;letter-spacing:.12em;color:var(--primary)">${r.code}</b> 給官方帳號${r.oa?` <b>${esc(r.oa)}</b>`:''}，10 分鐘內有效</span>`;
+    }catch(e){out.innerHTML=`<span style="color:var(--error)">${esc(String(e.message||e).replace(/^Error:\s+/,''))}</span>`}
+  };
+  $('sp').onclick=async()=>{
+    const o=$('op').value,n=$('np').value;
+    if(n.length<6){toast('新密碼至少 6 個字',true);return}
+    if(GAS){try{await call('apiSetPassword',token,o,n);toast('密碼已更新');renderProfile()}catch(e){toast(String(e.message||e).replace(/^Error:\s+/,''),true)}}
+    else{if(u.pw!==o){toast('目前的密碼不對',true);return}u.pw=n;Data.saveLocal();toast('密碼已更新');renderProfile()}
+  };
+}
+
+
+(async()=>{
+  try{if(await Data.boot()&&me&&S.users[me])startApp();else renderLogin()}
+  catch(e){document.getElementById('boot').innerHTML='載入失敗：'+esc(e.message||e)}
+})();
+</script>
+</body>
+</html>
