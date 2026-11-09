@@ -2,7 +2,11 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MIZU">
 <title>MIZU 接案管理</title>
 <link rel="icon" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
@@ -293,19 +297,101 @@ details summary::-webkit-details-marker{display:none}
 .spin{width:28px;height:28px;border:3px solid var(--primary-bg);border-top-color:var(--primary);border-radius:50%;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 
-@media (max-width:960px){
-  #app{flex-direction:column}
-  .sider{width:100%;height:auto;position:static;flex-direction:row;align-items:center}
-  .sider .brand{border:none;padding:0 12px}
-  .menu{display:flex;overflow-x:auto;padding:4px}
-  .menu a{padding:0 10px;white-space:nowrap}
-  .me-box{border:none}
-  .me-box>div{display:none}
-  .topbar{position:static}
-  main{padding:16px}
-  .c3,.c21,.c2,.form{grid-template-columns:1fr}
-  .msr{grid-template-columns:1fr 1fr}
+.only-mob{display:none!important}
+.tabbar{display:none}
+.top-me{display:none;border:none;background:none;padding:0;border-radius:50%}
+.dots{display:none}
+.newbtn .lbl{display:inline}
+
+/* 平板：側欄縮成圖示 */
+@media (max-width:1100px) and (min-width:769px){
+  .sider{width:72px}
+  .sider .brand{padding:0;justify-content:center}
+  .sider .brand b{display:none}
+  .menu a{justify-content:center;padding:0;flex-direction:column;gap:2px;height:52px;font-size:11px}
+  .menu svg{width:20px;height:20px}
+  .me-box{justify-content:center;padding:12px 0}
+  .me-box>div:not(.av),.me-box>.muted{display:none}
+  main{padding:20px}
+  .c21{grid-template-columns:1fr}
 }
+
+/* 手機 */
+@media (max-width:768px){
+  body{background:#F2F2F7;font-size:15px}
+  .only-mob{display:block!important}
+  .only-desk{display:none!important}
+  .sider{display:none}
+  .content{min-height:100vh}
+  .topbar{height:auto;min-height:52px;padding:calc(env(safe-area-inset-top) + 6px) 16px 6px;background:rgba(255,255,255,.82);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid rgba(0,0,0,.12)}
+  .topbar h1{font-size:17px;font-weight:600}
+  .sync{font-size:0;gap:0}
+  .sync i{width:8px;height:8px}
+  .top-me{display:block}
+  .newbtn{width:34px;height:34px;padding:0;border-radius:50%;font-size:18px}
+  .newbtn .lbl{display:none}
+  main{padding:12px 12px calc(88px + env(safe-area-inset-bottom))}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;padding:6px 4px env(safe-area-inset-bottom);background:rgba(249,249,249,.88);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid rgba(0,0,0,.18)}
+  .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px 0 4px;font-size:10px;font-weight:500;color:#8E8E93;-webkit-tap-highlight-color:transparent}
+  .tabbar a.on{color:var(--primary)}
+  .tabbar svg{width:25px;height:25px;stroke-width:1.7}
+  .tabbar a.on svg{stroke-width:2.1}
+  .row{gap:10px;margin-bottom:10px}
+  .c3,.c21,.c2,.form{grid-template-columns:minmax(0,1fr)}
+  .row.c3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .row>*{min-width:0}
+  .card-h>.muted.small{display:none}
+  html,body{overflow-x:hidden}
+  .row.c3>.card:first-child{grid-column:1/-1}
+  .card{border-radius:12px;border:none;box-shadow:none}
+  .card-h{padding:0 16px;min-height:48px}
+  .card-b{padding:16px}
+  .stat{padding:14px 16px}
+  .stat .v{font-size:22px}
+  .stat .t{font-size:13px}
+  .item{padding:12px 16px}
+  .sec{padding:8px 16px}
+  .agenda .day{padding:10px 16px}
+  .inp,select.inp,textarea.inp{font-size:16px;height:38px}
+  textarea.inp{height:auto}
+  .btn{height:36px}
+  .toolbar{gap:8px}
+  .search{flex:1;min-width:0}
+  .search .inp{width:100%}
+  .ctags{flex-wrap:nowrap;overflow-x:auto;margin:0 -12px 12px;padding:0 12px;scrollbar-width:none}
+  .ctags::-webkit-scrollbar{display:none}
+  .ctags button{flex-shrink:0}
+  .kanban{scroll-snap-type:x mandatory;margin:0 -12px;padding:0 12px 8px}
+  .col{width:82vw;scroll-snap-align:start}
+  .cal .wh{padding:6px 2px;text-align:center;font-size:12px}
+  .cal .dc{min-height:52px;padding:4px 2px;text-align:center;border-right:none}
+  .cal .dn{text-align:center;margin-bottom:2px}
+  .cal .dc .ev{display:none}
+  .cal .dc.sel{background:var(--primary-bg)}
+  .dots{display:flex;gap:3px;justify-content:center;flex-wrap:wrap;padding:0 2px}
+  .dots i{width:5px;height:5px;border-radius:50%}
+  .legend{display:none}
+  .hero{padding:18px 16px;gap:12px}
+  .hero .big{font-size:22px}
+  .trend{padding:8px 12px}
+  .tr-plot{margin-left:36px;height:180px}
+  .tr-x{margin-left:36px}
+  .tr-x span{font-size:10px}
+  .tr-bar{width:38%;border-radius:3px 3px 0 0}
+  .mask{align-items:flex-end;padding:0}
+  .modal,.modal.sm{width:100%;border-radius:16px 16px 0 0;max-height:92vh;display:flex;flex-direction:column;animation:up .25s ease}
+  .modal .mh{padding:14px 16px 8px}
+  .modal .mh::before{content:"";position:absolute;left:50%;margin-left:-18px;margin-top:-8px;width:36px;height:5px;border-radius:3px;background:rgba(0,0,0,.15)}
+  .mb{padding:4px 16px 8px;max-height:none;flex:1}
+  .mf{padding:10px 16px calc(12px + env(safe-area-inset-bottom));border-top:.5px solid var(--split)}
+  .msr{grid-template-columns:1fr auto;row-gap:6px}
+  .msr>span:nth-child(2){justify-self:end}
+  .dropdown{left:auto!important;right:12px!important;bottom:auto!important}
+  .prof-hero-inner{flex-direction:column;align-items:flex-start!important}
+  .prof-hero-inner>div:last-child{text-align:left!important}
+  .toast{top:calc(env(safe-area-inset-top) + 12px)}
+}
+@keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
 </style>
 </head>
 <body>
@@ -318,9 +404,10 @@ details summary::-webkit-details-marker{display:none}
     <div class="me-box" id="meBox"></div>
   </aside>
   <div class="content">
-    <div class="topbar"><h1 id="pageTitle"></h1><span class="spacer"></span><span class="sync" id="sync"></span><span id="topAct"></span></div>
+    <div class="topbar"><h1 id="pageTitle"></h1><span class="spacer"></span><span class="sync" id="sync"></span><span id="topAct"></span><button class="top-me" id="meTop"></button></div>
     <main id="main"></main>
   </div>
+  <nav class="tabbar" id="tabbar"></nav>
 </div>
 <div id="modalRoot"></div>
 
@@ -485,7 +572,7 @@ function toast(t,err){
   const el=document.createElement('div');el.className='toast'+(err?' err':'');el.innerHTML=`<i>${err?'!':'✓'}</i>${esc(t)}`;document.body.appendChild(el);
   setTimeout(()=>{el.style.opacity=0;setTimeout(()=>el.remove(),300)},2600);
 }
-function monthPicker(m,id){return `<button class="btn" id="${id}p">‹</button><span style="min-width:110px;text-align:center;font-weight:500">${ymLabel(m)}</span><button class="btn" id="${id}n">›</button><button class="btn" id="${id}t">本月</button>`}
+function monthPicker(m,id){return `<button class="btn" id="${id}p">‹</button><span style="min-width:110px;text-align:center;font-weight:500">${ymLabel(m)}</span><button class="btn" id="${id}n">›</button><button class="btn only-desk" id="${id}t">本月</button>`}
 function bindMonth(id,get,set){
   document.getElementById(id+'p').onclick=()=>{set(shiftMonth(get(),-1));route()};
   document.getElementById(id+'n').onclick=()=>{set(shiftMonth(get(),1));route()};
@@ -532,17 +619,20 @@ function startApp(){
 async function logout(){await Data.logout();document.getElementById('app').classList.add('hidden');renderLogin()}
 
 
-const ui={scope:'mine',view:'table',fStatus:'',fOwner:'',fSpec:'',q:'',calM:ym(TODAY),calScope:'mine',finM:ym(TODAY),expM:ym(TODAY),laterOpen:false,histQ:''};
+const ui={calDay:TODAY,scope:'mine',view:'table',fStatus:'',fOwner:'',fSpec:'',q:'',calM:ym(TODAY),calScope:'mine',finM:ym(TODAY),expM:ym(TODAY),laterOpen:false,histQ:''};
 let page='home';
 function route(){
   applyColors();
   const r=(location.hash||'').slice(1);
   if(PAGES[r])page=r;
-  document.getElementById('nav').innerHTML=NAV.map(([k,t,p])=>`<a href="#${k}" data-p="${k}" class="${k===page?'on':''}">${ico(p)}${t}</a>`).join('');
-  document.querySelectorAll('#nav a').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
+  const navHtml=NAV.map(([k,t,p])=>`<a href="#${k}" data-p="${k}" class="${k===page?'on':''}">${ico(p)}<span>${t}</span></a>`).join('');
+  document.getElementById('nav').innerHTML=navHtml;document.getElementById('tabbar').innerHTML=navHtml;
+  document.querySelectorAll('#nav a,#tabbar a').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
+  document.getElementById('meTop').innerHTML=avatar(me,30);
+  document.getElementById('meTop').onclick=e=>{e.stopPropagation();openMeMenu(e.currentTarget)};
   const u=S.users[me];
   document.getElementById('meBox').innerHTML=`${avatar(me,32)}<div style="flex:1;min-width:0"><div class="nm">${esc(u.name)}</div><div class="st">${esc(u.status||'設定・登出')}</div></div><span class="muted" style="font-size:12px">⌃</span>`;
-  document.getElementById('meBox').onclick=e=>{e.stopPropagation();openMeMenu()};
+  document.getElementById('meBox').onclick=e=>{e.stopPropagation();openMeMenu(e.currentTarget)};
   document.getElementById('pageTitle').textContent=PAGES[page];
   document.getElementById('topAct').innerHTML='';
   renderSync();
@@ -551,12 +641,12 @@ function route(){
 }
 window.addEventListener('hashchange',()=>{if(me)route()});
 function go(p){page=p;try{history.replaceState(null,'','#'+p)}catch(x){}route()}
-function openMeMenu(){
+function openMeMenu(anchor){
   closeMenu();
-  const box=document.getElementById('meBox').getBoundingClientRect();
+  const box=(anchor||document.getElementById('meBox')).getBoundingClientRect();
   const d=document.createElement('div');d.className='dropdown';d.id='meMenu';
   d.style.left=(box.left+8)+'px';d.style.bottom=(window.innerHeight-box.top+6)+'px';
-  if(window.innerWidth<=960){d.style.left='auto';d.style.right='12px';d.style.bottom='auto';d.style.top=(box.bottom+6)+'px'}
+  if(window.innerWidth<=768){d.style.top=(box.bottom+6)+'px'}
   d.innerHTML=`<div class="dh">${avatar(me,36)}<div><div style="font-weight:500">${esc(S.users[me].name)}</div><div class="muted small">${GAS?'已登入':'預覽模式'}</div></div></div>
     <button data-a="profile">${ico('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>')}個人設定</button>
     <button data-a="logout" class="dg">${ico('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>')}登出</button>`;
@@ -566,7 +656,7 @@ function openMeMenu(){
 }
 function closeMenu(){document.getElementById('meMenu')?.remove()}
 const M=()=>document.getElementById('main');
-const newBtn=()=>{document.getElementById('topAct').innerHTML='<button class="btn primary" id="newCase">＋ 新增案件</button>';document.getElementById('newCase').onclick=()=>openCase(null)};
+const newBtn=()=>{document.getElementById('topAct').innerHTML='<button class="btn primary newbtn" id="newCase">＋<span class="lbl"> 新增案件</span></button>';document.getElementById('newCase').onclick=()=>openCase(null)};
 const bindOpen=root=>root.querySelectorAll('[data-open]').forEach(el=>el.onclick=e=>{if(e.target.closest('.cb'))return;openCase(el.dataset.open)});
 
 
@@ -638,7 +728,9 @@ function renderCases(){
   <div id="cv"></div>`;
   const cv=document.getElementById('cv');
   if(ui.view==='table'){
-    cv.innerHTML=`<div class="card tbl"><table><thead><tr><th>案名</th><th>歸屬</th><th>收款人</th><th>規格</th><th>狀態</th><th>上線日</th><th class="r">實拿金額</th><th>匯款</th></tr></thead><tbody>
+    cv.innerHTML=`<div class="card only-mob">${list.map(c=>`<div class="item" data-open="${c.id}"><div class="main"><div class="ttl">${esc(c.title)}</div><div class="meta">${otag(c.owner)}${stag(c.status)}${c.owner==='mizu'?`<span>收款 ${esc(NAMES[c.lead])}</span>`:''}</div></div>
+      <div class="rt"><div class="num" style="color:var(--text);font-weight:500">${money(c.amount)}</div><div class="small">${c.ms.publish.date?'上線 '+md(c.ms.publish.date):'上線未定'}</div></div></div>`).join('')||'<div class="empty">沒有符合的案件</div>'}</div>
+    <div class="card tbl only-desk"><table><thead><tr><th>案名</th><th>歸屬</th><th>收款人</th><th>規格</th><th>狀態</th><th>上線日</th><th class="r">實拿金額</th><th>匯款</th></tr></thead><tbody>
     ${list.map(c=>`<tr data-open="${c.id}"><td style="max-width:280px"><div style="font-weight:500">${esc(c.title)}</div>${c.brand||!canEdit(c)?`<div class="muted small">${esc(c.brand)}${canEdit(c)?'':(c.brand?'・':'')+'僅檢視'}</div>`:''}</td>
     <td>${otag(c.owner)}</td><td>${c.owner==='mizu'?esc(NAMES[c.lead]):'<span class="muted">—</span>'}</td><td class="muted small" style="max-width:180px">${c.specs.join('、')||'—'}</td>
     <td>${stag(c.status)}</td><td class="num">${c.ms.publish.date?md(c.ms.publish.date):'<span class="muted">未定</span>'}</td><td class="r num">${money(c.amount)}</td>
@@ -758,10 +850,13 @@ function renderCalendar(){
     <div class="legend" style="margin-left:8px"><span><span class="dot" style="background:var(--c00)"></span>${esc(NAMES['00'])}</span><span><span class="dot" style="background:var(--cmimi)"></span>${esc(NAMES['mimi'])}</span><span><span class="dot" style="background:var(--cmizu)"></span>Mizu</span><span class="gev"><span class="dot" style="border-color:var(--text3)"></span>Google 日曆其他行程</span>${gcal[gk]==='loading'?'<span class="muted small">讀取 Google 日曆中…</span>':''}</div>
     <span class="spacer"></span>${monthPicker(ui.calM,'cm')}</div>
   <div class="card"><div class="cal">${[...WK].map(w=>`<div class="wh">${w}</div>`).join('')}
-  ${cells.map(d=>`<div class="dc ${ym(d)!==ui.calM?'out':''} ${d===TODAY?'today':''}"><div class="dn"><span>${+d.slice(8)}</span></div>${evs(d).map(x=>`<div class="ev ${x.done?'done':''}" data-open="${x.c.id}" title="${esc(MSL[x.k]+'・'+x.c.title)}"><span class="dot" style="background:${ocol(x.c.owner)}"></span>${esc(MSL[x.k])}・${esc(x.c.title)}</div>`).join('')}${gevs(d).map(e=>`<div class="ev gev" title="${esc(e.title)}"><span class="dot" style="border-color:${ocol(e.who)}"></span>${e.time?e.time+' ':''}${esc(e.title)}</div>`).join('')}</div>`).join('')}</div></div>
+  ${cells.map(d=>`<div class="dc ${ym(d)!==ui.calM?'out':''} ${d===TODAY?'today':''} ${d===ui.calDay?'sel':''}" data-d="${d}"><div class="dn"><span>${+d.slice(8)}</span></div><div class="dots">${evs(d).slice(0,4).map(x=>`<i style="background:${ocol(x.c.owner)};${x.done?'opacity:.35':''}"></i>`).join('')}${gevs(d).slice(0,2).map(e=>`<i style="border:1.5px solid ${ocol(e.who)};width:4px;height:4px"></i>`).join('')}</div>${evs(d).map(x=>`<div class="ev ${x.done?'done':''}" data-open="${x.c.id}" title="${esc(MSL[x.k]+'・'+x.c.title)}"><span class="dot" style="background:${ocol(x.c.owner)}"></span>${esc(MSL[x.k])}・${esc(x.c.title)}</div>`).join('')}${gevs(d).map(e=>`<div class="ev gev" title="${esc(e.title)}"><span class="dot" style="border-color:${ocol(e.who)}"></span>${e.time?e.time+' ':''}${esc(e.title)}</div>`).join('')}</div>`).join('')}</div></div>
+  <div class="card only-mob" style="margin-top:10px"><div class="card-h"><h3>${md(ui.calDay||TODAY)}</h3></div>
+    ${(()=>{const d=ui.calDay||TODAY,a=evs(d),g=gevs(d);return a.map(x=>`<div class="item" data-open="${x.c.id}"><span class="dot" style="background:${ocol(x.c.owner)};width:8px;height:8px"></span><div class="main"><div class="ttl" style="${x.done?'color:var(--text4);text-decoration:line-through':''}">${esc(taskLabel(x.c,x.k))}・${esc(x.c.title)}</div></div>${otag(x.c.owner)}</div>`).join('')+g.map(e=>`<div class="item"><span class="dot" style="border:1.5px solid ${ocol(e.who)};width:8px;height:8px"></span><div class="main"><div class="ttl" style="color:var(--text2)">${e.time?e.time+' ':''}${esc(e.title)}</div></div><span class="muted small">Google 日曆</span></div>`).join('')||'<div class="empty">這天沒有行程</div>'})()}</div>
   <div class="muted small" style="margin-top:10px">${GAS?'案件時程會自動寫進 Google 日曆：'+esc(NAMES['00'])+' 的個人案 → TZU、'+esc(NAMES['mimi'])+' 的個人案 → Miranda、Mizu 案 → mizu 米事':'預覽模式不會讀寫 Google 日曆'}</div>`;
   bindOpen(M());
   M().querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{ui.calScope=b.dataset.sc;renderCalendar()});
+  M().querySelectorAll('.dc[data-d]').forEach(c=>c.addEventListener('click',e=>{if(window.innerWidth>768&&e.target.closest('.ev'))return;if(window.innerWidth<=768){e.stopPropagation();ui.calDay=c.dataset.d;renderCalendar()}}));
   bindMonth('cm',()=>ui.calM,v=>ui.calM=v);
 }
 
@@ -838,7 +933,7 @@ function renderFinance(){
 
 
 function renderExpenses(){
-  document.getElementById('topAct').innerHTML='<button class="btn primary" id="add">＋ 記一筆</button>';
+  document.getElementById('topAct').innerHTML='<button class="btn primary newbtn" id="add">＋<span class="lbl"> 記一筆</span></button>';
   document.getElementById('add').onclick=()=>openExp(null);
   const m=ui.expM;
   const list=S.expenses.filter(e=>ym(e.date)===m).sort((a,b)=>b.date.localeCompare(a.date));
@@ -849,7 +944,8 @@ function renderExpenses(){
     <div class="card stat"><div class="t">${esc(NAMES['00'])} 墊付</div><div class="v">${money(tot('00'))}</div></div>
     <div class="card stat"><div class="t">${esc(NAMES['mimi'])} 墊付</div><div class="v">${money(tot('mimi'))}</div></div>
   </div>
-  <div class="card tbl"><table><thead><tr><th>日期</th><th>分類</th><th>說明</th><th>相關案件</th><th>誰付的</th><th class="r">金額</th></tr></thead><tbody>
+  <div class="card only-mob">${list.map(e=>{const c=S.cases.find(x=>x.id===e.caseId);return `<div class="item" data-eid="${e.id}"><div class="main"><div class="ttl">${esc(e.note||e.cat)}</div><div class="meta">${otag(e.payer)}<span>${e.cat}</span>${c?`<span>${esc(c.title)}</span>`:''}</div></div><div class="rt"><div class="num" style="color:var(--text);font-weight:500">${money(e.amount)}</div><div class="small">${md(e.date)}</div></div></div>`}).join('')||'<div class="empty">這個月還沒有支出</div>'}</div>
+  <div class="card tbl only-desk"><table><thead><tr><th>日期</th><th>分類</th><th>說明</th><th>相關案件</th><th>誰付的</th><th class="r">金額</th></tr></thead><tbody>
   ${list.map(e=>{const c=S.cases.find(x=>x.id===e.caseId);return `<tr data-eid="${e.id}"><td class="num">${md(e.date)}</td><td><span class="tag tg-default">${e.cat}</span></td><td>${esc(e.note)}</td><td>${c?esc(c.title):'<span class="muted">—</span>'}</td><td>${otag(e.payer)}</td><td class="r num">${money(e.amount)}</td></tr>`}).join('')||'<tr><td colspan="6" class="empty">這個月還沒有支出</td></tr>'}
   </tbody></table></div>`;
   bindMonth('em',()=>ui.expM,v=>ui.expM=v);
@@ -896,7 +992,7 @@ function renderProfile(){
   const theme=p.theme||'#9254DE';
   M().innerHTML=`<div class="card" style="margin-bottom:16px;overflow:hidden">
     <div style="height:96px;background:linear-gradient(120deg,color-mix(in srgb,${u.color} 35%,#fff),color-mix(in srgb,${theme} 30%,#fff))"></div>
-    <div style="display:flex;gap:20px;align-items:flex-end;padding:0 24px 20px;margin-top:-40px;flex-wrap:wrap">
+    <div class="prof-hero-inner" style="display:flex;gap:20px;align-items:flex-end;padding:0 24px 20px;margin-top:-40px;flex-wrap:wrap">
       <div style="border:4px solid #fff;border-radius:50%;background:#fff">${avatar(me,84)}</div>
       <div style="flex:1;min-width:200px;padding-bottom:4px"><div style="font-size:22px;font-weight:600">${esc(u.name)}</div>
         <input class="inp" id="stIn" style="margin-top:6px;width:min(360px,100%)" placeholder="寫一句狀態，會顯示在左下角…" value="${esc(u.status)}"></div>
