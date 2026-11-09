@@ -310,6 +310,7 @@ details summary::-webkit-details-marker{display:none}
 .top-me{display:none;border:none;background:none;padding:0;border-radius:50%}
 .dots{display:none}
 .newbtn .lbl{display:inline}
+.fab{display:none}
 
 /* 平板：側欄縮成圖示 */
 @media (max-width:1100px) and (min-width:769px){
@@ -340,10 +341,12 @@ details summary::-webkit-details-marker{display:none}
   .sync{font-size:0;gap:0}
   .sync i{width:8px;height:8px}
   .top-me{display:block}
-  .newbtn{width:30px;height:30px;padding:0;border-radius:50%;font-size:17px;box-shadow:none}
+  #topAct .newbtn{display:none}
+  .fab.show{display:flex;align-items:center;justify-content:center;position:fixed;left:16px;bottom:calc(49px + env(safe-area-inset-bottom) + 16px);z-index:35;width:56px;height:56px;border:none;border-radius:50%;background:var(--primary);color:#fff;font-size:30px;font-weight:300;line-height:1;box-shadow:0 6px 18px color-mix(in srgb,var(--primary) 40%,transparent),0 2px 6px rgba(0,0,0,.12);-webkit-tap-highlight-color:transparent;transition:transform .15s}
+  .fab.show:active{transform:scale(.92)}
   .top-me .av{width:30px!important;height:30px!important}
   .newbtn .lbl{display:none}
-  main{flex:1;min-height:0;max-width:none;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;padding:12px 12px 20px}
+  main{flex:1;min-height:0;max-width:none;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;padding:12px 12px 88px}
   .tabbar{display:flex;position:relative;flex:none;z-index:40;height:calc(49px + env(safe-area-inset-bottom));padding:4px 4px env(safe-area-inset-bottom);background:rgba(249,249,249,.88);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid rgba(0,0,0,.18)}
   .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px 0 4px;font-size:10px;font-weight:500;color:#8E8E93;-webkit-tap-highlight-color:transparent}
   .tabbar a.on{color:var(--primary)}
@@ -391,9 +394,9 @@ details summary::-webkit-details-marker{display:none}
   .tr-x{margin-left:36px}
   .tr-x span{font-size:10px}
   .tr-bar{width:38%;border-radius:3px 3px 0 0}
-  .mask{align-items:flex-end;padding:0;background:rgba(0,0,0,.4)}
-  .modal:not(.alert),.modal.sm:not(.alert){width:100%;max-height:calc(100% - env(safe-area-inset-top) - 10px);border-radius:12px 12px 0 0;background:#F2F2F7;display:flex;flex-direction:column;animation:up .28s cubic-bezier(.2,.8,.2,1);box-shadow:none}
-  .modal:not(.alert) .mh{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:14px 16px 12px;gap:8px}
+  .mask{align-items:flex-end;padding:0 8px calc(8px + env(safe-area-inset-bottom));background:rgba(0,0,0,.35)}
+  .modal:not(.alert),.modal.sm:not(.alert){width:100%;max-height:min(80%,calc(100% - env(safe-area-inset-top) - 64px));border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.18)!important;background:#F2F2F7;display:flex;flex-direction:column;animation:up .28s cubic-bezier(.2,.8,.2,1);box-shadow:none}
+  .modal:not(.alert) .mh{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:14px 16px 12px;gap:8px;flex:none}
   .modal:not(.alert) .mh h2{grid-column:2;font-size:17px;font-weight:600;text-align:center;max-width:52vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .modal:not(.alert) .mh h2 .lockbadge{display:none}
   .nav-btn{border:none;background:none;color:var(--primary);font-size:17px;padding:4px 0;display:inline-block!important}
@@ -401,7 +404,7 @@ details summary::-webkit-details-marker{display:none}
   .nav-r{justify-self:end;grid-column:3;grid-row:1;font-weight:600}
   .modal .x{display:none}
   .modal:not(.alert) .mf{display:none}
-  .modal:not(.alert) .mb{flex:1;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 16px calc(28px + env(safe-area-inset-bottom))}
+  .modal:not(.alert) .mb{flex:1;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 12px 16px}
   .modal .form{display:block;background:#fff;border-radius:10px;overflow:hidden}
   .modal .fi{display:flex;align-items:center;gap:12px;min-height:44px;margin:0;padding:0 16px;position:relative}
   .modal .fi+.fi::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:.5px solid rgba(60,60,67,.2)}
@@ -453,6 +456,7 @@ details summary::-webkit-details-marker{display:none}
     <main id="main"></main>
   </div>
   <nav class="tabbar" id="tabbar"></nav>
+  <button class="fab" id="fab" aria-label="新增">＋</button>
 </div>
 <div id="modalRoot"></div>
 
@@ -682,6 +686,8 @@ function route(){
   document.getElementById('topAct').innerHTML='';
   renderSync();
   ({home:renderHome,cases:renderCases,calendar:renderCalendar,finance:renderFinance,expenses:renderExpenses,profile:renderProfile})[page]();
+  const nb=document.querySelector('#topAct .newbtn'),fab=document.getElementById('fab');
+  fab.classList.toggle('show',!!nb);fab.onclick=()=>nb&&nb.click();if(nb)fab.setAttribute('aria-label',nb.textContent.replace('＋','').trim());
   window.scrollTo?.(0,window.scrollY);
 }
 window.addEventListener('hashchange',()=>{if(me)route()});
@@ -1074,7 +1080,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 01:45</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 01:50</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
