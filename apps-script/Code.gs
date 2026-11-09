@@ -142,7 +142,8 @@ function apiLoad(token) {
   const expenses = e.rows.map(r => {
     const g = k => r[e.h.indexOf(k)];
     return { id: String(g('id')), date: d2s_(g('日期')), cat: String(g('分類')), amount: Number(g('金額')) || 0,
-      payer: key_(g('誰付的')), caseId: String(g('相關案件id') || '') || null, note: String(g('說明') || '') };
+      payer: key_(g('誰付的')), caseId: String(g('相關案件id') || '') || null, note: String(g('說明') || ''),
+      split: ({ '全算00': '00', '全算米米': 'mimi' })[String(g('怎麼分') || '')] || 'half' };
   });
   const s = table_('月結');
   const settlements = {};
@@ -300,7 +301,9 @@ function apiDeleteCase(token, id) {
 function apiSaveExpense(token, x) {
   auth_(token);
   return withLock_(() => {
-    upsert_('支出', x.id, [x.id, s2d_(x.date), x.cat, Number(x.amount) || 0, TO_LABEL[x.payer], x.caseId || '', x.note || '']);
+    ensureCol_('支出', '怎麼分');
+    const sp = x.split === '00' ? '全算00' : x.split === 'mimi' ? '全算米米' : '平分';
+    upsert_('支出', x.id, [x.id, s2d_(x.date), x.cat, Number(x.amount) || 0, TO_LABEL[x.payer], x.caseId || '', x.note || '', sp]);
     return true;
   });
 }
