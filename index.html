@@ -272,9 +272,17 @@ details summary::-webkit-details-marker{display:none}
 .chips label.on{border-color:var(--primary);color:var(--primary);background:var(--primary-bg)}
 .chips input{display:none}
 .ms{border:1px solid var(--split);border-radius:8px;overflow:hidden}
-.msr{display:grid;grid-template-columns:90px minmax(0,1fr) 160px 70px;gap:12px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--split)}
+.msr{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:8px 12px;border-bottom:1px solid var(--split)}
 .msr:last-child{border-bottom:none}
-.msr .chk{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px}
+.ms-l{display:flex;align-items:center;gap:8px;min-width:0}
+.ms-n{min-width:64px;white-space:nowrap}
+.ms-r{display:flex;align-items:center;gap:12px;margin-left:auto;flex:none}
+.ms-r .inp{width:150px}
+.chk{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;white-space:nowrap;user-select:none}
+.chk input{appearance:none;-webkit-appearance:none;width:20px;height:20px;margin:0;border-radius:50%;border:1.5px solid #C7C7CC;background:#fff;display:grid;place-content:center;cursor:pointer;transition:all .15s;flex:none}
+.chk input:checked{background:var(--primary);border-color:var(--primary)}
+.chk input:checked::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:translate(0,-1px) rotate(45deg)}
+.chk input:disabled{opacity:.5;cursor:not-allowed}
 .hint{font-size:12px;color:var(--text3);margin-top:6px}
 .lockbadge{font-size:12px;color:var(--text3);font-weight:400}
 
@@ -406,11 +414,13 @@ details summary::-webkit-details-marker{display:none}
   .modal .fi.full textarea.inp{min-height:60px}
   .modal .chips label{height:30px;border-radius:15px;font-size:15px}
   .modal .ms{border:none;border-radius:0}
-  .modal .msr{grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;padding:6px 0;border-bottom:.5px solid rgba(60,60,67,.12)}
+  .modal .msr{padding:8px 0;gap:8px;border-bottom:.5px solid rgba(60,60,67,.14)}
   .modal .msr:last-child{border-bottom:none}
-  .modal .msr>span:first-child{font-size:16px}
-  .modal .msr .inp{height:32px;font-size:15px;border:none;background:#F2F2F7;border-radius:8px;padding:0 8px;width:128px}
-  .modal .msr .chk{font-size:14px}
+  .modal .ms-n{font-size:16px;min-width:56px}
+  .modal .ms-r{gap:10px}
+  .modal .ms-r .inp{height:32px;font-size:15px;border:none!important;background:#F2F2F7!important;border-radius:8px;padding:0 8px;width:132px;text-align:center;color:#000}
+  .modal .chk{font-size:0;gap:0}
+  .modal .chk input{width:24px;height:24px}
   .modal .hint{display:none}
   .ios-del{display:block!important;width:100%;height:44px;margin-top:20px;border:none;border-radius:10px;background:#fff;color:#FF3B30;font-size:17px}
   .mask.alert-mask{align-items:center;padding:24px;background:rgba(0,0,0,.4)}
@@ -813,8 +823,8 @@ function openCase(id){
       ${c.split==='fixed'?`<div class="fi"><label>${esc(NAMES['00'])} 拿</label><input class="inp" type="number" id="f_fx00" value="${c.fixed['00']||0}" ${dis}></div><div class="fi"><label>${esc(NAMES['mimi'])} 拿</label><input class="inp" type="number" id="f_fxmimi" value="${c.fixed['mimi']||0}" ${dis}></div>`:''}`:''}
       <div class="fi"><label>實拿金額</label><input class="inp" type="number" id="f_amount" value="${c.amount||''}" placeholder="NT$" ${dis}></div>
       <div class="fi full"><label>規格</label><div class="chips">${SPECS.map(s=>`<label class="${c.specs.includes(s)?'on':''}"><input type="checkbox" value="${s}" ${c.specs.includes(s)?'checked':''} ${dis}>${s}</label>`).join('')}</div></div>
-      <div class="fi full"><label>時程</label><div class="ms">${MS.map(([k,l])=>`<div class="msr"><span>${l}</span><span>${responsible(c,k).map(otag).join('')}</span>
-        <input class="inp" type="date" data-msd="${k}" value="${c.ms[k].date}" ${dis}><label class="chk"><input type="checkbox" data-msk="${k}" ${c.ms[k].done?'checked':''} ${dis}>完成</label></div>`).join('')}</div>
+      <div class="fi full"><label>時程</label><div class="ms">${MS.map(([k,l])=>`<div class="msr"><div class="ms-l"><span class="ms-n">${l}</span>${responsible(c,k).map(otag).join('')}</div>
+        <div class="ms-r"><input class="inp" type="date" data-msd="${k}" value="${c.ms[k].date}" ${dis}><label class="chk" title="完成"><input type="checkbox" data-msk="${k}" ${c.ms[k].done?'checked':''} ${dis}><span>完成</span></label></div></div>`).join('')}</div>
         <div class="hint">隸屬月份看上線日${c.ms.publish.date?'：'+ymLabel(ym(c.ms.publish.date)):''}。勾「完成」會自動跳到下一個狀態。</div></div>
       <div class="fi full"><label>相關連結</label><input class="inp" id="f_link" value="${esc(c.link)}" placeholder="brief、雲端資料夾" ${dis}></div>
       <div class="fi full"><label>備註</label><textarea class="inp" id="f_note" rows="2" ${dis}>${esc(c.note)}</textarea></div>
@@ -1064,6 +1074,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 01:45</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
