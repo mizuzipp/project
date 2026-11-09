@@ -342,7 +342,7 @@ details summary::-webkit-details-marker{display:none}
   .sync i{width:8px;height:8px}
   .top-me{display:block}
   #topAct .newbtn{display:none}
-  .fab.show{display:flex;align-items:center;justify-content:center;position:fixed;left:16px;bottom:calc(49px + env(safe-area-inset-bottom) + 16px);z-index:35;width:56px;height:56px;border:none;border-radius:50%;background:var(--primary);color:#fff;font-size:30px;font-weight:300;line-height:1;box-shadow:0 6px 18px color-mix(in srgb,var(--primary) 40%,transparent),0 2px 6px rgba(0,0,0,.12);-webkit-tap-highlight-color:transparent;transition:transform .15s}
+  .fab.show{display:flex;align-items:center;justify-content:center;position:fixed;right:16px;bottom:calc(49px + env(safe-area-inset-bottom) + 16px);z-index:35;width:56px;height:56px;border:none;border-radius:50%;background:var(--primary);color:#fff;font-size:30px;font-weight:300;line-height:1;box-shadow:0 6px 18px color-mix(in srgb,var(--primary) 40%,transparent),0 2px 6px rgba(0,0,0,.12);-webkit-tap-highlight-color:transparent;transition:transform .15s}
   .fab.show:active{transform:scale(.92)}
   .top-me .av{width:30px!important;height:30px!important}
   .newbtn .lbl{display:none}
@@ -394,8 +394,10 @@ details summary::-webkit-details-marker{display:none}
   .tr-x{margin-left:36px}
   .tr-x span{font-size:10px}
   .tr-bar{width:38%;border-radius:3px 3px 0 0}
-  .mask{align-items:flex-end;padding:0 8px calc(8px + env(safe-area-inset-bottom));background:rgba(0,0,0,.35)}
-  .modal:not(.alert),.modal.sm:not(.alert){width:100%;max-height:min(80%,calc(100% - env(safe-area-inset-top) - 64px));border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.18)!important;background:#F2F2F7;display:flex;flex-direction:column;animation:up .28s cubic-bezier(.2,.8,.2,1);box-shadow:none}
+  .mask{align-items:flex-end;padding:0;background:rgba(0,0,0,.35);animation:fadein .3s ease}
+  .mask.closing{animation:fadeout .26s ease forwards}
+  .mask.closing .modal{animation:slidedown .26s cubic-bezier(.4,0,1,1) forwards!important}
+  .modal:not(.alert),.modal.sm:not(.alert){width:100%;max-height:min(80%,calc(100% - env(safe-area-inset-top) - 64px));border-radius:16px 16px 0 0;box-shadow:0 -4px 30px rgba(0,0,0,.12)!important;background:#F2F2F7;display:flex;flex-direction:column;animation:slideup .38s cubic-bezier(.32,.72,0,1)}
   .modal:not(.alert) .mh{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:14px 16px 12px;gap:8px;flex:none}
   .modal:not(.alert) .mh h2{grid-column:2;font-size:17px;font-weight:600;text-align:center;max-width:52vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .modal:not(.alert) .mh h2 .lockbadge{display:none}
@@ -404,7 +406,7 @@ details summary::-webkit-details-marker{display:none}
   .nav-r{justify-self:end;grid-column:3;grid-row:1;font-weight:600}
   .modal .x{display:none}
   .modal:not(.alert) .mf{display:none}
-  .modal:not(.alert) .mb{flex:1;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 12px 16px}
+  .modal:not(.alert) .mb{flex:1;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 12px calc(16px + env(safe-area-inset-bottom))}
   .modal .form{display:block;background:#fff;border-radius:10px;overflow:hidden}
   .modal .fi{display:flex;align-items:center;gap:12px;min-height:44px;margin:0;padding:0 16px;position:relative}
   .modal .fi+.fi::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:.5px solid rgba(60,60,67,.2)}
@@ -438,6 +440,10 @@ details summary::-webkit-details-marker{display:none}
   .prof-hero-inner>div:last-child{text-align:left!important}
   .toast{top:calc(env(safe-area-inset-top) + 12px)}
 }
+@keyframes slideup{from{transform:translateY(100%)}to{transform:none}}
+@keyframes slidedown{from{transform:none}to{transform:translateY(100%)}}
+@keyframes fadein{from{background:rgba(0,0,0,0)}}
+@keyframes fadeout{to{background:rgba(0,0,0,0)}}
 @keyframes pop{from{transform:scale(1.15);opacity:0}to{transform:none;opacity:1}}
 @keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
 </style>
@@ -816,7 +822,7 @@ function openCase(id){
     :JSON.parse(JSON.stringify(S.cases.find(x=>x.id===id)));
   const ro=!isNew&&!canEdit(c),dis=ro?'disabled':'';
   const root=document.getElementById('modalRoot');
-  const close=()=>root.innerHTML='';
+  const close=()=>closeSheet(root);
   const draw=()=>{
     root.innerHTML=`<div class="mask" id="mk"><div class="modal" ${isNew?'data-new="1"':''} data-del-label="刪除案件">
     <div class="mh"><h2>${isNew?'新增案件':esc(c.title)} ${ro?`<span class="lockbadge">・${esc(NAMES[c.owner])}的個人案，只能檢視</span>`:''}</h2><button class="x" id="cx">✕</button></div>
@@ -876,12 +882,17 @@ function openCase(id){
   };
   draw();
 }
+function closeSheet(root){
+  const mk=root.querySelector('.mask');
+  if(!mk||!matchMedia('(max-width:768px)').matches||mk.classList.contains('closing')){root.innerHTML='';return}
+  mk.classList.add('closing');setTimeout(()=>{if(mk.isConnected)root.innerHTML=''},260);
+}
 function iosify(root){
   const m=root.querySelector('.modal:not(.alert)');if(!m)return;
   const mh=m.querySelector('.mh'),h=mh.querySelector('h2');
   const cancel=m.querySelector('#cc'),save=m.querySelector('.mf .btn.primary'),del=m.querySelector('.mf .btn.danger');
   const l=document.createElement('button');l.type='button';l.className='nav-btn nav-l only-mob';l.textContent=save?'取消':'完成';
-  l.onclick=()=>{if(cancel)cancel.click();else root.innerHTML=''};mh.appendChild(l);
+  l.onclick=()=>{if(cancel)cancel.click();else closeSheet(root)};mh.appendChild(l);
   if(save){const r=document.createElement('button');r.type='button';r.className='nav-btn nav-r only-mob';r.textContent=save.textContent.trim()==='儲存'&&m.dataset.new?'新增':save.textContent.trim();r.onclick=()=>save.click();mh.appendChild(r)}
   if(del){const d=document.createElement('button');d.type='button';d.className='ios-del only-mob';d.textContent=m.dataset.delLabel||'刪除';d.onclick=()=>del.click();m.querySelector('.mb').appendChild(d)}
 }
@@ -1027,7 +1038,7 @@ function openExp(id){
   <div class="fi full"><label>說明</label><input class="inp" id="e_note" value="${esc(e.note)}" placeholder="例：計程車來回"></div>
   </div></div>
   <div class="mf">${isNew?'':'<button class="btn danger" id="ed">刪除</button>'}<span style="flex:1"></span><button class="btn" id="cc">取消</button><button class="btn primary" id="es">儲存</button></div></div></div>`;
-  const $=i=>document.getElementById(i),close=()=>root.innerHTML='';
+  const $=i=>document.getElementById(i),close=()=>closeSheet(root);
   $('cx').onclick=$('cc').onclick=close;
   $('mk').onmousedown=ev=>{if(ev.target.id==='mk')close()};
   iosify(root);
@@ -1080,7 +1091,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 01:50</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 01:53</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
