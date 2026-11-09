@@ -322,16 +322,21 @@ details summary::-webkit-details-marker{display:none}
   .only-mob{display:block!important}
   .only-desk{display:none!important}
   .sider{display:none}
-  .content{min-height:100vh}
-  .topbar{height:auto;min-height:52px;padding:calc(env(safe-area-inset-top) + 6px) 16px 6px;background:rgba(255,255,255,.82);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid rgba(0,0,0,.12)}
-  .topbar h1{font-size:17px;font-weight:600}
+  html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+  body{position:fixed;inset:0;width:100%;touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+  #login{position:fixed;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  #app{position:fixed;inset:0;flex-direction:column;min-height:0}
+  .content{flex:1;min-height:0;display:flex;flex-direction:column}
+  .topbar{position:relative;flex:none;height:calc(44px + env(safe-area-inset-top));min-height:0;padding:env(safe-area-inset-top) 12px 0;background:rgba(249,249,249,.94);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid rgba(0,0,0,.18);gap:8px}
+  .topbar h1{position:absolute;left:50%;bottom:11px;transform:translateX(-50%);font-size:17px;font-weight:600;letter-spacing:-.01em}
   .sync{font-size:0;gap:0}
   .sync i{width:8px;height:8px}
   .top-me{display:block}
-  .newbtn{width:34px;height:34px;padding:0;border-radius:50%;font-size:18px}
+  .newbtn{width:30px;height:30px;padding:0;border-radius:50%;font-size:17px;box-shadow:none}
+  .top-me .av{width:30px!important;height:30px!important}
   .newbtn .lbl{display:none}
-  main{padding:12px 12px calc(88px + env(safe-area-inset-bottom))}
-  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;padding:6px 4px env(safe-area-inset-bottom);background:rgba(249,249,249,.88);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid rgba(0,0,0,.18)}
+  main{flex:1;min-height:0;max-width:none;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;padding:12px 12px 20px}
+  .tabbar{display:flex;position:relative;flex:none;z-index:40;height:calc(49px + env(safe-area-inset-bottom));padding:4px 4px env(safe-area-inset-bottom);background:rgba(249,249,249,.88);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid rgba(0,0,0,.18)}
   .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px 0 4px;font-size:10px;font-weight:500;color:#8E8E93;-webkit-tap-highlight-color:transparent}
   .tabbar a.on{color:var(--primary)}
   .tabbar svg{width:25px;height:25px;stroke-width:1.7}
@@ -378,19 +383,49 @@ details summary::-webkit-details-marker{display:none}
   .tr-x{margin-left:36px}
   .tr-x span{font-size:10px}
   .tr-bar{width:38%;border-radius:3px 3px 0 0}
-  .mask{align-items:flex-end;padding:0}
-  .modal,.modal.sm{width:100%;border-radius:16px 16px 0 0;max-height:92vh;display:flex;flex-direction:column;animation:up .25s ease}
-  .modal .mh{padding:14px 16px 8px}
-  .modal .mh::before{content:"";position:absolute;left:50%;margin-left:-18px;margin-top:-8px;width:36px;height:5px;border-radius:3px;background:rgba(0,0,0,.15)}
-  .mb{padding:4px 16px 8px;max-height:none;flex:1}
-  .mf{padding:10px 16px calc(12px + env(safe-area-inset-bottom));border-top:.5px solid var(--split)}
-  .msr{grid-template-columns:1fr auto;row-gap:6px}
-  .msr>span:nth-child(2){justify-self:end}
+  .mask{align-items:flex-end;padding:0;background:rgba(0,0,0,.4)}
+  .modal:not(.alert),.modal.sm:not(.alert){width:100%;max-height:calc(100% - env(safe-area-inset-top) - 10px);border-radius:12px 12px 0 0;background:#F2F2F7;display:flex;flex-direction:column;animation:up .28s cubic-bezier(.2,.8,.2,1);box-shadow:none}
+  .modal:not(.alert) .mh{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:14px 16px 12px;gap:8px}
+  .modal:not(.alert) .mh h2{grid-column:2;font-size:17px;font-weight:600;text-align:center;max-width:52vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .modal:not(.alert) .mh h2 .lockbadge{display:none}
+  .nav-btn{border:none;background:none;color:var(--primary);font-size:17px;padding:4px 0;display:inline-block!important}
+  .nav-l{justify-self:start;grid-column:1;grid-row:1}
+  .nav-r{justify-self:end;grid-column:3;grid-row:1;font-weight:600}
+  .modal .x{display:none}
+  .modal:not(.alert) .mf{display:none}
+  .modal:not(.alert) .mb{flex:1;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 16px calc(28px + env(safe-area-inset-bottom))}
+  .modal .form{display:block;background:#fff;border-radius:10px;overflow:hidden}
+  .modal .fi{display:flex;align-items:center;gap:12px;min-height:44px;margin:0;padding:0 16px;position:relative}
+  .modal .fi+.fi::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:.5px solid rgba(60,60,67,.2)}
+  .modal .fi>label{flex:none;padding:0;font-size:17px;color:#000}
+  .modal .fi .inp{flex:1;min-width:0;border:none!important;box-shadow:none!important;background:transparent;text-align:right;height:44px;padding:0;font-size:17px;color:rgba(60,60,67,.7)}
+  .modal .fi select.inp{text-align-last:right;padding-right:18px;background-position:right 0 center}
+  .modal .fi.full{display:block;padding:10px 16px 12px}
+  .modal .fi.full>label{font-size:13px;color:rgba(60,60,67,.6);padding-bottom:8px}
+  .modal .fi.full .inp{text-align:left;height:auto;min-height:24px;color:#000}
+  .modal .fi.full textarea.inp{min-height:60px}
+  .modal .chips label{height:30px;border-radius:15px;font-size:15px}
+  .modal .ms{border:none;border-radius:0}
+  .modal .msr{grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;padding:6px 0;border-bottom:.5px solid rgba(60,60,67,.12)}
+  .modal .msr:last-child{border-bottom:none}
+  .modal .msr>span:first-child{font-size:16px}
+  .modal .msr .inp{height:32px;font-size:15px;border:none;background:#F2F2F7;border-radius:8px;padding:0 8px;width:128px}
+  .modal .msr .chk{font-size:14px}
+  .modal .hint{display:none}
+  .ios-del{display:block!important;width:100%;height:44px;margin-top:20px;border:none;border-radius:10px;background:#fff;color:#FF3B30;font-size:17px}
+  .mask.alert-mask{align-items:center;padding:24px;background:rgba(0,0,0,.4)}
+  .modal.alert{width:270px;border-radius:14px;background:rgba(242,242,247,.96);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);overflow:hidden;animation:pop .2s ease}
+  .modal.alert .mh{padding:20px 16px 18px;justify-content:center;text-align:center}
+  .modal.alert .mh h2{font-size:17px;font-weight:600;line-height:1.35}
+  .modal.alert .mf{padding:0;gap:0;border-top:.5px solid rgba(60,60,67,.29)}
+  .modal.alert .mf .btn{flex:1;height:44px;border:none;border-radius:0;background:none!important;box-shadow:none;font-size:17px;color:var(--primary)}
+  .modal.alert .mf .btn+.btn{border-left:.5px solid rgba(60,60,67,.29);color:#FF3B30;font-weight:600}
   .dropdown{left:auto!important;right:12px!important;bottom:auto!important}
   .prof-hero-inner{flex-direction:column;align-items:flex-start!important}
   .prof-hero-inner>div:last-child{text-align:left!important}
   .toast{top:calc(env(safe-area-inset-top) + 12px)}
 }
+@keyframes pop{from{transform:scale(1.15);opacity:0}to{transform:none;opacity:1}}
 @keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
 </style>
 </head>
@@ -767,7 +802,7 @@ function openCase(id){
   const root=document.getElementById('modalRoot');
   const close=()=>root.innerHTML='';
   const draw=()=>{
-    root.innerHTML=`<div class="mask" id="mk"><div class="modal">
+    root.innerHTML=`<div class="mask" id="mk"><div class="modal" ${isNew?'data-new="1"':''} data-del-label="刪除案件">
     <div class="mh"><h2>${isNew?'新增案件':esc(c.title)} ${ro?`<span class="lockbadge">・${esc(NAMES[c.owner])}的個人案，只能檢視</span>`:''}</h2><button class="x" id="cx">✕</button></div>
     <div class="mb"><div class="form">
       <div class="fi full"><label>案名</label><input class="inp" id="f_title" value="${esc(c.title)}" placeholder="例：711元進莊薑母鴨湯品" ${dis}></div>
@@ -790,6 +825,7 @@ function openCase(id){
     const $=i=>document.getElementById(i);
     $('cx').onclick=$('cc').onclick=close;
     $('mk').onmousedown=e=>{if(e.target.id==='mk')close()};
+    iosify(root);
     if(ro)return;
     root.querySelectorAll('.chips label').forEach(l=>l.querySelector('input').onchange=e=>l.classList.toggle('on',e.target.checked));
     ['f_owner','f_split','f_lead'].forEach(i=>{if($(i))$(i).onchange=()=>{collect();draw()}});
@@ -824,9 +860,18 @@ function openCase(id){
   };
   draw();
 }
+function iosify(root){
+  const m=root.querySelector('.modal:not(.alert)');if(!m)return;
+  const mh=m.querySelector('.mh'),h=mh.querySelector('h2');
+  const cancel=m.querySelector('#cc'),save=m.querySelector('.mf .btn.primary'),del=m.querySelector('.mf .btn.danger');
+  const l=document.createElement('button');l.type='button';l.className='nav-btn nav-l only-mob';l.textContent=save?'取消':'完成';
+  l.onclick=()=>{if(cancel)cancel.click();else root.innerHTML=''};mh.appendChild(l);
+  if(save){const r=document.createElement('button');r.type='button';r.className='nav-btn nav-r only-mob';r.textContent=save.textContent.trim()==='儲存'&&m.dataset.new?'新增':save.textContent.trim();r.onclick=()=>save.click();mh.appendChild(r)}
+  if(del){const d=document.createElement('button');d.type='button';d.className='ios-del only-mob';d.textContent=m.dataset.delLabel||'刪除';d.onclick=()=>del.click();m.querySelector('.mb').appendChild(d)}
+}
 function confirmBox(msg,ok){
   const r=document.createElement('div');
-  r.innerHTML=`<div class="mask" style="z-index:60;align-items:center"><div class="modal sm"><div class="mh"><h2>${esc(msg)}</h2></div><div class="mf"><button class="btn" data-n>取消</button><button class="btn primary" data-y style="background:var(--error);border-color:var(--error)">確定</button></div></div></div>`;
+  r.innerHTML=`<div class="mask alert-mask" style="z-index:60;align-items:center"><div class="modal sm alert"><div class="mh"><h2>${esc(msg)}</h2></div><div class="mf"><button class="btn" data-n>取消</button><button class="btn primary" data-y style="background:var(--error);border-color:var(--error)">確定</button></div></div></div>`;
   document.body.appendChild(r);
   r.querySelector('[data-n]').onclick=()=>r.remove();
   r.querySelector('[data-y]').onclick=()=>{r.remove();ok()};
@@ -956,7 +1001,7 @@ function openExp(id){
   const e=isNew?{id:uid(),date:TODAY,cat:EXP_CATS[0],amount:'',payer:me,caseId:'',note:''}:{...S.expenses.find(x=>x.id===id)};
   const root=document.getElementById('modalRoot');
   const opts=S.cases.filter(c=>c.owner==='mizu'&&c.status!=='已結案'||c.id===e.caseId).map(c=>`<option value="${c.id}" ${e.caseId===c.id?'selected':''}>${esc(c.title)}</option>`).join('');
-  root.innerHTML=`<div class="mask" id="mk"><div class="modal sm"><div class="mh"><h2>${isNew?'記一筆支出':'編輯支出'}</h2><button class="x" id="cx">✕</button></div>
+  root.innerHTML=`<div class="mask" id="mk"><div class="modal sm" ${isNew?'data-new="1"':''} data-del-label="刪除這筆支出"><div class="mh"><h2>${isNew?'記一筆支出':'編輯支出'}</h2><button class="x" id="cx">✕</button></div>
   <div class="mb"><div class="form">
   <div class="fi"><label>日期</label><input class="inp" type="date" id="e_date" value="${e.date}"></div>
   <div class="fi"><label>金額</label><input class="inp" type="number" id="e_amt" value="${e.amount}"></div>
@@ -969,6 +1014,7 @@ function openExp(id){
   const $=i=>document.getElementById(i),close=()=>root.innerHTML='';
   $('cx').onclick=$('cc').onclick=close;
   $('mk').onmousedown=ev=>{if(ev.target.id==='mk')close()};
+  iosify(root);
   $('es').onclick=async()=>{
     e.date=$('e_date').value;e.amount=+$('e_amt').value||0;e.cat=$('e_cat').value;e.payer=$('e_payer').value;e.caseId=$('e_case').value||null;e.note=$('e_note').value;
     if(!e.amount||!e.date){toast('請填日期和金額',true);return}
