@@ -311,6 +311,14 @@ details summary::-webkit-details-marker{display:none}
 .dots{display:none}
 .newbtn .lbl{display:inline}
 .fab{display:none}
+.mpick{display:inline-flex;align-items:center;gap:8px;flex:none}
+.mlabel{min-width:110px;text-align:center;font-weight:500;white-space:nowrap}
+.crop{position:relative;width:min(280px,72vw);aspect-ratio:1;margin:12px auto 4px;border-radius:12px;overflow:hidden;background:#111;touch-action:none;cursor:grab;user-select:none}
+.crop:active{cursor:grabbing}
+.crop canvas{width:100%;height:100%;display:block}
+.crop-ring{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 999px rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.9);pointer-events:none}
+.zoomrow{display:flex;align-items:center;gap:10px;width:min(280px,72vw);margin:12px auto 4px;color:var(--text3)}
+.zoomrow input{flex:1;accent-color:var(--primary)}
 
 /* 平板：側欄縮成圖示 */
 @media (max-width:1100px) and (min-width:769px){
@@ -377,6 +385,10 @@ details summary::-webkit-details-marker{display:none}
   .search .inp:focus{box-shadow:none}
   .search svg{top:11px}
   .ctb .spacer{display:none}
+  .tb-note{display:none}
+  .toolbar .mpick{margin-left:auto}
+  .mpick .btn{width:36px;padding:0}
+  .mlabel{min-width:96px}
   .ctags{flex-wrap:nowrap;overflow-x:auto;margin:0 -12px 12px;padding:0 12px;scrollbar-width:none}
   .ctags::-webkit-scrollbar{display:none}
   .ctags button{flex-shrink:0}
@@ -631,7 +643,7 @@ function toast(t,err){
   const el=document.createElement('div');el.className='toast'+(err?' err':'');el.innerHTML=`<i>${err?'!':'✓'}</i>${esc(t)}`;document.body.appendChild(el);
   setTimeout(()=>{el.style.opacity=0;setTimeout(()=>el.remove(),300)},2600);
 }
-function monthPicker(m,id){return `<button class="btn" id="${id}p">‹</button><span style="min-width:110px;text-align:center;font-weight:500">${ymLabel(m)}</span><button class="btn" id="${id}n">›</button><button class="btn only-desk" id="${id}t">本月</button>`}
+function monthPicker(m,id){return `<span class="mpick"><button class="btn" id="${id}p">‹</button><span class="mlabel">${ymLabel(m)}</span><button class="btn" id="${id}n">›</button><button class="btn only-desk" id="${id}t">本月</button></span>`}
 function bindMonth(id,get,set){
   document.getElementById(id+'p').onclick=()=>{set(shiftMonth(get(),-1));route()};
   document.getElementById(id+'n').onclick=()=>{set(shiftMonth(get(),1));route()};
@@ -887,6 +899,39 @@ function openCase(id){
   };
   draw();
 }
+function openCropper(file,onDone){
+  const root=document.getElementById('modalRoot');
+  const url=URL.createObjectURL(file);const img=new Image();
+  img.onload=()=>{
+    const N=560;let zoom=1,ox=0,oy=0;const base=Math.max(N/img.width,N/img.height);
+    root.innerHTML=`<div class="mask" id="mk"><div class="modal sm"><div class="mh"><h2>裁切頭貼</h2><button class="x" id="cx">✕</button></div>
+      <div class="mb"><div class="crop" id="crop"><canvas id="ccv" width="${N}" height="${N}"></canvas><div class="crop-ring"></div></div>
+      <div class="zoomrow"><span>－</span><input type="range" id="zm" min="1" max="4" step="0.01" value="1"><span>＋</span></div>
+      <div class="muted small" style="text-align:center;margin-bottom:8px">拖曳移動位置，拉桿或兩指縮放</div></div>
+      <div class="mf"><button class="btn" id="cc">取消</button><button class="btn primary" id="ok">使用</button></div></div></div>`;
+    const $=i=>document.getElementById(i),cv=$('ccv'),ctx=cv.getContext('2d'),box=$('crop');
+    const clamp=()=>{const sc=base*zoom,mx=Math.max(0,(img.width*sc-N)/2),my=Math.max(0,(img.height*sc-N)/2);ox=Math.max(-mx,Math.min(mx,ox));oy=Math.max(-my,Math.min(my,oy))};
+    const draw=(c,size)=>{const k=size/N,sc=base*zoom*k,w=img.width*sc,h=img.height*sc;c.fillStyle='#fff';c.fillRect(0,0,size,size);c.drawImage(img,size/2-w/2+ox*k,size/2-h/2+oy*k,w,h)};
+    const paint=()=>{clamp();draw(ctx,N)};paint();
+    const pts=new Map();let pinch=null;
+    box.onpointerdown=e=>{box.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pts.size===2){const [a,b]=[...pts.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z:zoom}}};
+    box.onpointermove=e=>{if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId),r=N/box.clientWidth;
+      if(pts.size===1){ox+=(e.clientX-p.x)*r;oy+=(e.clientY-p.y)*r}
+      pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+      if(pts.size===2&&pinch){const [a,b]=[...pts.values()];zoom=Math.max(1,Math.min(4,pinch.z*Math.hypot(a.x-b.x,a.y-b.y)/pinch.d));$('zm').value=zoom}
+      paint()};
+    box.onpointerup=box.onpointercancel=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch=null};
+    box.onwheel=e=>{e.preventDefault();zoom=Math.max(1,Math.min(4,zoom*(e.deltaY<0?1.06:1/1.06)));$('zm').value=zoom;paint()};
+    $('zm').oninput=e=>{zoom=+e.target.value;paint()};
+    const close=()=>{URL.revokeObjectURL(url);closeSheet(root)};
+    $('cx').onclick=$('cc').onclick=close;
+    $('mk').onmousedown=e=>{if(e.target.id==='mk')close()};
+    $('ok').onclick=()=>{const o=document.createElement('canvas');o.width=o.height=200;draw(o.getContext('2d'),200);onDone(o.toDataURL('image/jpeg',.82));close()};
+    iosify(root);
+  };
+  img.onerror=()=>toast('這張圖片讀不出來，換一張試試',true);
+  img.src=url;
+}
 function closeSheet(root){
   const mk=root.querySelector('.mask');
   if(!mk||!matchMedia('(max-width:768px)').matches||mk.classList.contains('closing')){root.innerHTML='';return}
@@ -980,7 +1025,7 @@ function renderFinance(){
   const from=st.net>=0?'00':'mimi',to=other(from);
   const i00=incomeFor('00',m),imi=incomeFor('mimi',m);
   const pend=S.cases.filter(c=>c.ms.publish.done&&!isPaid(c)).sort((a,b)=>(a.ms.payment.date||'9999').localeCompare(b.ms.payment.date||'9999'));
-  M().innerHTML=`<div class="toolbar"><span class="muted">依上線月份計算</span><span class="spacer"></span>${monthPicker(m,'fm')}</div>
+  M().innerHTML=`<div class="toolbar"><span class="muted tb-note">依上線月份計算</span><span class="spacer"></span>${monthPicker(m,'fm')}</div>
   <div class="card" style="margin-bottom:16px"><div class="hero">
     <div style="flex:1;min-width:240px"><div class="lbl">${ymLabel(m)} Mizu 月結</div>
       <div class="big">${Math.abs(st.net)<1?'不用轉帳':`${esc(NAMES[from])} 要轉 ${money(Math.abs(st.net))} 給 ${esc(NAMES[to])}`}</div>
@@ -1015,7 +1060,7 @@ function renderExpenses(){
   const m=ui.expM;
   const list=S.expenses.filter(e=>ym(e.date)===m).sort((a,b)=>b.date.localeCompare(a.date));
   const tot=p=>list.filter(e=>!p||e.payer===p).reduce((s,e)=>s+e.amount,0);
-  M().innerHTML=`<div class="toolbar"><span class="muted">兩人一起的代墊開銷，月結時自動對半分攤</span><span class="spacer"></span>${monthPicker(m,'em')}</div>
+  M().innerHTML=`<div class="toolbar"><span class="muted tb-note">兩人一起的代墊開銷，月結時自動對半分攤</span><span class="spacer"></span>${monthPicker(m,'em')}</div>
   <div class="row c3">
     <div class="card stat"><div class="t">本月總支出</div><div class="v">${money(tot())}</div></div>
     <div class="card stat"><div class="t">${esc(NAMES['00'])} 墊付</div><div class="v">${money(tot('00'))}</div></div>
@@ -1096,7 +1141,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 01:57</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 02:08</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
@@ -1108,7 +1153,7 @@ function renderProfile(){
   M().querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>saveU({emoji:b.dataset.e,photo:''}));
   M().querySelectorAll('[data-bg]').forEach(b=>b.onclick=()=>saveU({bg:b.dataset.bg}));
   if($('rp'))$('rp').onclick=()=>saveU({photo:''});
-  $('ph').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const img=new Image();img.onload=()=>{const cv=document.createElement('canvas'),s=120;cv.width=cv.height=s;const cx=cv.getContext('2d'),m=Math.min(img.width,img.height);cx.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,s,s);saveU({photo:cv.toDataURL('image/jpeg',.8)});toast('頭貼已更新')};img.src=rd.result};rd.readAsDataURL(f)};
+  $('ph').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;openCropper(f,data=>{saveU({photo:data});toast('頭貼已更新')})};
   $('stIn').onchange=async()=>{u.status=$('stIn').value;toast('狀態已更新');route();await Data.run('apiSaveUser',{status:u.status})};
   const setTheme=async c=>{await savePrefs({theme:c});route()};
   $('thSw').querySelectorAll('[data-c]').forEach(s=>s.onclick=()=>{prefs().theme=s.dataset.c;route();setTheme(s.dataset.c)});
