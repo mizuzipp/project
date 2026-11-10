@@ -311,6 +311,19 @@ details summary::-webkit-details-marker{display:none}
 .dots{display:none}
 .newbtn .lbl{display:inline}
 .fab{display:none}
+.bell{position:relative;width:32px;height:32px;border:none;background:none;border-radius:8px;color:var(--text2);display:flex;align-items:center;justify-content:center;padding:0}
+.bell:hover{background:rgba(0,0,0,.04);color:var(--text)}
+.bell svg{width:20px;height:20px}
+.bell .rd{position:absolute;top:5px;right:6px;width:8px;height:8px;border-radius:50%;background:#FF3B30;border:1.5px solid #fff}
+.ann{padding:4px 0 8px}
+.ann+.ann{border-top:1px solid var(--split);padding-top:14px;margin-top:6px}
+.ann-d{font-size:12px;color:var(--text3)}
+.ann-t{font-size:16px;font-weight:600;margin:2px 0 8px;display:flex;align-items:center;gap:6px}
+.ann ul{margin:0;padding-left:20px;color:var(--text2);line-height:1.7}
+.ann li b{color:var(--text);font-weight:500}
+.ann-hero{text-align:center;padding:4px 0 14px}
+.ann-hero .em{font-size:40px;line-height:1.2}
+.ann-hero .t{font-size:18px;font-weight:600;margin-top:6px}
 .newtag{display:inline-block;font-size:10px;font-weight:600;color:#fff;background:#FF4D4F;border-radius:4px;padding:0 4px;margin-left:6px;vertical-align:2px;line-height:16px}
 .qref{font-size:12.5px;color:var(--text2);background:var(--primary-bg);border-radius:6px;padding:6px 10px;margin-top:8px}
 .ms-warn{flex-basis:100%;font-size:12px;color:#D46B08;background:#FFF7E6;border-radius:6px;padding:4px 8px}
@@ -388,6 +401,8 @@ details summary::-webkit-details-marker{display:none}
   .sync{font-size:0;gap:0}
   .sync i{width:8px;height:8px}
   .top-me{display:block}
+  .bell{width:30px;height:30px}
+  .modal .ann ul{font-size:15px}
   #topAct .newbtn{display:none}
   .fab.show{display:flex;align-items:center;justify-content:center;position:fixed;right:16px;bottom:calc(49px + env(safe-area-inset-bottom) + 16px);z-index:35;width:56px;height:56px;border:none;border-radius:50%;background:var(--primary);color:#fff;font-size:30px;font-weight:300;line-height:1;box-shadow:0 6px 18px color-mix(in srgb,var(--primary) 40%,transparent),0 2px 6px rgba(0,0,0,.12);-webkit-tap-highlight-color:transparent;transition:transform .15s}
   .fab.show:active{transform:scale(.92)}
@@ -518,7 +533,7 @@ details summary::-webkit-details-marker{display:none}
     <div class="me-box" id="meBox"></div>
   </aside>
   <div class="content">
-    <div class="topbar"><h1 id="pageTitle"></h1><span class="spacer"></span><span class="sync" id="sync"></span><span id="topAct"></span><button class="top-me" id="meTop"></button></div>
+    <div class="topbar"><h1 id="pageTitle"></h1><span class="spacer"></span><span class="sync" id="sync"></span><button class="bell" id="bell" aria-label="公告"></button><span id="topAct"></span><button class="top-me" id="meTop"></button></div>
     <main id="main"></main>
   </div>
   <nav class="tabbar" id="tabbar"></nav>
@@ -732,6 +747,7 @@ function renderLogin(){
 let poll=null;
 function startApp(){
   applyPrefsOnce();
+  setTimeout(()=>{if(me&&annUnseen().length&&!document.getElementById('modalRoot').innerHTML)openAnn(true)},600);
   document.getElementById('boot').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   route();
@@ -759,7 +775,7 @@ function route(){
   document.getElementById('meBox').onclick=e=>{e.stopPropagation();openMeMenu(e.currentTarget)};
   document.getElementById('pageTitle').textContent=PAGES[page];
   document.getElementById('topAct').innerHTML='';
-  renderSync();
+  renderSync();renderBell();
   ({home:renderHome,cases:renderCases,calendar:renderCalendar,finance:renderFinance,expenses:renderExpenses,profile:renderProfile,chat:renderChat})[page]();
   const nb=document.querySelector('#topAct .newbtn'),fab=document.getElementById('fab');
   fab.classList.toggle('show',!!nb);fab.onclick=()=>nb&&nb.click();if(nb)fab.setAttribute('aria-label',nb.textContent.replace('＋','').trim());
@@ -989,6 +1005,37 @@ function openCropper(file,onDone){
   };
   img.onerror=()=>toast('這張圖片讀不出來，換一張試試',true);
   img.src=url;
+}
+const ANN=[
+  {id:'2026-11-10-0915',date:'11/10',title:'新增公告',items:[['公告','右上角的 🔔 會列出每次更新的內容，有新公告會出現紅點']]},
+  {id:'2026-11-10-0906',date:'11/10',title:'接案更順手的 5 個小工具',items:[
+    ['撞期提醒','填拍攝日、上線日時，那天已經有拍攝會跳橘色提示；首頁本週時程也會標「撞期」'],
+    ['複製成新案件','打開案子按「複製成新案件」，系列案（像 KC SKIN 1～4）不用重打'],
+    ['報價參考','勾規格時，會顯示過去同規格的平均實拿和範圍'],
+    ['複製月結明細','財務頁一鍵複製整段月結，直接貼 LINE 對帳'],
+    ['催款訊息','待收款每筆旁邊可以複製客氣的催款文字']]},
+  {id:'2026-11-10-0853',date:'11/10',title:'「校稿」改名為「AC」',items:[['AC','網頁、LINE 通知、Google 日曆上的「校稿」都改成「AC」']]},
+  {id:'2026-11-10-0229',date:'11/10',title:'支出可以設定「算誰的」',items:[['算誰的','除了誰付的，還能選平分、全算 00、全算米米，月結會自動算好誰還誰']]},
+  {id:'2026-11-10-0208',date:'11/10',title:'頭貼可以裁切',items:[['頭貼裁切','上傳照片後可以拖曳、縮放，選好要留的範圍']]},
+  {id:'2026-11-10-0150',date:'11/10',title:'手機版改成 iOS app 風格',items:[['手機版','下方分頁列、右下角新增按鈕、從下方滑出的表單；建議用 Safari「加入主畫面」']]}
+];
+const annKey=()=>'mizu_ann_'+me;
+const annUnseen=()=>{const s=LS.get(annKey())||'';return ANN.filter(a=>a.id>s)};
+function renderBell(){
+  const b=document.getElementById('bell');if(!b)return;
+  b.innerHTML=ico('<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/>')+(annUnseen().length?'<span class="rd"></span>':'');
+  b.onclick=()=>openAnn(false);
+}
+function openAnn(auto){
+  const root=document.getElementById('modalRoot'),un=annUnseen(),list=auto?un.slice(0,3):ANN;
+  const block=a=>`<div class="ann"><div class="ann-d">${a.date}</div><div class="ann-t">${esc(a.title)}${un.includes(a)&&!auto?'<span class="newtag">NEW</span>':''}</div><ul>${a.items.map(([k,v])=>`<li><b>${esc(k)}</b>：${esc(v)}</li>`).join('')}</ul></div>`;
+  root.innerHTML=`<div class="mask" id="mk"><div class="modal sm"><div class="mh"><h2>${auto?'有新功能':'公告'}</h2><button class="x" id="cx">✕</button></div>
+    <div class="mb">${auto?'<div class="ann-hero"><div class="em">✨</div><div class="t">MIZU 更新了</div><div class="muted small">看看這次多了什麼</div></div>':''}${list.map(block).join('')}</div>
+    <div class="mf"><button class="btn primary" id="cc">${auto?'知道了':'關閉'}</button></div></div></div>`;
+  const close=()=>{LS.set(annKey(),ANN[0].id);closeSheet(root);renderBell()};
+  document.getElementById('cx').onclick=document.getElementById('cc').onclick=close;
+  document.getElementById('mk').onmousedown=e=>{if(e.target.id==='mk')close()};
+  iosify(root);
 }
 function closeSheet(root){
   const mk=root.querySelector('.mask');
@@ -1297,7 +1344,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 09:06</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 09:10</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
