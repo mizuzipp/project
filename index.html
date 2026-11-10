@@ -525,7 +525,7 @@ const STATUSES=['確定合作','On hold','過腳本中','剪輯中','過稿中',
 const ST_COLOR={'確定合作':'blue','On hold':'default','過腳本中':'cyan','剪輯中':'geekblue','過稿中':'purple','待發布':'orange','待匯款':'gold','未發布已結帳':'lime','已結案':'green'};
 const RANK={'確定合作':0,'On hold':0,'過腳本中':1,'剪輯中':2,'過稿中':3,'待發布':4,'待匯款':5,'未發布已結帳':5,'已結案':6};
 const SPECS=['Reels','配音','Threads','抖音','限動','廣告主','素材授權','圖文'];
-const MS=[['shoot','拍攝'],['script','腳本'],['review','校稿'],['approve','廠商過稿'],['publish','上線'],['payment','匯款']];
+const MS=[['shoot','拍攝'],['script','腳本'],['review','AC'],['approve','廠商過稿'],['publish','上線'],['payment','匯款']];
 const MSL=Object.fromEntries(MS);
 const EXP_CATS=['交通','道具 / 服裝','餐飲','場地 / 其他'];
 const COLORS=['#F5222D','#FF4D4F','#FA541C','#FA8C16','#FAAD14','#FADB14','#D4B106','#A0D911','#52C41A','#389E0D','#13C2C2','#08979C',
@@ -1248,7 +1248,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 02:29</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 08:53</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>

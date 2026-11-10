@@ -6,10 +6,10 @@
  */
 const TZ = 'Asia/Taipei';
 const CASE_COLS = ['id','案名','品牌','歸屬','接案人','規格','狀態','實拿金額','分帳方式','00固定金額','米米固定金額',
-  '拍攝日','拍攝完成','腳本日','腳本完成','校稿日','校稿完成','廠商過稿日','廠商過稿完成','上線日','上線完成','匯款日','匯款完成',
+  '拍攝日','拍攝完成','腳本日','腳本完成','AC日','AC完成','廠商過稿日','廠商過稿完成','上線日','上線完成','匯款日','匯款完成',
   '廠商聯絡人','相關連結','備註','最後修改','修改時間'];
 const EXP_COLS = ['id','日期','分類','金額','誰付的','相關案件id','說明'];
-const MS = [['shoot','拍攝'],['script','腳本'],['review','校稿'],['approve','廠商過稿'],['publish','上線'],['payment','匯款']];
+const MS = [['shoot','拍攝'],['script','腳本'],['review','AC'],['approve','廠商過稿'],['publish','上線'],['payment','匯款']];
 const TO_KEY = {'00':'00','0':'00','米米':'mimi','mimi':'mimi','Mizu':'mizu','MIZU':'mizu','mizu':'mizu'};
 const TO_LABEL = {'00':'00','mimi':'米米','mizu':'Mizu'};
 
@@ -20,7 +20,7 @@ const CALS = {
   'mizu': '1560368ba62edb977ee3c119b950ddb5337a3c90d93e570f3ce750f96f3cb8c7@group.calendar.google.com'
 };
 // 日曆上的事件名稱，照你們原本的寫法：「拍攝｜案名」
-const CAL_WORD = { shoot: '拍攝', script: '腳本', review: '審稿', approve: '過稿', publish: '上線', payment: '匯款' };
+const CAL_WORD = { shoot: '拍攝', script: '腳本', review: 'AC', approve: '過稿', publish: '上線', payment: '匯款' };
 
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('MIZU')
@@ -151,7 +151,14 @@ function apiLoad(token) {
   return { me: me, users: users_(false), cases: cases, expenses: expenses, settlements: settlements };
 }
 
+// 舊欄位名稱「校稿日／校稿完成」自動改成「AC日／AC完成」
+function migrateAC_() {
+  const s = sh_('案件');
+  const h = s.getRange(1, 1, 1, s.getLastColumn()).getValues()[0].map(String);
+  [['校稿日', 'AC日'], ['校稿完成', 'AC完成']].forEach(([a, b]) => { const i = h.indexOf(a); if (i >= 0) s.getRange(1, i + 1).setValue(b); });
+}
 function casesFromSheet_() {
+  migrateAC_();
   const c = table_('案件');
   const cases = c.rows.map(r => {
     const g = k => r[c.h.indexOf(k)];
@@ -414,7 +421,7 @@ function responsible_(c, k) {
   if (k === 'review') return ['mimi'];
   return [c.lead];
 }
-const TASK_WORD = { shoot: '拍攝', script: '腳本', review: '校稿', approve: '跟廠商過稿', publish: '發布上線', payment: '追匯款' };
+const TASK_WORD = { shoot: '拍攝', script: '腳本', review: 'AC', approve: '跟廠商過稿', publish: '發布上線', payment: '追匯款' };
 function buildDigest_(who, cases) {
   const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
   const tmr = Utilities.formatDate(new Date(Date.now() + 864e5), TZ, 'yyyy-MM-dd');
