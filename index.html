@@ -311,6 +311,27 @@ details summary::-webkit-details-marker{display:none}
 .dots{display:none}
 .newbtn .lbl{display:inline}
 .fab{display:none}
+.demo-sw{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;border:1px dashed var(--primary-border);border-radius:10px;background:var(--primary-bg)}
+.demo-sw>span{font-size:13px;font-weight:600;color:var(--primary-active)}
+.demo-sw .seg{flex-wrap:wrap}
+.mbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.mini-btn.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.msel{width:auto;min-width:160px}
+.mgroup{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--fill);border-bottom:1px solid var(--split);cursor:pointer;user-select:none}
+td.mgroup{display:table-cell}
+.grp-row td{padding:10px 16px}
+.mgroup .caret{display:inline-block;transition:transform .2s;color:var(--text3);font-size:12px;margin-right:6px}
+.mgroup.closed .caret{transform:rotate(-90deg)}
+.mgroup b{margin-right:10px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.mcard{background:#fff;border:1px solid var(--split);border-radius:12px;padding:14px 16px;cursor:pointer;box-shadow:var(--shadow);transition:all .2s}
+.mcard:hover{border-color:var(--primary-border);transform:translateY(-1px)}
+.mcard.cur{border-color:var(--primary)}
+.mc-h{display:flex;align-items:center;gap:6px;font-size:16px}
+.mc-n{font-size:28px;font-weight:600;margin-top:6px}
+.mc-n span{font-size:14px;font-weight:400;color:var(--text3)}
+.mc-bar{height:6px;background:var(--fill);border-radius:3px;margin:10px 0 4px;overflow:hidden}
+.mc-bar i{display:block;height:100%;background:var(--success);border-radius:3px}
 .bell{position:relative;width:32px;height:32px;border:none;background:none;border-radius:8px;color:var(--text2);display:flex;align-items:center;justify-content:center;padding:0}
 .bell:hover{background:rgba(0,0,0,.04);color:var(--text)}
 .bell svg{width:20px;height:20px}
@@ -440,6 +461,13 @@ details summary::-webkit-details-marker{display:none}
   .search svg{top:11px}
   .ctb .spacer{display:none}
   .tb-note{display:none}
+  .msel{flex:1 1 100%;order:-1}
+  .mgrid{grid-template-columns:1fr 1fr;gap:10px}
+  .mcard{box-shadow:none;border:none}
+  .demo-sw{padding:8px}
+  .demo-sw .seg{overflow-x:auto;flex-wrap:nowrap;max-width:100%}
+  .demo-sw .seg button{white-space:nowrap}
+  .mbar .muted{flex-basis:100%}
   .toolbar .mpick{margin-left:auto}
   .mpick .btn{width:36px;padding:0}
   .mlabel{min-width:96px}
@@ -563,6 +591,8 @@ const NAV=[['home','首頁','<path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H
   ['expenses','支出','<path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/>']];
 const CHAT=false;
 const NEWF=true;
+const MONTH_DEMO=false;
+const MONTH_MODE='A';
 if(CHAT)NAV.splice(4,0,['chat','聊天','<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/>']);
 const PAGES={chat:'聊天',home:'首頁',cases:'案件',calendar:'日曆',finance:'財務',expenses:'支出',profile:'個人設定'};
 const ico=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
@@ -655,7 +685,7 @@ const splitLabel=e=>{const s=expSplit(e);return s==='half'?'平分':'全算'+NAM
 const shares=c=>c.owner!=='mizu'?{[c.owner]:c.amount||0,[other(c.owner)]:0}:
   c.split==='fixed'?{'00':+c.fixed['00']||0,'mimi':+c.fixed['mimi']||0}:{'00':(c.amount||0)/2,'mimi':(c.amount||0)/2};
 const collector=c=>c.owner==='mizu'?c.lead:c.owner;
-const pubMonth=c=>ym(c.ms.publish.date);
+const pubMonth=c=>ym(c.ms.shoot.date);
 const isPaid=c=>c.ms.payment.done;
 function applyDone(c,k,val){
   c.ms[k].done=val;if(!val)return null;
@@ -756,7 +786,7 @@ function startApp(){
 async function logout(){await Data.logout();document.getElementById('app').classList.add('hidden');renderLogin()}
 
 
-const ui={calDay:TODAY,scope:'mine',view:'table',fStatus:'',fOwner:'',fSpec:'',q:'',calM:ym(TODAY),calScope:'mine',finM:ym(TODAY),expM:ym(TODAY),laterOpen:false,histQ:''};
+const ui={mMode:'A',cMonth:ym(TODAY),eMonth:'',mClosed:{},calDay:TODAY,scope:'mine',view:'table',fStatus:'',fOwner:'',fSpec:'',q:'',calM:ym(TODAY),calScope:'mine',finM:ym(TODAY),expM:ym(TODAY),laterOpen:false,histQ:''};
 let page='home';
 function route(){
   applyColors();
@@ -857,31 +887,66 @@ function filtered(){
   return S.cases.filter(c=>(ui.scope==='all'?(!ui.fOwner||c.owner===ui.fOwner):mine(c))
     &&(!ui.q||(c.title+c.brand+c.note+c.specs.join()).toLowerCase().includes(ui.q.toLowerCase())));
 }
+const MMODES=[['A','月份切換'],['B','依月份分組'],['C','月份標籤'],['D','下拉選單'],['E','月份總覽卡']];
+const caseMonth=c=>pubMonth(c)||'none';
+const mLabel=k=>k==='none'?'上線未定':ymLabel(k);
+const mShort=k=>k==='none'?'未定':(k.slice(0,4)===TODAY.slice(0,4)?'':k.slice(2,4)+'年')+(+k.slice(5))+'月';
+function caseRowsMob(list){return list.map(c=>`<div class="item" data-open="${c.id}"><div class="main"><div class="ttl">${esc(c.title)}</div><div class="meta">${otag(c.owner)}${stag(c.status)}${c.owner==='mizu'?`<span>收款 ${esc(NAMES[c.lead])}</span>`:''}</div></div>
+      <div class="rt"><div class="num" style="color:var(--text);font-weight:500">${money(c.amount)}</div><div class="small">${c.ms.shoot.date?'拍攝 '+md(c.ms.shoot.date):'拍攝未定'}</div></div></div>`).join('')}
+function caseRowsDesk(list){return list.map(c=>`<tr data-open="${c.id}"><td style="max-width:280px"><div style="font-weight:500">${esc(c.title)}</div>${c.brand||!canEdit(c)?`<div class="muted small">${esc(c.brand)}${canEdit(c)?'':(c.brand?'・':'')+'僅檢視'}</div>`:''}</td>
+    <td>${otag(c.owner)}</td><td>${c.owner==='mizu'?esc(NAMES[c.lead]):'<span class="muted">—</span>'}</td><td class="muted small" style="max-width:180px">${c.specs.join('、')||'—'}</td>
+    <td>${stag(c.status)}</td><td class="num">${c.ms.shoot.date?md(c.ms.shoot.date):'<span class="muted">未定</span>'}</td><td class="r num">${money(c.amount)}</td>
+    <td>${isPaid(c)?'<span style="color:#389E0D">已匯</span>':c.ms.publish.done?'<span style="color:#D48806">待匯款</span>':'<span class="muted">—</span>'}</td></tr>`).join('')}
+const TH='<thead><tr><th>案名</th><th>歸屬</th><th>收款人</th><th>規格</th><th>狀態</th><th>拍攝日</th><th class="r">實拿金額</th><th>匯款</th></tr></thead>';
 function renderCases(){
   newBtn();
-  const isMob=matchMedia('(max-width:768px)').matches,view=isMob?'table':ui.view;
-  const base=filtered();
+  const isMob=matchMedia('(max-width:768px)').matches;
+  const mode=MONTH_DEMO?ui.mMode:MONTH_MODE;
   const order=new Map(S.cases.map((c,i)=>[c.id,i]));
-  const list=base.filter(c=>!ui.fStatus||c.status===ui.fStatus).sort((a,b)=>order.get(b.id)-order.get(a.id));
-  const cnt=s=>base.filter(c=>c.status===s).length;
-  M().innerHTML=`<div class="toolbar ctb">
+  const byNew=(a,b)=>order.get(b.id)-order.get(a.id);
+  const base=filtered();
+  const months=[...new Set(base.map(caseMonth))].sort((a,b)=>a==='none'?-1:b==='none'?1:b.localeCompare(a));
+  const mcount=k=>base.filter(c=>caseMonth(c)===k).length;
+  const mf=ui.q?'':(mode==='A'||mode==='C'||mode==='D')?ui.cMonth:mode==='E'?(ui.eMonth||''):'';
+  const baseM=mf?base.filter(c=>caseMonth(c)===mf):base;
+  const showOverview=mode==='E'&&!ui.eMonth;
+  const view=isMob||mode==='B'||showOverview?'table':ui.view;
+  const list=baseM.filter(c=>!ui.fStatus||c.status===ui.fStatus).sort(byNew);
+  const cnt=s=>baseM.filter(c=>c.status===s).length;
+  const sum=l=>l.reduce((s,c)=>s+(c.amount||0),0);
+  let mctl='';
+  if(mode==='A'&&ui.q)mctl=`<div class="mbar"><span class="muted small">搜尋所有月份・找到 ${baseM.length} 件</span></div>`;
+  else if(mode==='A')mctl=`<div class="mbar"><button class="btn" id="cmP">‹</button><span class="mlabel">${ui.cMonth?mLabel(ui.cMonth):'全部月份'}</span><button class="btn" id="cmN">›</button>
+    <span class="muted small">${baseM.length} 件・${money(sum(baseM))}</span></div>`;
+  if(mode==='C')mctl=`<div class="ctags mtags"><button data-cm="" class="${!ui.cMonth?'on':''}">全部月份<span class="n">${base.length}</span></button>${months.map(k=>`<button data-cm="${k}" class="${ui.cMonth===k?'on':''}">${mShort(k)}<span class="n">${mcount(k)}</span></button>`).join('')}</div>`;
+  if(mode==='E'&&ui.eMonth)mctl=`<div class="mbar"><button class="btn" id="eBack">‹ 所有月份</button><b style="font-size:16px">${mLabel(ui.eMonth)}</b><span class="muted small">${baseM.length} 件・${money(sum(baseM))}</span></div>`;
+  M().innerHTML=`${MONTH_DEMO?`<div class="demo-sw"><span>Demo 版本</span><div class="seg">${MMODES.map(([k,n])=>`<button data-mm="${k}" class="${mode===k?'on':''}"><b>${k}</b> ${n}</button>`).join('')}</div></div>`:''}
+  <div class="toolbar ctb">
     <div class="seg"><button data-sc="mine" class="${ui.scope==='mine'?'on':''}">我的</button><button data-sc="all" class="${ui.scope==='all'?'on':''}">全部</button></div>
     ${ui.scope==='all'?`<div class="seg">${[['','不限'],['00',NAMES['00']],['mimi',NAMES['mimi']],['mizu','Mizu']].map(([v,t])=>`<button data-fo="${v}" class="${ui.fOwner===v?'on':''}">${esc(t)}</button>`).join('')}</div>`:''}
+    ${mode==='D'?`<select class="inp msel" id="cmSel"><option value="">全部月份（${base.length}）</option>${months.map(k=>`<option value="${k}" ${ui.cMonth===k?'selected':''}>${mLabel(k)}（${mcount(k)}）</option>`).join('')}</select>`:''}
     <div class="search">${ico('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>')}<input class="inp" id="q" placeholder="搜尋案名或規格" value="${esc(ui.q)}"></div>
     <span class="spacer"></span>
-    <div class="seg only-desk"><button data-v="table" class="${view==='table'?'on':''}">表格</button><button data-v="kanban" class="${view==='kanban'?'on':''}">看板</button></div></div>
-  ${view==='table'?`<div class="ctags"><button data-fs="" class="${!ui.fStatus?'on':''}">全部<span class="n">${base.length}</span></button>${STATUSES.filter(s=>cnt(s)).map(s=>`<button data-fs="${s}" class="${ui.fStatus===s?'on':''}">${s}<span class="n">${cnt(s)}</span></button>`).join('')}</div>`:''}
+    ${mode==='B'||showOverview?'':`<div class="seg only-desk"><button data-v="table" class="${view==='table'?'on':''}">表格</button><button data-v="kanban" class="${view==='kanban'?'on':''}">看板</button></div>`}</div>
+  ${mctl}
+  ${view==='table'&&!showOverview?`<div class="ctags"><button data-fs="" class="${!ui.fStatus?'on':''}">全部狀態<span class="n">${baseM.length}</span></button>${STATUSES.filter(s=>cnt(s)).map(s=>`<button data-fs="${s}" class="${ui.fStatus===s?'on':''}">${s}<span class="n">${cnt(s)}</span></button>`).join('')}</div>`:''}
   <div id="cv"></div>`;
   const cv=document.getElementById('cv');
-  if(view==='table'){
-    cv.innerHTML=`<div class="card only-mob">${list.map(c=>`<div class="item" data-open="${c.id}"><div class="main"><div class="ttl">${esc(c.title)}</div><div class="meta">${otag(c.owner)}${stag(c.status)}${c.owner==='mizu'?`<span>收款 ${esc(NAMES[c.lead])}</span>`:''}</div></div>
-      <div class="rt"><div class="num" style="color:var(--text);font-weight:500">${money(c.amount)}</div><div class="small">${c.ms.publish.date?'上線 '+md(c.ms.publish.date):'上線未定'}</div></div></div>`).join('')||'<div class="empty">沒有符合的案件</div>'}</div>
-    <div class="card tbl only-desk"><table><thead><tr><th>案名</th><th>歸屬</th><th>收款人</th><th>規格</th><th>狀態</th><th>上線日</th><th class="r">實拿金額</th><th>匯款</th></tr></thead><tbody>
-    ${list.map(c=>`<tr data-open="${c.id}"><td style="max-width:280px"><div style="font-weight:500">${esc(c.title)}</div>${c.brand||!canEdit(c)?`<div class="muted small">${esc(c.brand)}${canEdit(c)?'':(c.brand?'・':'')+'僅檢視'}</div>`:''}</td>
-    <td>${otag(c.owner)}</td><td>${c.owner==='mizu'?esc(NAMES[c.lead]):'<span class="muted">—</span>'}</td><td class="muted small" style="max-width:180px">${c.specs.join('、')||'—'}</td>
-    <td>${stag(c.status)}</td><td class="num">${c.ms.publish.date?md(c.ms.publish.date):'<span class="muted">未定</span>'}</td><td class="r num">${money(c.amount)}</td>
-    <td>${isPaid(c)?'<span style="color:#389E0D">已匯</span>':c.ms.publish.done?'<span style="color:#D48806">待匯款</span>':'<span class="muted">—</span>'}</td></tr>`).join('')||'<tr><td colspan="8" class="empty">沒有符合的案件</td></tr>'}
-    </tbody></table></div>`;
+  if(showOverview){
+    cv.innerHTML=`<div class="mgrid">${months.map(k=>{const l=base.filter(c=>caseMonth(c)===k),done=l.filter(c=>c.status==='已結案').length,cur=k===ym(TODAY);
+      return `<div class="mcard ${cur?'cur':''}" data-em="${k}"><div class="mc-h"><b>${mShort(k)}</b>${cur?'<span class="tag tg-purple">本月</span>':''}<span class="muted small" style="margin-left:auto">${k==='none'?'':k.slice(0,4)}</span></div>
+        <div class="mc-n">${l.length}<span> 件</span></div><div class="muted small">${money(sum(l))}</div>
+        <div class="mc-bar"><i style="width:${l.length?done/l.length*100:0}%"></i></div><div class="muted small">已結案 ${done}／${l.length}</div></div>`}).join('')||'<div class="empty">沒有案件</div>'}</div>`;
+    cv.querySelectorAll('[data-em]').forEach(x=>x.onclick=()=>{ui.eMonth=x.dataset.em;ui.fStatus='';renderCases()});
+  }else if(view==='table'&&mode==='B'){
+    const groups=months.map(k=>({k,l:list.filter(c=>caseMonth(c)===k)})).filter(g=>g.l.length);
+    const head=(g,tag)=>`<${tag} class="mgroup ${ui.mClosed[g.k]?'closed':''}" data-mg="${g.k}"><span class="caret">▾</span><b>${mLabel(g.k)}</b><span class="muted small">${g.l.length} 件・${money(sum(g.l))}</span></${tag}>`;
+    cv.innerHTML=`<div class="only-mob">${groups.map(g=>`<div class="card" style="margin-bottom:10px">${head(g,'div')}${ui.mClosed[g.k]?'':caseRowsMob(g.l)}</div>`).join('')||'<div class="card"><div class="empty">沒有符合的案件</div></div>'}</div>
+    <div class="card tbl only-desk"><table>${TH}<tbody>${groups.map(g=>`<tr class="grp-row">${head(g,'td colspan="8"').replace(/<\/td colspan="8">/,'</td>')}</tr>${ui.mClosed[g.k]?'':caseRowsDesk(g.l)}`).join('')||'<tr><td colspan="8" class="empty">沒有符合的案件</td></tr>'}</tbody></table></div>`;
+    cv.querySelectorAll('[data-mg]').forEach(h=>h.onclick=e=>{e.stopPropagation();const k=h.dataset.mg;ui.mClosed[k]=!ui.mClosed[k];renderCases()});
+  }else if(view==='table'){
+    cv.innerHTML=`<div class="card only-mob">${caseRowsMob(list)||'<div class="empty">沒有符合的案件</div>'}</div>
+    <div class="card tbl only-desk"><table>${TH}<tbody>${caseRowsDesk(list)||'<tr><td colspan="8" class="empty">沒有符合的案件</td></tr>'}</tbody></table></div>`;
   }else{
     const cols=STATUSES;
     cv.innerHTML=`<div class="kanban">${cols.map(s=>{const cs=list.filter(c=>c.status===s);return `<div class="col" data-col="${s}"><div class="ch">${stag(s)}<span class="muted small">${cs.length}</span></div>
@@ -896,15 +961,20 @@ function renderCases(){
       col.ondrop=async e=>{e.preventDefault();col.classList.remove('drop');const c=S.cases.find(x=>x.id===dragId);
         if(c&&c.status!==col.dataset.col){c.status=col.dataset.col;c.updatedBy=me;toast(`「${c.title}」改為 ${c.status}`);renderCases();await Data.run('apiSaveCase',c)}};
     });
+  
   }
   bindOpen(cv);
+  M().querySelectorAll('[data-mm]').forEach(b=>b.onclick=()=>{ui.mMode=b.dataset.mm;ui.fStatus='';ui.cMonth=ui.mMode==='A'?ym(TODAY):'';ui.eMonth='';renderCases()});
+  M().querySelectorAll('[data-cm]').forEach(b=>b.onclick=()=>{ui.cMonth=b.dataset.cm;ui.fStatus='';renderCases()});
+  if(document.getElementById('cmP')){const step=n=>{ui.cMonth=shiftMonth(ui.cMonth&&ui.cMonth!=='none'?ui.cMonth:ym(TODAY),n);ui.fStatus='';renderCases()};document.getElementById('cmP').onclick=()=>step(-1);document.getElementById('cmN').onclick=()=>step(1)}
+  if(document.getElementById('cmSel'))document.getElementById('cmSel').onchange=e=>{ui.cMonth=e.target.value;ui.fStatus='';renderCases()};
+  if(document.getElementById('eBack'))document.getElementById('eBack').onclick=()=>{ui.eMonth='';ui.fStatus='';renderCases()};
   M().querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{ui.scope=b.dataset.sc;renderCases()});
   M().querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{ui.view=b.dataset.v;renderCases()});
   const q=document.getElementById('q');q.oninput=()=>{ui.q=q.value;clearTimeout(q._t);q._t=setTimeout(()=>{renderCases();const n=document.getElementById('q');n.focus();n.setSelectionRange(n.value.length,n.value.length)},300)};
   M().querySelectorAll('[data-fs]').forEach(b=>b.onclick=()=>{ui.fStatus=b.dataset.fs;renderCases()});
   M().querySelectorAll('[data-fo]').forEach(b=>b.onclick=()=>{ui.fOwner=b.dataset.fo;renderCases()});
 }
-
 function openCase(id,preset){
   const isNew=!id;
   const c=preset?preset:isNew?{id:uid(),title:'',brand:'',owner:me,lead:me,specs:[],status:'確定合作',amount:0,split:'half',fixed:{'00':0,'mimi':0},ms:Object.fromEntries(MS.map(([k])=>[k,{date:'',done:false}])),contact:'',link:'',note:''}
@@ -926,7 +996,7 @@ function openCase(id,preset){
       <div class="fi full"><label>規格</label><div class="chips">${SPECS.map(s=>`<label class="${c.specs.includes(s)?'on':''}"><input type="checkbox" value="${s}" ${c.specs.includes(s)?'checked':''} ${dis}>${s}</label>`).join('')}</div>${NEWF&&!ro?`<div class="qref" id="qref">${quoteRef(c.specs,c.id)}</div>`:''}</div>
       <div class="fi full"><label>時程</label><div class="ms">${MS.map(([k,l])=>`<div class="msr"><div class="ms-l"><span class="ms-n">${l}</span>${responsible(c,k).map(otag).join('')}</div>
         <div class="ms-r"><input class="inp" type="date" data-msd="${k}" value="${c.ms[k].date}" ${dis}><label class="chk" title="完成"><input type="checkbox" data-msk="${k}" ${c.ms[k].done?'checked':''} ${dis}><span>完成</span></label></div>${NEWF?'<div class="ms-warn"></div>':''}</div>`).join('')}</div>
-        <div class="hint">隸屬月份看上線日${c.ms.publish.date?'：'+ymLabel(ym(c.ms.publish.date)):''}。勾「完成」會自動跳到下一個狀態。</div></div>
+        <div class="hint">隸屬月份看拍攝日${c.ms.shoot.date?'：'+ymLabel(ym(c.ms.shoot.date)):''}。勾「完成」會自動跳到下一個狀態。</div></div>
       <div class="fi full"><label>相關連結</label><input class="inp" id="f_link" value="${esc(c.link)}" placeholder="brief、雲端資料夾" ${dis}></div>
       <div class="fi full"><label>備註</label><textarea class="inp" id="f_note" rows="2" ${dis}>${esc(c.note)}</textarea></div>
     </div></div>
@@ -1007,6 +1077,7 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
+  {id:'2026-11-10-1515',date:'11/10',title:'案件清單可以切換月份，月份改看拍攝日',items:[['月份切換','案件頁上方用「‹ 2026 年 11 月 ›」一個月一個月看，搜尋時會找所有月份'],['拍攝月份','案件清單、財務、Mizu 月結、本月實拿、收入趨勢圖，都改成依「拍攝日」算月份']]},
   {id:'2026-11-10-0915',date:'11/10',title:'新增公告',items:[['公告','右上角的 🔔 會列出每次更新的內容，有新公告會出現紅點']]},
   {id:'2026-11-10-0906',date:'11/10',title:'接案更順手的 5 個小工具',items:[
     ['撞期提醒','填拍攝日、上線日時，那天已經有拍攝會跳橘色提示；首頁本週時程也會標「撞期」'],
@@ -1191,7 +1262,7 @@ function trendCard(y,curM){
       ${x.a.total?`<div class="tr-bar" style="height:${x.a.total/top*100}%;background:var(--c00)"></div>`:''}${x.b.total?`<div class="tr-bar" style="height:${x.b.total/top*100}%;background:var(--cmimi)"></div>`:''}</div>`).join('')}</div>
     <div class="tip hidden" id="tip"></div></div>
     <div class="tr-x">${d.map(x=>`<span class="${x.m===curM?'cur':''}">${+x.m.slice(5)}月</span>`).join('')}</div>
-    <div class="muted small" style="margin-top:8px">個人案 + Mizu 分到的，依上線月份。滑過看細節，點一下切到那個月</div></div>
+    <div class="muted small" style="margin-top:8px">個人案 + Mizu 分到的，依拍攝月份。滑過看細節，點一下切到那個月</div></div>
   <details><summary>看數字</summary><div class="tbl"><table><thead><tr><th>月份</th><th class="r">${esc(NAMES['00'])}</th><th class="r">${esc(NAMES['mimi'])}</th><th class="r">合計</th></tr></thead><tbody>
     ${d.map(x=>`<tr><td>${+x.m.slice(5)} 月</td><td class="r num">${money(x.a.total)}</td><td class="r num">${money(x.b.total)}</td><td class="r num">${money(x.a.total+x.b.total)}</td></tr>`).join('')}
   </tbody></table></div></details></div>`;
@@ -1217,15 +1288,15 @@ function renderFinance(){
   const from=st.net>=0?'00':'mimi',to=other(from);
   const i00=incomeFor('00',m),imi=incomeFor('mimi',m);
   const pend=S.cases.filter(c=>c.ms.publish.done&&!isPaid(c)).sort((a,b)=>(a.ms.payment.date||'9999').localeCompare(b.ms.payment.date||'9999'));
-  M().innerHTML=`<div class="toolbar"><span class="muted tb-note">依上線月份計算</span>${CHAT?'<button class="btn only-mob" id="toExp" style="display:inline-flex!important">支出紀錄</button>':''}<span class="spacer"></span>${monthPicker(m,'fm')}</div>
+  M().innerHTML=`<div class="toolbar"><span class="muted tb-note">依拍攝月份計算</span>${CHAT?'<button class="btn only-mob" id="toExp" style="display:inline-flex!important">支出紀錄</button>':''}<span class="spacer"></span>${monthPicker(m,'fm')}</div>
   <div class="card" style="margin-bottom:16px"><div class="hero">
     <div style="flex:1;min-width:240px"><div class="lbl">${ymLabel(m)} Mizu 月結</div>
       <div class="big">${Math.abs(st.net)<1?'不用轉帳':`${esc(NAMES[from])} 要轉 ${money(Math.abs(st.net))} 給 ${esc(NAMES[to])}`}</div>
       <div class="sub">Mizu 案 ${st.mc.length} 件共 ${money(st.total)}${st.exTotal?`・代墊 ${money(st.exTotal)} 已依分攤方式抵掉`:''}</div></div>
     ${NEWF?'<button class="btn" id="copySet">複製月結明細</button>':''}<div style="display:flex;align-items:center;gap:10px"><button class="switch ${sd?.done?'on':''}" id="sdone"></button><span>${sd?.done?`已轉帳<span class="muted small">（${esc(NAMES[sd.by]||'')}）</span>`:'還沒轉'}</span></div>
   </div>
-  <details><summary>看 Mizu 案件明細</summary><div class="tbl"><table><thead><tr><th>案名</th><th>上線</th><th class="r">金額</th><th>收款人</th><th class="r">${esc(NAMES['00'])}</th><th class="r">${esc(NAMES['mimi'])}</th></tr></thead><tbody>
-    ${st.mc.map(c=>{const sh=shares(c);return `<tr data-open="${c.id}"><td>${esc(c.title)}</td><td class="num">${md(c.ms.publish.date)}</td><td class="r num">${money(c.amount)}</td><td>${otag(c.lead)}</td><td class="r num">${money(sh['00'])}</td><td class="r num">${money(sh['mimi'])}</td></tr>`}).join('')||'<tr><td colspan="6" class="empty">這個月沒有 Mizu 案</td></tr>'}
+  <details><summary>看 Mizu 案件明細</summary><div class="tbl"><table><thead><tr><th>案名</th><th>拍攝</th><th class="r">金額</th><th>收款人</th><th class="r">${esc(NAMES['00'])}</th><th class="r">${esc(NAMES['mimi'])}</th></tr></thead><tbody>
+    ${st.mc.map(c=>{const sh=shares(c);return `<tr data-open="${c.id}"><td>${esc(c.title)}</td><td class="num">${md(c.ms.shoot.date)}</td><td class="r num">${money(c.amount)}</td><td>${otag(c.lead)}</td><td class="r num">${money(sh['00'])}</td><td class="r num">${money(sh['mimi'])}</td></tr>`}).join('')||'<tr><td colspan="6" class="empty">這個月沒有 Mizu 案</td></tr>'}
   </tbody></table></div></details></div>
   <div class="row c3">
     <div class="card stat"><div class="t">${esc(NAMES['00'])} 本月實拿</div><div class="v">${money(i00.total)}</div><div class="h">個人 ${money(i00.personal)}・Mizu ${money(i00.mizu)}</div></div>
@@ -1344,7 +1415,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 09:10</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 15:16</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
