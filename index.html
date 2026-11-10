@@ -385,6 +385,12 @@ td.mgroup{display:table-cell}
 .send:disabled{opacity:.35}
 .qlist .item{cursor:default}
 .mpick{display:inline-flex;align-items:center;gap:8px;flex:none}
+.holdban{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:12px 14px;margin-bottom:14px;border-radius:10px;background:#FFF7E6;border:1px solid #FFD591;color:#AD4E00;cursor:pointer}
+.holdban.sm{padding:8px 12px;font-size:13px}.holdban .btn{flex-shrink:0}
+.htabs{margin-bottom:10px}.htabs .n{margin-left:6px;font-size:12px;opacity:.7}
+.hdot{display:inline-block;min-width:16px;height:16px;line-height:16px;border-radius:8px;background:var(--warning);color:#fff;font-size:10px;margin-left:4px;padding:0 4px}
+.pinh{background:#FFF7E6!important;color:#AD4E00}
+.bulkr{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--split)}.bulkr .main{flex:1;min-width:0}.bulkr .ttl{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bulkr .meta{display:flex;gap:6px;align-items:center;margin-top:4px;font-size:12px}.bulkr .inp{width:150px;flex-shrink:0}
 .mlabel{min-width:110px;text-align:center;font-weight:500;white-space:nowrap}
 .crop{position:relative;width:min(280px,72vw);aspect-ratio:1;margin:12px auto 4px;border-radius:12px;overflow:hidden;background:#111;touch-action:none;cursor:grab;user-select:none}
 .crop:active{cursor:grabbing}
@@ -593,6 +599,9 @@ const CHAT=false;
 const NEWF=true;
 const MONTH_DEMO=false;
 const MONTH_MODE='A';
+const HOLD_DEMO=false;const HOLD_MODE='1';
+const HMODES=[['1','清單底部區塊'],['2','On hold 分頁'],['3','翻到最後一頁'],['4','置頂在本月'],['5','首頁提醒＋一次補']];
+const noShoot=c=>!c.ms.shoot.date;
 if(CHAT)NAV.splice(4,0,['chat','聊天','<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/>']);
 const PAGES={chat:'聊天',home:'首頁',cases:'案件',calendar:'日曆',finance:'財務',expenses:'支出',profile:'個人設定'};
 const ico=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
@@ -786,7 +795,7 @@ function startApp(){
 async function logout(){await Data.logout();document.getElementById('app').classList.add('hidden');renderLogin()}
 
 
-const ui={mMode:'A',cMonth:ym(TODAY),eMonth:'',mClosed:{},calDay:TODAY,scope:'mine',view:'table',fStatus:'',fOwner:'',fSpec:'',q:'',calM:ym(TODAY),calScope:'mine',finM:ym(TODAY),expM:ym(TODAY),laterOpen:false,histQ:''};
+const ui={hMode:'1',hTab:'m',hOpen:true,cMonth:ym(TODAY),eMonth:'',mClosed:{},calDay:TODAY,scope:'mine',view:'table',fStatus:'',fOwner:'',fSpec:'',q:'',calM:ym(TODAY),calScope:'mine',finM:ym(TODAY),expM:ym(TODAY),laterOpen:false,histQ:''};
 let page='home';
 function route(){
   applyColors();
@@ -852,6 +861,7 @@ function renderHome(){
   M().innerHTML=`
   <div style="margin-bottom:16px"><div style="font-size:20px;font-weight:600">${h<11?'早安':h<18?'午安':'晚安'}，${esc(S.users[me].name)}</div>
     <div class="muted">${S.users[me].prefs&&S.users[me].prefs.greet?esc(S.users[me].prefs.greet)+'　':''}今天 ${md(TODAY)}・有 ${over.length+soon.filter(t=>t.date===TODAY).length} 件事要處理</div></div>
+  ${hmode()==='5'?(()=>{const n=S.cases.filter(c=>mine(c)&&noShoot(c)).length;return n?`<div class="holdban" id="hbHome"><div><b>有 ${n} 件還沒排拍攝日</b><div class="small">這些案子算 On hold，不會出現在月份清單和收入</div></div><button class="btn primary">一次補日期</button></div>`:''})():''}
   <div class="row c3">
     <div class="card stat"><div class="t">我本月實拿</div><div class="v">${money(inc.total)}</div><div class="h">個人案 ${money(inc.personal)}・Mizu ${money(inc.mizu)}</div></div>
     <div class="card stat"><div class="t">待收款（我負責追的）</div><div class="v" style="color:${pending.length?'#D48806':'inherit'}">${money(pending.reduce((s,c)=>s+(c.amount||0),0))}</div><div class="h">${pending.length} 筆已上線、廠商還沒匯</div></div>
@@ -878,6 +888,7 @@ function renderHome(){
     setTimeout(route,250);await Data.run('apiSaveCase',c);
   });
   bindOpen(M());
+  if(document.getElementById('hbHome'))document.getElementById('hbHome').onclick=()=>openBulkShoot();
   document.getElementById('tl').onclick=()=>{ui.laterOpen=!ui.laterOpen;renderHome()};
   document.getElementById('toCal').onclick=e=>{e.preventDefault();page='calendar';route()};
 }
@@ -898,8 +909,25 @@ function caseRowsDesk(list){return list.map(c=>`<tr data-open="${c.id}"><td styl
     <td>${stag(c.status)}</td><td class="num">${c.ms.shoot.date?md(c.ms.shoot.date):'<span class="muted">未定</span>'}</td><td class="r num">${money(c.amount)}</td>
     <td>${isPaid(c)?'<span style="color:#389E0D">已匯</span>':c.ms.publish.done?'<span style="color:#D48806">待匯款</span>':'<span class="muted">—</span>'}</td></tr>`).join('')}
 const TH='<thead><tr><th>案名</th><th>歸屬</th><th>收款人</th><th>規格</th><th>狀態</th><th>拍攝日</th><th class="r">實拿金額</th><th>匯款</th></tr></thead>';
+const hmode=()=>HOLD_DEMO?ui.hMode:HOLD_MODE;
+function latestMonth(){const ks=S.cases.map(c=>ym(c.ms.shoot.date)).filter(Boolean).sort();const t=ym(TODAY);return ks.length&&ks[ks.length-1]>t?ks[ks.length-1]:t}
+function openBulkShoot(){
+  const root=document.getElementById('modalRoot');
+  const list=S.cases.filter(c=>mine(c)&&noShoot(c));
+  root.innerHTML=`<div class="mask" id="mk"><div class="modal sm"><div class="mh"><h2>補拍攝日</h2><button class="x" id="cx">✕</button></div>
+    <div class="mb"><div class="muted small" style="margin-bottom:10px">填了日期的案子會自動歸到那個月；留空就繼續算 On hold</div>
+    ${list.map(c=>`<div class="bulkr"><div class="main"><div class="ttl">${esc(c.title)}</div><div class="meta">${otag(c.owner)}<span class="num">${money(c.amount)}</span></div></div><input class="inp" type="date" data-bs="${c.id}"></div>`).join('')||'<div class="empty">都排好了 ✨</div>'}</div>
+    <div class="mf"><button class="btn" id="cc">取消</button><button class="btn primary" id="bsSave">儲存</button></div></div></div>`;
+  const close=()=>closeSheet(root);
+  document.getElementById('cx').onclick=document.getElementById('cc').onclick=close;
+  document.getElementById('mk').onmousedown=e=>{if(e.target.id==='mk')close()};
+  document.getElementById('bsSave').onclick=async()=>{const ch=[];root.querySelectorAll('[data-bs]').forEach(i=>{if(i.value){const c=S.cases.find(x=>x.id===i.dataset.bs);c.ms.shoot.date=i.value;c.updatedBy=me;ch.push(c)}});
+    close();toast(ch.length?`補好 ${ch.length} 件的拍攝日`:'沒有變更');route();for(const c of ch)await Data.run('apiSaveCase',c)};
+  iosify(root);
+}
 function renderCases(){
   newBtn();
+  const hm=hmode();
   const isMob=matchMedia('(max-width:768px)').matches;
   const mode=MONTH_DEMO?ui.mMode:MONTH_MODE;
   const order=new Map(S.cases.map((c,i)=>[c.id,i]));
@@ -908,7 +936,11 @@ function renderCases(){
   const months=[...new Set(base.map(caseMonth))].sort((a,b)=>a==='none'?-1:b==='none'?1:b.localeCompare(a));
   const mcount=k=>base.filter(c=>caseMonth(c)===k).length;
   const mf=ui.q?'':(mode==='A'||mode==='C'||mode==='D')?ui.cMonth:mode==='E'?(ui.eMonth||''):'';
-  const baseM=mf?base.filter(c=>caseMonth(c)===mf):base;
+  const holdPage=!ui.q&&((hm==='2'&&ui.hTab==='h')||(hm==='3'&&ui.cMonth==='hold'));
+  const holdL=base.filter(noShoot).sort((a,b)=>order.get(b.id)-order.get(a.id));
+  const baseM=holdPage?holdL:mf?base.filter(c=>caseMonth(c)===mf):base;
+  const pin4=hm==='4'&&!ui.q&&ui.cMonth===ym(TODAY)?holdL:[];
+  const sec1=hm==='1'&&!ui.q?holdL:[];
   const showOverview=mode==='E'&&!ui.eMonth;
   const view=isMob||mode==='B'||showOverview?'table':ui.view;
   const list=baseM.filter(c=>!ui.fStatus||c.status===ui.fStatus).sort(byNew);
@@ -916,11 +948,16 @@ function renderCases(){
   const sum=l=>l.reduce((s,c)=>s+(c.amount||0),0);
   let mctl='';
   if(mode==='A'&&ui.q)mctl=`<div class="mbar"><span class="muted small">搜尋所有月份・找到 ${baseM.length} 件</span></div>`;
-  else if(mode==='A')mctl=`<div class="mbar"><button class="btn" id="cmP">‹</button><span class="mlabel">${ui.cMonth?mLabel(ui.cMonth):'全部月份'}</span><button class="btn" id="cmN">›</button>
+  else if(mode==='A'&&holdPage&&hm==='2')mctl=`<div class="mbar"><span class="mlabel" style="text-align:left">On hold・未排拍攝</span><span class="muted small">${baseM.length} 件・${money(sum(baseM))}・填了拍攝日就會回到月份清單</span></div>`;
+  else if(mode==='A'&&holdPage)mctl=`<div class="mbar"><button class="btn" id="cmP">‹</button><span class="mlabel">On hold・未排拍攝</span><button class="btn" disabled>›</button>
     <span class="muted small">${baseM.length} 件・${money(sum(baseM))}</span></div>`;
+  else if(mode==='A')mctl=`<div class="mbar"><button class="btn" id="cmP">‹</button><span class="mlabel">${ui.cMonth?mLabel(ui.cMonth):'全部月份'}</span><button class="btn" id="cmN">›${hm==='3'&&ui.cMonth===latestMonth()&&holdL.length?`<span class="hdot">${holdL.length}</span>`:''}</button>
+    <span class="muted small">${baseM.length} 件・${money(sum(baseM))}</span></div>`;
+  if(hm==='2'&&!ui.q)mctl=`<div class="seg htabs"><button data-ht="m" class="${ui.hTab==='m'?'on':''}">依月份</button><button data-ht="h" class="${ui.hTab==='h'?'on':''}">On hold<span class="n">${holdL.length}</span></button></div>`+mctl;
+  if(hm==='5'&&!ui.q&&holdL.length)mctl=`<div class="holdban sm" id="hbCase"><span>${holdL.length} 件還沒排拍攝日（On hold）</span><button class="btn">一次補日期</button></div>`+mctl;
   if(mode==='C')mctl=`<div class="ctags mtags"><button data-cm="" class="${!ui.cMonth?'on':''}">全部月份<span class="n">${base.length}</span></button>${months.map(k=>`<button data-cm="${k}" class="${ui.cMonth===k?'on':''}">${mShort(k)}<span class="n">${mcount(k)}</span></button>`).join('')}</div>`;
   if(mode==='E'&&ui.eMonth)mctl=`<div class="mbar"><button class="btn" id="eBack">‹ 所有月份</button><b style="font-size:16px">${mLabel(ui.eMonth)}</b><span class="muted small">${baseM.length} 件・${money(sum(baseM))}</span></div>`;
-  M().innerHTML=`${MONTH_DEMO?`<div class="demo-sw"><span>Demo 版本</span><div class="seg">${MMODES.map(([k,n])=>`<button data-mm="${k}" class="${mode===k?'on':''}"><b>${k}</b> ${n}</button>`).join('')}</div></div>`:''}
+  M().innerHTML=`${HOLD_DEMO?`<div class="demo-sw"><span>Demo 版本</span><div class="seg">${HMODES.map(([k,n])=>`<button data-hm="${k}" class="${hm===k?'on':''}"><b>${k}</b> ${n}</button>`).join('')}</div></div>`:''}${MONTH_DEMO?`<div class="demo-sw"><span>Demo 版本</span><div class="seg">${MMODES.map(([k,n])=>`<button data-mm="${k}" class="${mode===k?'on':''}"><b>${k}</b> ${n}</button>`).join('')}</div></div>`:''}
   <div class="toolbar ctb">
     <div class="seg"><button data-sc="mine" class="${ui.scope==='mine'?'on':''}">我的</button><button data-sc="all" class="${ui.scope==='all'?'on':''}">全部</button></div>
     ${ui.scope==='all'?`<div class="seg">${[['','不限'],['00',NAMES['00']],['mimi',NAMES['mimi']],['mizu','Mizu']].map(([v,t])=>`<button data-fo="${v}" class="${ui.fOwner===v?'on':''}">${esc(t)}</button>`).join('')}</div>`:''}
@@ -945,8 +982,14 @@ function renderCases(){
     <div class="card tbl only-desk"><table>${TH}<tbody>${groups.map(g=>`<tr class="grp-row">${head(g,'td colspan="8"').replace(/<\/td colspan="8">/,'</td>')}</tr>${ui.mClosed[g.k]?'':caseRowsDesk(g.l)}`).join('')||'<tr><td colspan="8" class="empty">沒有符合的案件</td></tr>'}</tbody></table></div>`;
     cv.querySelectorAll('[data-mg]').forEach(h=>h.onclick=e=>{e.stopPropagation();const k=h.dataset.mg;ui.mClosed[k]=!ui.mClosed[k];renderCases()});
   }else if(view==='table'){
-    cv.innerHTML=`<div class="card only-mob">${caseRowsMob(list)||'<div class="empty">沒有符合的案件</div>'}</div>
-    <div class="card tbl only-desk"><table>${TH}<tbody>${caseRowsDesk(list)||'<tr><td colspan="8" class="empty">沒有符合的案件</td></tr>'}</tbody></table></div>`;
+    const hd=(l,txt,cls,tag)=>`<${tag} class="mgroup ${cls}" ${cls.includes('tog')?'data-hold="1"':''}>${cls.includes('tog')?'<span class="caret">▾</span>':''}<b>${txt}</b><span class="muted small">${l.length} 件・${money(sum(l))}</span></${tag}>`;
+    const pinM=pin4.length?`<div class="card pin4" style="margin-bottom:10px">${hd(pin4,'📌 待排拍攝（On hold）','pinh','div')}${caseRowsMob(pin4)}</div>`:'';
+    const pinD=pin4.length?`<tr class="grp-row">${hd(pin4,'📌 待排拍攝（On hold）','pinh','td colspan="8"').replace('</td colspan="8">','</td>')}</tr>${caseRowsDesk(pin4)}<tr class="grp-row"><td colspan="8" class="mgroup"><b>${mLabel(ui.cMonth)}</b></td></tr>`:'';
+    const s1M=sec1.length?`<div class="card" style="margin-top:12px">${hd(sec1,'On hold・未排拍攝',(ui.hOpen?'':'closed ')+'tog','div')}${ui.hOpen?caseRowsMob(sec1):''}</div>`:'';
+    const s1D=sec1.length?`<tr class="grp-row">${hd(sec1,'On hold・未排拍攝',(ui.hOpen?'':'closed ')+'tog','td colspan="8"').replace('</td colspan="8">','</td>')}</tr>${ui.hOpen?caseRowsDesk(sec1):''}`:'';
+    cv.innerHTML=`<div class="only-mob">${pinM}<div class="card">${caseRowsMob(list)||'<div class="empty">'+(holdPage?'沒有未排拍攝的案子 ✨':'這個月沒有拍攝')+'</div>'}</div>${s1M}</div>
+    <div class="card tbl only-desk"><table>${TH}<tbody>${pinD}${caseRowsDesk(list)||'<tr><td colspan="8" class="empty">這個月沒有拍攝</td></tr>'}${s1D}</tbody></table></div>`;
+    cv.querySelectorAll('[data-hold]').forEach(h=>h.onclick=e=>{e.stopPropagation();ui.hOpen=!ui.hOpen;renderCases()});
   }else{
     const cols=STATUSES;
     cv.innerHTML=`<div class="kanban">${cols.map(s=>{const cs=list.filter(c=>c.status===s);return `<div class="col" data-col="${s}"><div class="ch">${stag(s)}<span class="muted small">${cs.length}</span></div>
@@ -964,9 +1007,12 @@ function renderCases(){
   
   }
   bindOpen(cv);
+  M().querySelectorAll('[data-hm]').forEach(b=>b.onclick=()=>{ui.hMode=b.dataset.hm;ui.hTab='m';ui.cMonth=ym(TODAY);ui.fStatus='';renderCases()});
+  M().querySelectorAll('[data-ht]').forEach(b=>b.onclick=()=>{ui.hTab=b.dataset.ht;ui.fStatus='';renderCases()});
+  if(document.getElementById('hbCase'))document.getElementById('hbCase').onclick=()=>openBulkShoot();
   M().querySelectorAll('[data-mm]').forEach(b=>b.onclick=()=>{ui.mMode=b.dataset.mm;ui.fStatus='';ui.cMonth=ui.mMode==='A'?ym(TODAY):'';ui.eMonth='';renderCases()});
   M().querySelectorAll('[data-cm]').forEach(b=>b.onclick=()=>{ui.cMonth=b.dataset.cm;ui.fStatus='';renderCases()});
-  if(document.getElementById('cmP')){const step=n=>{ui.cMonth=shiftMonth(ui.cMonth&&ui.cMonth!=='none'?ui.cMonth:ym(TODAY),n);ui.fStatus='';renderCases()};document.getElementById('cmP').onclick=()=>step(-1);document.getElementById('cmN').onclick=()=>step(1)}
+  if(document.getElementById('cmP')){const step=n=>{if(ui.cMonth==='hold'){ui.cMonth=latestMonth()}else if(hm==='3'&&n>0&&ui.cMonth===latestMonth()&&holdL.length){ui.cMonth='hold'}else ui.cMonth=shiftMonth(ui.cMonth&&ui.cMonth!=='none'?ui.cMonth:ym(TODAY),n);ui.fStatus='';renderCases()};document.getElementById('cmP').onclick=()=>step(-1);if(document.getElementById('cmN'))document.getElementById('cmN').onclick=()=>step(1)}
   if(document.getElementById('cmSel'))document.getElementById('cmSel').onchange=e=>{ui.cMonth=e.target.value;ui.fStatus='';renderCases()};
   if(document.getElementById('eBack'))document.getElementById('eBack').onclick=()=>{ui.eMonth='';ui.fStatus='';renderCases()};
   M().querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{ui.scope=b.dataset.sc;renderCases()});
@@ -1077,7 +1123,8 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
-  {id:'2026-11-10-1515',date:'11/10',title:'案件清單可以切換月份，月份改看拍攝日',items:[['月份切換','案件頁上方用「‹ 2026 年 11 月 ›」一個月一個月看，搜尋時會找所有月份'],['拍攝月份','案件清單、財務、Mizu 月結、本月實拿、收入趨勢圖，都改成依「拍攝日」算月份']]},
+  {id:'2026-11-10-1535',date:'11/10',title:'沒排拍攝日的案子回來了',items:[['On hold・未排拍攝','每個月的案件清單最下面都有這一區，還沒填拍攝日的案子都在這裡，點標題可以收合'],['自動歸月','幫案子填上拍攝日，它就會自動移到那個月']]},
+{id:'2026-11-10-1515',date:'11/10',title:'案件清單可以切換月份，月份改看拍攝日',items:[['月份切換','案件頁上方用「‹ 2026 年 11 月 ›」一個月一個月看，搜尋時會找所有月份'],['拍攝月份','案件清單、財務、Mizu 月結、本月實拿、收入趨勢圖，都改成依「拍攝日」算月份']]},
   {id:'2026-11-10-0915',date:'11/10',title:'新增公告',items:[['公告','右上角的 🔔 會列出每次更新的內容，有新公告會出現紅點']]},
   {id:'2026-11-10-0906',date:'11/10',title:'接案更順手的 5 個小工具',items:[
     ['撞期提醒','填拍攝日、上線日時，那天已經有拍攝會跳橘色提示；首頁本週時程也會標「撞期」'],
@@ -1415,7 +1462,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 15:16</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 15:29</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
