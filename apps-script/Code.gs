@@ -162,8 +162,8 @@ function casesFromSheet_() {
   const c = table_('案件');
   const cases = c.rows.map(r => {
     const g = k => r[c.h.indexOf(k)];
-    const ms = {};
-    MS.forEach(([k, l]) => { ms[k] = { date: d2s_(g(l + '日')), done: bool_(g(l + '完成')) }; });
+    const ms = {}, tt = parseTimes_(c.h.indexOf('時間') >= 0 ? g('時間') : '');
+    MS.forEach(([k, l]) => { ms[k] = { date: d2s_(g(l + '日')), time: tt[k] || '', done: bool_(g(l + '完成')) }; });
     const owner = key_(g('歸屬'));
     return {
       id: String(g('id')), title: String(g('案名')), brand: String(g('品牌') || ''), owner: owner,
@@ -179,13 +179,38 @@ function casesFromSheet_() {
   return cases;
 }
 
+// 「時間」欄格式：拍攝 14:00、腳本 10:30（沒寫的就是整天）
+function parseTimes_(v) {
+  const o = {};
+  String(v || '').split(/[、,，]/).forEach(p => {
+    const m = p.trim().match(/^(\S+)\s+(\d{1,2}):(\d{2})$/);
+    if (!m) return;
+    const k = (MS.find(x => x[1] === m[1] || x[1] === m[1].replace('校稿', 'AC')) || [])[0];
+    if (k) o[k] = ('0' + m[2]).slice(-2) + ':' + m[3];
+  });
+  return o;
+}
+function timesStr_(c) {
+  return MS.filter(([k]) => c.ms[k] && c.ms[k].date && c.ms[k].time).map(([k, l]) => l + ' ' + c.ms[k].time).join('、');
+}
+function writeTimes_(c) {
+  ensureCol_('案件', '時間');
+  const s = sh_('案件');
+  const h = s.getRange(1, 1, 1, s.getLastColumn()).getValues()[0].map(String);
+  const col = h.indexOf('時間') + 1;
+  const ids = s.getRange(1, 1, s.getLastRow(), 1).getValues().map(r => String(r[0]));
+  const i = ids.indexOf(String(c.id));
+  if (i >= 0) s.getRange(i + 1, col).setNumberFormat('@').setValue(timesStr_(c));
+}
+
 /* ---------- Google 日曆同步 ---------- */
+function calTime_(d, t) { return Utilities.parseDate(d + ' ' + t, TZ, 'yyyy-MM-dd HH:mm'); }
 function calDate_(s) { return Utilities.parseDate(s + ' 12:00', Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm'); }
 function syncCtx_() {
   let s = sh_('日曆同步');
   if (!s) { s = SpreadsheetApp.getActive().insertSheet('日曆同步'); s.appendRow(['key', '日曆', '事件id', '日期', '標題']); s.hideSheet(); }
   const m = {};
-  s.getDataRange().getValues().slice(1).forEach((r, i) => { if (r[0]) m[r[0]] = { cal: String(r[1]), id: String(r[2]), date: d2s_(r[3]), title: String(r[4] || ''), row: i + 2 }; });
+  s.getDataRange().getValues().slice(1).forEach((r, i) => { if (r[0]) m[r[0]] = { cal: String(r[1]), id: String(r[2]), date: (r[3] instanceof Date) ? d2s_(r[3]) : String(r[3] || ''), title: String(r[4] || ''), row: i + 2 }; });
   return { s: s, m: m, cals: {} };
 }
 function cal_(ctx, id) { return ctx.cals[id] || (ctx.cals[id] = CalendarApp.getCalendarById(id)); }
@@ -200,10 +225,11 @@ function syncCase_(c, ctx) {
   ctx = ctx || syncCtx_();
   const oldest = Utilities.formatDate(new Date(Date.now() - 30 * 864e5), TZ, 'yyyy-MM-dd');
   MS.forEach(([k]) => {
-    const key = c.id + '_' + k, rec = ctx.m[key], date = c.ms[k].date;
+    const key = c.id + '_' + k, rec = ctx.m[key], date = c.ms[k].date, time = date ? (c.ms[k].time || '') : '';
+    const dk = date + (time ? ' ' + time : '');
     const calId = CALS[c.owner], title = CAL_WORD[k] + '｜' + c.title;
     if (!date && !(rec && rec.id)) return;
-    if (date && rec && rec.id && rec.date === date && rec.cal === calId && rec.title === title) return; // 沒變就跳過
+    if (date && rec && rec.id && rec.date === dk && rec.cal === calId && rec.title === title) return; // 沒變就跳過
     let ev = null;
     if (rec && rec.id) { try { ev = cal_(ctx, rec.cal).getEventById(rec.id); } catch (e) { ev = null; } }
     if (!date) { if (ev) ev.deleteEvent(); if (rec && rec.id) setRec_(ctx, key, '', '', ''); return; }
@@ -212,13 +238,19 @@ function syncCase_(c, ctx) {
     const cal = cal_(ctx, calId);
     if (!ev) {
       // 日曆上已經有同名事件（你們手動建的）就直接沿用，不重複建
-      ev = cal.getEventsForDay(calDate_(date)).filter(e => e.getTitle() === title)[0]
-        || cal.createAllDayEvent(title, calDate_(date), { description: '由 MIZU 接案管理同步' });
-      setRec_(ctx, key, calId, ev.getId(), date, title);
+      ev = cal.getEventsForDay(calDate_(date)).filter(e => e.getTitle() === title)[0] || newEv_(cal, title, date, time);
+      if (time && ev.isAllDayEvent()) { ev.deleteEvent(); ev = newEv_(cal, title, date, time); }
+      else if (time) setEvTime_(ev, date, time);
+      setRec_(ctx, key, calId, ev.getId(), dk, title);
       return;
     }
     if (ev.getTitle() !== title) ev.setTitle(title);
-    if (rec.date !== date) {
+    const hadTime = (rec.date || '').length > 10;
+    if (time) {
+      if (ev.isAllDayEvent()) { ev.deleteEvent(); ev = newEv_(cal, title, date, time); }
+      else if (rec.date !== dk) setEvTime_(ev, date, time);
+    } else if (hadTime && !ev.isAllDayEvent()) { ev.deleteEvent(); ev = newEv_(cal, title, date, ''); }
+    else if (rec.date !== dk) {
       if (ev.isAllDayEvent()) ev.setAllDayDate(calDate_(date));
       else {
         const st = ev.getStartTime(), dur = ev.getEndTime() - st;
@@ -226,8 +258,20 @@ function syncCase_(c, ctx) {
         ev.setTime(ns, new Date(ns.getTime() + dur));
       }
     }
-    setRec_(ctx, key, calId, ev.getId(), date, title);
+    setRec_(ctx, key, calId, ev.getId(), dk, title);
   });
+}
+// 沒選時間 → 整天；有選時間 → 從那個時間開始 1 小時
+function newEv_(cal, title, date, time) {
+  const o = { description: '由 MIZU 接案管理同步' };
+  if (!time) return cal.createAllDayEvent(title, calDate_(date), o);
+  const st = calTime_(date, time);
+  return cal.createEvent(title, st, new Date(st.getTime() + 36e5), o);
+}
+function setEvTime_(ev, date, time) {
+  const st = calTime_(date, time);
+  const dur = ev.isAllDayEvent() ? 36e5 : (ev.getEndTime() - ev.getStartTime()) || 36e5;
+  ev.setTime(st, new Date(st.getTime() + dur));
 }
 function unsyncCase_(id) {
   const ctx = syncCtx_();
@@ -288,6 +332,7 @@ function apiSaveCase(token, c) {
     MS.forEach(([k]) => { row.push(s2d_(c.ms[k].date)); row.push(!!c.ms[k].done); });
     row.push(c.contact || '', c.link || '', c.note || '', TO_LABEL[me], now_());
     upsert_('案件', c.id, row);
+    writeTimes_(c);
     try { syncCase_(c); } catch (e) { console.log('calendar', e); }
     return true;
   });
@@ -431,7 +476,7 @@ function buildDigest_(who, cases) {
     MS.forEach(([k]) => {
       const m = c.ms[k];
       if (!m.date || m.done || responsible_(c, k).indexOf(who) < 0) return;
-      const line = '・' + TASK_WORD[k] + '｜' + c.title + (k === 'shoot' && c.owner === 'mizu' ? '（一起）' : '');
+      const line = '・' + (m.time ? m.time + ' ' : '') + TASK_WORD[k] + '｜' + c.title + (k === 'shoot' && c.owner === 'mizu' ? '（一起）' : '');
       if (m.date === tmr) tomorrow.push(line);
       else if (m.date <= today) overdue.push(line + '（' + m.date.slice(5).replace('-', '/') + '）');
     });
