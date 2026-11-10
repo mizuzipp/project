@@ -311,6 +311,15 @@ details summary::-webkit-details-marker{display:none}
 .dots{display:none}
 .newbtn .lbl{display:inline}
 .fab{display:none}
+.newtag{display:inline-block;font-size:10px;font-weight:600;color:#fff;background:#FF4D4F;border-radius:4px;padding:0 4px;margin-left:6px;vertical-align:2px;line-height:16px}
+.qref{font-size:12.5px;color:var(--text2);background:var(--primary-bg);border-radius:6px;padding:6px 10px;margin-top:8px}
+.ms-warn{flex-basis:100%;font-size:12px;color:#D46B08;background:#FFF7E6;border-radius:6px;padding:4px 8px}
+.ms-warn:empty{display:none}
+.clash{font-size:11px;color:#D46B08;border:1px solid #FFD591;background:#FFF7E6;border-radius:4px;padding:0 5px;margin-left:6px}
+.mini-btn{border:1px solid var(--border);background:#fff;border-radius:6px;height:26px;padding:0 10px;font-size:12px;color:var(--text2);white-space:nowrap}
+.mini-btn:hover{color:var(--primary);border-color:var(--primary)}
+.ios-dup{display:block!important;width:100%;height:44px;margin-top:20px;border:none;border-radius:10px;background:#fff;color:var(--primary);font-size:17px}
+.ios-dup+.ios-del{margin-top:10px}
 .badge{position:absolute;top:4px;right:10px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#FF3B30;color:#fff;font-size:11px;font-weight:600;line-height:18px;text-align:center}
 .menu a,.tabbar a{position:relative}
 .chat{display:flex;flex-direction:column;height:calc(100vh - 64px - 48px);background:#fff;border-radius:8px;border:1px solid var(--split);overflow:hidden}
@@ -538,6 +547,7 @@ const NAV=[['home','首頁','<path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H
   ['finance','財務','<path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'],
   ['expenses','支出','<path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/>']];
 const CHAT=false;
+const NEWF=true;
 if(CHAT)NAV.splice(4,0,['chat','聊天','<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/>']);
 const PAGES={chat:'聊天',home:'首頁',cases:'案件',calendar:'日曆',finance:'財務',expenses:'支出',profile:'個人設定'};
 const ico=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
@@ -807,10 +817,13 @@ function renderHome(){
       <div class="sec"><span class="dot" style="background:var(--warning)"></span>7 天內 ${soon.length}</div>${soon.map(taskItem).join('')||'<div class="empty">這週沒有排程</div>'}
       <div class="sec" id="tl" style="cursor:pointer"><span class="dot" style="background:var(--text4)"></span>之後 ${later.length}　<span style="color:var(--primary)">${ui.laterOpen?'收起':'展開'}</span></div>${ui.laterOpen?later.map(taskItem).join(''):''}
     </div>
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+    ${false?(()=>{const w=waitingOnOther();return `<div class="card"><div class="card-h"><h3>等${esc(NAMES[other(me)])}處理<span class="newtag">NEW</span></h3><span class="muted small">Mizu 案・14 天內</span></div>
+      ${w.map(x=>{const dd=diffDays(TODAY,x.date);return `<div class="item" data-open="${x.c.id}"><div class="main"><div class="ttl">${esc(taskLabel(x.c,x.k))}・${esc(x.c.title)}</div><div class="meta">${otag(other(me))}</div></div><div class="rt" style="${dd<0?'color:var(--error)':''}">${dd<0?'逾期 '+(-dd)+' 天':dd===0?'今天':md(x.date)}</div></div>`}).join('')||'<div class="empty">'+esc(NAMES[other(me)])+'那邊目前沒有卡住的事 👍</div>'}</div>`})():''}
     <div class="card agenda"><div class="card-h"><h3>本週時程</h3><a href="#calendar" id="toCal" class="small">月曆 →</a></div>
       ${days.map(d=>{const e=evs(d),dt=new Date(d+'T00:00:00');return `<div class="day ${d===TODAY?'today':''}"><div class="dh"><b>${dt.getMonth()+1}/${dt.getDate()}</b>週${WK[dt.getDay()]}${d===TODAY?'・今天':''}</div>
-        ${e.map(x=>`<div class="ev ${x.done?'done':''}" data-open="${x.c.id}"><span class="dot" style="background:${ocol(x.c.owner)}"></span>${esc(MSL[x.k])}・${esc(x.c.title)}</div>`).join('')||'<div class="muted small">—</div>'}</div>`}).join('')}
-    </div>
+        ${e.map(x=>`<div class="ev ${x.done?'done':''}" data-open="${x.c.id}"><span class="dot" style="background:${ocol(x.c.owner)}"></span>${esc(MSL[x.k])}・${esc(x.c.title)}${NEWF&&x.k==='shoot'&&e.filter(y=>y.k==='shoot').length>1?'<span class="clash">撞期</span>':''}</div>`).join('')||'<div class="muted small">—</div>'}</div>`}).join('')}
+    </div></div>
   </div>`;
   M().querySelectorAll('.cb[data-cid]').forEach(b=>b.onclick=async e=>{
     e.stopPropagation();b.classList.add('on');
@@ -876,9 +889,9 @@ function renderCases(){
   M().querySelectorAll('[data-fo]').forEach(b=>b.onclick=()=>{ui.fOwner=b.dataset.fo;renderCases()});
 }
 
-function openCase(id){
+function openCase(id,preset){
   const isNew=!id;
-  const c=isNew?{id:uid(),title:'',brand:'',owner:me,lead:me,specs:[],status:'確定合作',amount:0,split:'half',fixed:{'00':0,'mimi':0},ms:Object.fromEntries(MS.map(([k])=>[k,{date:'',done:false}])),contact:'',link:'',note:''}
+  const c=preset?preset:isNew?{id:uid(),title:'',brand:'',owner:me,lead:me,specs:[],status:'確定合作',amount:0,split:'half',fixed:{'00':0,'mimi':0},ms:Object.fromEntries(MS.map(([k])=>[k,{date:'',done:false}])),contact:'',link:'',note:''}
     :JSON.parse(JSON.stringify(S.cases.find(x=>x.id===id)));
   const ro=!isNew&&!canEdit(c),dis=ro?'disabled':'';
   const root=document.getElementById('modalRoot');
@@ -894,14 +907,14 @@ function openCase(id){
       <div class="fi"><label>分帳方式</label><select class="inp" id="f_split" ${dis}><option value="half" ${c.split==='half'?'selected':''}>對半分</option><option value="fixed" ${c.split==='fixed'?'selected':''}>固定金額</option></select></div>
       ${c.split==='fixed'?`<div class="fi"><label>${esc(NAMES['00'])} 拿</label><input class="inp" type="number" id="f_fx00" value="${c.fixed['00']||0}" ${dis}></div><div class="fi"><label>${esc(NAMES['mimi'])} 拿</label><input class="inp" type="number" id="f_fxmimi" value="${c.fixed['mimi']||0}" ${dis}></div>`:''}`:''}
       <div class="fi"><label>實拿金額</label><input class="inp" type="number" id="f_amount" value="${c.amount||''}" placeholder="NT$" ${dis}></div>
-      <div class="fi full"><label>規格</label><div class="chips">${SPECS.map(s=>`<label class="${c.specs.includes(s)?'on':''}"><input type="checkbox" value="${s}" ${c.specs.includes(s)?'checked':''} ${dis}>${s}</label>`).join('')}</div></div>
+      <div class="fi full"><label>規格</label><div class="chips">${SPECS.map(s=>`<label class="${c.specs.includes(s)?'on':''}"><input type="checkbox" value="${s}" ${c.specs.includes(s)?'checked':''} ${dis}>${s}</label>`).join('')}</div>${NEWF&&!ro?`<div class="qref" id="qref">${quoteRef(c.specs,c.id)}</div>`:''}</div>
       <div class="fi full"><label>時程</label><div class="ms">${MS.map(([k,l])=>`<div class="msr"><div class="ms-l"><span class="ms-n">${l}</span>${responsible(c,k).map(otag).join('')}</div>
-        <div class="ms-r"><input class="inp" type="date" data-msd="${k}" value="${c.ms[k].date}" ${dis}><label class="chk" title="完成"><input type="checkbox" data-msk="${k}" ${c.ms[k].done?'checked':''} ${dis}><span>完成</span></label></div></div>`).join('')}</div>
+        <div class="ms-r"><input class="inp" type="date" data-msd="${k}" value="${c.ms[k].date}" ${dis}><label class="chk" title="完成"><input type="checkbox" data-msk="${k}" ${c.ms[k].done?'checked':''} ${dis}><span>完成</span></label></div>${NEWF?'<div class="ms-warn"></div>':''}</div>`).join('')}</div>
         <div class="hint">隸屬月份看上線日${c.ms.publish.date?'：'+ymLabel(ym(c.ms.publish.date)):''}。勾「完成」會自動跳到下一個狀態。</div></div>
       <div class="fi full"><label>相關連結</label><input class="inp" id="f_link" value="${esc(c.link)}" placeholder="brief、雲端資料夾" ${dis}></div>
       <div class="fi full"><label>備註</label><textarea class="inp" id="f_note" rows="2" ${dis}>${esc(c.note)}</textarea></div>
     </div></div>
-    <div class="mf">${!isNew&&!ro?'<button class="btn danger" id="cdel">刪除</button>':''}<span style="flex:1"></span>${c.updatedBy?`<span class="muted small" style="margin-right:8px">最後修改：${esc(NAMES[c.updatedBy])}</span>`:''}
+    <div class="mf">${!isNew&&!ro?'<button class="btn danger" id="cdel">刪除</button>':''}${NEWF&&!isNew?'<button class="btn dup" id="cdup">複製成新案件</button>':''}<span style="flex:1"></span>${c.updatedBy?`<span class="muted small" style="margin-right:8px">最後修改：${esc(NAMES[c.updatedBy])}</span>`:''}
       <button class="btn" id="cc">${ro?'關閉':'取消'}</button>${ro?'':'<button class="btn primary" id="cs">儲存</button>'}</div>
     </div></div>`;
     const $=i=>document.getElementById(i);
@@ -909,7 +922,9 @@ function openCase(id){
     $('mk').onmousedown=e=>{if(e.target.id==='mk')close()};
     iosify(root);
     if(ro)return;
-    root.querySelectorAll('.chips label').forEach(l=>l.querySelector('input').onchange=e=>l.classList.toggle('on',e.target.checked));
+    root.querySelectorAll('.chips label').forEach(l=>l.querySelector('input').onchange=e=>{l.classList.toggle('on',e.target.checked);if($('qref'))$('qref').innerHTML=quoteRef([...root.querySelectorAll('.chips input:checked')].map(x=>x.value),c.id)});
+    if(NEWF)root.querySelectorAll('[data-msd]').forEach(inp=>{const k=inp.dataset.msd,w=inp.closest('.msr').querySelector('.ms-warn');const upd=()=>{const cl=clashes(c,k,inp.value);w.textContent=cl.length?`⚠️ 這天也有${MSL[k]}：${cl.map(x=>x.title).join('、')}`:''};inp.addEventListener('change',upd);upd()});
+    if($('cdup'))$('cdup').onclick=()=>{const d=JSON.parse(JSON.stringify(c));d.id=uid();d.title=c.title+'（複製）';d.status='確定合作';d.updatedBy='';MS.forEach(([k])=>d.ms[k]={date:'',done:false});closeSheet(root);setTimeout(()=>openCase(null,d),280)};
     ['f_owner','f_split','f_lead'].forEach(i=>{if($(i))$(i).onchange=()=>{collect();draw()}});
     $('cs').onclick=save;
     if($('cdel'))$('cdel').onclick=()=>confirmBox(`確定要刪除「${c.title}」嗎？`,async()=>{S.cases=S.cases.filter(x=>x.id!==c.id);close();toast('已刪除');route();await Data.run('apiDeleteCase',c.id)});
@@ -987,6 +1002,8 @@ function iosify(root){
   const l=document.createElement('button');l.type='button';l.className='nav-btn nav-l only-mob';l.textContent=save?'取消':'完成';
   l.onclick=()=>{if(cancel)cancel.click();else closeSheet(root)};if(!(save&&save===cancel))mh.appendChild(l);
   if(save){const r=document.createElement('button');r.type='button';r.className='nav-btn nav-r only-mob';r.textContent=save.textContent.trim()==='儲存'&&m.dataset.new?'新增':save.textContent.trim();r.onclick=()=>save.click();mh.appendChild(r)}
+  const dup=m.querySelector('.mf .btn.dup');
+  if(dup){const d=document.createElement('button');d.type='button';d.className='ios-dup only-mob';d.textContent=dup.textContent;d.onclick=()=>dup.click();m.querySelector('.mb').appendChild(d)}
   if(del){const d=document.createElement('button');d.type='button';d.className='ios-del only-mob';d.textContent=m.dataset.delLabel||'刪除';d.onclick=()=>del.click();m.querySelector('.mb').appendChild(d)}
 }
 function confirmBox(msg,ok){
@@ -1087,6 +1104,30 @@ function openQuickEdit(){
   };
   draw();
 }
+function copyText(text,msg){
+  const ok=()=>toast(msg||'已複製');
+  try{navigator.clipboard.writeText(text).then(ok,()=>fb())}catch(e){fb()}
+  function fb(){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');ok()}catch(x){toast('複製失敗',true)}ta.remove()}
+}
+function quoteRef(specs,exclude){
+  if(!specs.length)return '';
+  const key=s=>[...s].sort().join('、');
+  let pool=S.cases.filter(c=>c.id!==exclude&&c.amount>0&&key(c.specs)===key(specs)),label='「'+specs.join('、')+'」';
+  if(pool.length<2){pool=S.cases.filter(c=>c.id!==exclude&&c.amount>0&&specs.every(s=>c.specs.includes(s)));label='含'+label}
+  if(!pool.length)return '還沒有類似規格的案子可以參考';
+  const a=pool.map(c=>c.amount),avg=a.reduce((x,y)=>x+y,0)/a.length;
+  return `報價參考：過去 ${pool.length} 件${label}平均實拿 <b>${money(Math.round(avg/100)*100)}</b>（${money(Math.min(...a))}～${money(Math.max(...a))}）`;
+}
+function clashes(c,k,date){
+  if(!date||(k!=='shoot'&&k!=='publish'))return [];
+  return S.cases.filter(x=>x.id!==c.id&&x.status!=='On hold'&&x.ms[k].date===date&&responsible(x,k).some(u=>responsible(c,k).includes(u)));
+}
+function waitingOnOther(){
+  const o=other(me),lim=addDays(TODAY,14),out=[];
+  S.cases.forEach(c=>{if(c.owner!=='mizu'||c.status==='On hold'||c.status==='已結案')return;
+    MS.forEach(([k])=>{const m=c.ms[k],r=responsible(c,k);if(m.date&&!m.done&&r.includes(o)&&!r.includes(me)&&m.date<=lim)out.push({c,k,date:m.date})})});
+  return out.sort((a,b)=>a.date.localeCompare(b.date));
+}
 function shortMoney(v){return v>=10000?(Math.round(v/1000)/10)+' 萬':v.toLocaleString('en-US')}
 function trendCard(y,curM){
   const ms=[...Array(12)].map((_,i)=>`${y}-${pad(i+1)}`);
@@ -1134,7 +1175,7 @@ function renderFinance(){
     <div style="flex:1;min-width:240px"><div class="lbl">${ymLabel(m)} Mizu 月結</div>
       <div class="big">${Math.abs(st.net)<1?'不用轉帳':`${esc(NAMES[from])} 要轉 ${money(Math.abs(st.net))} 給 ${esc(NAMES[to])}`}</div>
       <div class="sub">Mizu 案 ${st.mc.length} 件共 ${money(st.total)}${st.exTotal?`・代墊 ${money(st.exTotal)} 已依分攤方式抵掉`:''}</div></div>
-    <div style="display:flex;align-items:center;gap:10px"><button class="switch ${sd?.done?'on':''}" id="sdone"></button><span>${sd?.done?`已轉帳<span class="muted small">（${esc(NAMES[sd.by]||'')}）</span>`:'還沒轉'}</span></div>
+    ${NEWF?'<button class="btn" id="copySet">複製月結明細</button>':''}<div style="display:flex;align-items:center;gap:10px"><button class="switch ${sd?.done?'on':''}" id="sdone"></button><span>${sd?.done?`已轉帳<span class="muted small">（${esc(NAMES[sd.by]||'')}）</span>`:'還沒轉'}</span></div>
   </div>
   <details><summary>看 Mizu 案件明細</summary><div class="tbl"><table><thead><tr><th>案名</th><th>上線</th><th class="r">金額</th><th>收款人</th><th class="r">${esc(NAMES['00'])}</th><th class="r">${esc(NAMES['mimi'])}</th></tr></thead><tbody>
     ${st.mc.map(c=>{const sh=shares(c);return `<tr data-open="${c.id}"><td>${esc(c.title)}</td><td class="num">${md(c.ms.publish.date)}</td><td class="r num">${money(c.amount)}</td><td>${otag(c.lead)}</td><td class="r num">${money(sh['00'])}</td><td class="r num">${money(sh['mimi'])}</td></tr>`}).join('')||'<tr><td colspan="6" class="empty">這個月沒有 Mizu 案</td></tr>'}
@@ -1149,11 +1190,19 @@ function renderFinance(){
     ${pend.map(c=>{const pd=c.ms.payment.date,dd=pd?diffDays(TODAY,pd):null;
       const when=dd==null?'<span class="muted">未填匯款日</span>':dd<0?`<span style="color:var(--error)">逾期 ${-dd} 天</span>`:dd===0?'<span style="color:#D48806">今天</span>':dd<=7?`<span style="color:#D48806">${md(pd)}</span>`:md(pd);
       return `<div class="item" data-open="${c.id}"><div class="main"><div class="ttl">${esc(c.title)}</div><div class="meta">${otag(c.owner)}<span>追款：${esc(NAMES[collector(c)])}</span></div></div>
-    <div class="rt"><div class="num" style="color:var(--text);font-weight:500">${money(c.amount)}</div><div class="small">${when}</div></div></div>`}).join('')||'<div class="empty">全部都收到了 🎉</div>'}
+    ${NEWF?`<button class="mini-btn" data-dun="${c.id}">催款訊息</button>`:''}<div class="rt"><div class="num" style="color:var(--text);font-weight:500">${money(c.amount)}</div><div class="small">${when}</div></div></div>`}).join('')||'<div class="empty">全部都收到了 🎉</div>'}
   </div>`;
   bindOpen(M());
   bindMonth('fm',()=>ui.finM,v=>ui.finM=v);
   if(document.getElementById('toExp'))document.getElementById('toExp').onclick=()=>go('expenses');
+  if(document.getElementById('copySet'))document.getElementById('copySet').onclick=()=>{
+    const L=[`【MIZU ${+m.slice(5)} 月月結】`,Math.abs(st.net)<1?'這個月不用轉帳 🤝':`${NAMES[from]} → ${NAMES[to]} 轉 ${money(Math.abs(st.net))}`,'',`Mizu 案 ${st.mc.length} 件，共 ${money(st.total)}`];
+    st.mc.forEach(c=>{const sh=shares(c);L.push(`・${c.title} ${money(c.amount)}｜收款 ${NAMES[c.lead]}｜${NAMES['00']} ${money(sh['00'])}／${NAMES['mimi']} ${money(sh['mimi'])}`)});
+    if(st.ex.length){L.push('','代墊');st.ex.forEach(e=>L.push(`・${md(e.date)} ${e.note||e.cat} ${money(e.amount)}｜${NAMES[e.payer]} 先付・${splitLabel(e)}`))}
+    copyText(L.join('\n'),'已複製，可以直接貼到 LINE');
+  };
+  M().querySelectorAll('[data-dun]').forEach(b=>b.onclick=e=>{e.stopPropagation();const c=S.cases.find(x=>x.id===b.dataset.dun);
+    copyText(`您好～想跟您確認一下「${c.title}」的款項（${money(c.amount)}），內容已於 ${c.ms.publish.date?md(c.ms.publish.date):'先前'} 上線，再麻煩協助確認匯款進度，謝謝您 🙏`,'催款訊息已複製')});
   bindTrend(m.slice(0,4));
   document.getElementById('sdone').onclick=async()=>{const on=!(sd&&sd.done);S.settlements[m]=on?{done:true,by:me,at:TODAY}:null;toast(on?'已標記轉帳':'已取消標記');renderFinance();await Data.run('apiSetSettlement',m,on)};
 }
@@ -1248,7 +1297,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 08:53</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/10 09:06</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
