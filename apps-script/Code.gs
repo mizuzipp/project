@@ -270,8 +270,11 @@ function syncCase_(c, ctx) {
     const cal = cal_(ctx, calId);
     if (!ev) {
       // 日曆上已經有同名事件（你們手動建的）就直接沿用，不重複建
-      ev = cal.getEventsForDay(calDate_(date)).filter(e => e.getTitle() === title)[0] || newEv_(cal, title, date, time);
-      if (time && ev.isAllDayEvent()) { ev.deleteEvent(); ev = newEv_(cal, title, date, time); }
+      const same = cal.getEventsForDay(calDate_(date));
+      ev = same.filter(e => e.getTitle() === title)[0] || same.filter(e => looksSame_(e.getTitle(), title))[0];
+      if (ev) { if (ev.getTitle() !== title) ev.setTitle(title); if (k === 'payment') ev.setColor(CalendarApp.EventColor.RED); }
+      else ev = newEv_(cal, title, date, time, k);
+      if (time && ev.isAllDayEvent()) { ev.deleteEvent(); ev = newEv_(cal, title, date, time, k); }
       else if (time) setEvTime_(ev, date, time);
       setRec_(ctx, key, calId, ev.getId(), dk, title);
       return;
@@ -279,9 +282,9 @@ function syncCase_(c, ctx) {
     if (ev.getTitle() !== title) ev.setTitle(title);
     const hadTime = (rec.date || '').length > 10;
     if (time) {
-      if (ev.isAllDayEvent()) { ev.deleteEvent(); ev = newEv_(cal, title, date, time); }
+      if (ev.isAllDayEvent()) { ev.deleteEvent(); ev = newEv_(cal, title, date, time, k); }
       else if (rec.date !== dk) setEvTime_(ev, date, time);
-    } else if (hadTime && !ev.isAllDayEvent()) { ev.deleteEvent(); ev = newEv_(cal, title, date, ''); }
+    } else if (hadTime && !ev.isAllDayEvent()) { ev.deleteEvent(); ev = newEv_(cal, title, date, '', k); }
     else if (rec.date !== dk) {
       if (ev.isAllDayEvent()) ev.setAllDayDate(calDate_(date));
       else {
@@ -294,11 +297,21 @@ function syncCase_(c, ctx) {
   });
 }
 // 沒選時間 → 整天；有選時間 → 從那個時間開始 1 小時
-function newEv_(cal, title, date, time) {
+function newEv_(cal, title, date, time, k) {
   const o = { description: '由 MIZU 接案管理同步' };
-  if (!time) return cal.createAllDayEvent(title, calDate_(date), o);
-  const st = calTime_(date, time);
-  return cal.createEvent(title, st, new Date(st.getTime() + 36e5), o);
+  let ev;
+  if (!time) ev = cal.createAllDayEvent(title, calDate_(date), o);
+  else { const st = calTime_(date, time); ev = cal.createEvent(title, st, new Date(st.getTime() + 36e5), o); }
+  if (k === 'payment') ev.setColor(CalendarApp.EventColor.RED);   // 匯款一律紅色
+  return ev;
+}
+// 自己手動建的行程（例如「AC｜統一布丁翻轉」）跟網頁的「AC｜統一布丁翻轉雪糕」視為同一個，不重複建
+function looksSame_(a, b) {
+  const n = s => String(s).replace(/[\s　()（）「」『』《》]/g, '').toLowerCase();
+  const [pa, ...ra] = String(a).trim().split('｜'), [pb, ...rb] = String(b).trim().split('｜');
+  if (!ra.length || pa.trim() !== pb.trim()) return false;
+  const x = n(ra.join('')), y = n(rb.join(''));
+  return x.length >= 2 && y.length >= 2 && (x.indexOf(y) >= 0 || y.indexOf(x) >= 0);
 }
 function setEvTime_(ev, date, time) {
   const st = calTime_(date, time);
