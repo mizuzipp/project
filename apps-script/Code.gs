@@ -57,7 +57,7 @@ function doPost(e) {
 }
 function api_(b) {
   const fns = { apiPublic, apiLogin, apiLogout, apiLoad, apiSaveCase, apiDeleteCase, apiSaveExpense, apiDeleteExpense,
-    apiSetSettlement, apiSaveUser, apiSetPassword, apiLineCode, apiCalendar };
+    apiSetSettlement, apiSaveUser, apiSetPassword, apiLineCode, apiCalendar, apiChat, apiChatSend };
   let res;
   if (!fns[b.fn]) res = { ok: false, error: '不支援的操作' };
   else {
@@ -163,6 +163,8 @@ function casesFromSheet_() {
   const cases = c.rows.map(r => {
     const g = k => r[c.h.indexOf(k)];
     const ms = {}, tt = parseTimes_(c.h.indexOf('時間') >= 0 ? g('時間') : '');
+    const mv = c.h.indexOf('隸屬月份') >= 0 ? g('隸屬月份') : '';
+    const month = mv instanceof Date ? Utilities.formatDate(mv, TZ, 'yyyy-MM') : (String(mv || '').match(/^(\d{4})[-\/.](\d{1,2})/) ? String(mv).replace(/^(\d{4})[-\/.](\d{1,2}).*$/, (_, y, m) => y + '-' + ('0' + m).slice(-2)) : '');
     MS.forEach(([k, l]) => { ms[k] = { date: d2s_(g(l + '日')), time: tt[k] || '', done: bool_(g(l + '完成')) }; });
     const owner = key_(g('歸屬'));
     return {
@@ -172,7 +174,7 @@ function casesFromSheet_() {
       status: String(g('狀態') || '確定合作'), amount: Number(g('實拿金額')) || 0,
       split: g('分帳方式') === '固定金額' ? 'fixed' : 'half',
       fixed: { '00': Number(g('00固定金額')) || 0, 'mimi': Number(g('米米固定金額')) || 0 },
-      ms: ms, contact: String(g('廠商聯絡人') || ''), link: String(g('相關連結') || ''), note: String(g('備註') || ''),
+      month: month, ms: ms, contact: String(g('廠商聯絡人') || ''), link: String(g('相關連結') || ''), note: String(g('備註') || ''),
       updatedBy: TO_KEY[String(g('最後修改'))] || ''
     };
   });
@@ -193,14 +195,44 @@ function parseTimes_(v) {
 function timesStr_(c) {
   return MS.filter(([k]) => c.ms[k] && c.ms[k].date && c.ms[k].time).map(([k, l]) => l + ' ' + c.ms[k].time).join('、');
 }
+// 「時間」「隸屬月份」放在最後面的欄位（隸屬月份空白 = 跟拍攝日）
 function writeTimes_(c) {
   ensureCol_('案件', '時間');
+  ensureCol_('案件', '隸屬月份');
   const s = sh_('案件');
   const h = s.getRange(1, 1, 1, s.getLastColumn()).getValues()[0].map(String);
-  const col = h.indexOf('時間') + 1;
   const ids = s.getRange(1, 1, s.getLastRow(), 1).getValues().map(r => String(r[0]));
   const i = ids.indexOf(String(c.id));
-  if (i >= 0) s.getRange(i + 1, col).setNumberFormat('@').setValue(timesStr_(c));
+  if (i < 0) return;
+  s.getRange(i + 1, h.indexOf('時間') + 1).setNumberFormat('@').setValue(timesStr_(c));
+  s.getRange(i + 1, h.indexOf('隸屬月份') + 1).setNumberFormat('@').setValue(/^\d{4}-\d{2}$/.test(c.month || '') ? c.month : '');
+}
+
+/* ---------- 聊天室 ---------- */
+function chatSheet_() {
+  let s = sh_('聊天');
+  if (!s) { s = SpreadsheetApp.getActive().insertSheet('聊天'); s.appendRow(['id', '時間', '誰', '內容']); s.getRange('A:D').setNumberFormat('@'); }
+  return s;
+}
+function apiChat(token, since) {
+  auth_(token);
+  const s = chatSheet_(), n = s.getLastRow() - 1;
+  if (n < 1) return [];
+  const take = since ? Math.min(n, 300) : Math.min(n, 300);
+  const rows = s.getRange(s.getLastRow() - take + 1, 1, take, 4).getValues();
+  return rows.filter(r => r[0] && (!since || String(r[1]) > since))
+    .map(r => ({ id: String(r[0]), at: String(r[1]), from: key_(r[2]), text: String(r[3]) }));
+}
+function apiChatSend(token, text) {
+  const me = auth_(token);
+  text = String(text || '').trim().slice(0, 2000);
+  if (!text) throw new Error('訊息是空的');
+  return withLock_(() => {
+    const m = { id: Utilities.getUuid(), at: Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd'T'HH:mm:ss.SSS"), from: me, text: text };
+    const s = chatSheet_();
+    s.getRange(s.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[m.id, m.at, TO_LABEL[me], text]]);
+    return m;
+  });
 }
 
 /* ---------- Google 日曆同步 ---------- */
