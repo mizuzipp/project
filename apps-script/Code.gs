@@ -158,8 +158,8 @@ function migrateAC_() {
   [['校稿日', 'AC日'], ['校稿完成', 'AC完成']].forEach(([a, b]) => { const i = h.indexOf(a); if (i >= 0) s.getRange(1, i + 1).setValue(b); });
 }
 function casesFromSheet_() {
-  migrateAC_();
-  const c = table_('案件');
+  let c = table_('案件');
+  if (c.h.indexOf('校稿日') >= 0) { migrateAC_(); c = table_('案件'); }
   const cases = c.rows.map(r => {
     const g = k => r[c.h.indexOf(k)];
     const ms = {}, tt = parseTimes_(c.h.indexOf('時間') >= 0 ? g('時間') : '');
