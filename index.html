@@ -462,7 +462,8 @@ body:has(#login:not(.hidden)) .uxbar{bottom:auto;top:calc(env(safe-area-inset-to
 .tabbar{display:none}
 .top-me{display:none;border:none;background:none;padding:0;border-radius:50%}
 .dots{display:none}
-.newbtn .lbl{display:inline}
+.newbtn .lbl{display:inline;line-height:1;margin:0;color:inherit;font-size:14px}
+.newbtn{height:36px;padding:0 16px 0 14px;gap:6px;font-weight:500;border-radius:8px}.newbtn svg{flex:none;display:block}
 .fab{display:none}
 .demo-sw{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;border:1px dashed var(--primary-border);border-radius:10px;background:var(--primary-bg)}
 .demo-sw>span{font-size:13px;font-weight:600;color:var(--primary-active)}
@@ -763,7 +764,7 @@ const NEWF=true;
 const MONTH_DEMO=false;
 const MONTH_MODE='A';
 const UXD_DEMO=false;
-const D2=false;   // 連結按鈕＋左右詳情 demo
+const D2=true;   // 連結按鈕＋左右詳情 demo
 const HOLD_DEMO=false;const HOLD_MODE='1';
 const HMODES=[['1','清單底部區塊'],['2','On hold 分頁'],['3','翻到最後一頁'],['4','置頂在本月'],['5','首頁提醒＋一次補']];
 const noShoot=c=>!(c.month||c.ms.shoot.date);
@@ -1043,7 +1044,7 @@ function openMeMenu(anchor){
 }
 function closeMenu(){document.getElementById('meMenu')?.remove()}
 const M=()=>document.getElementById('main');
-const newBtn=()=>{document.getElementById('topAct').innerHTML='<button class="btn primary newbtn" id="newCase">＋<span class="lbl"> 新增案件</span></button>';document.getElementById('newCase').onclick=()=>openCase(null)};
+const newBtn=()=>{document.getElementById('topAct').innerHTML='<button class="btn primary newbtn" id="newCase"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span class="lbl">新增案件</span></button>';document.getElementById('newCase').onclick=()=>openCase(null)};
 const bindOpen=root=>root.querySelectorAll('[data-open]').forEach(el=>el.onclick=e=>{if(e.target.closest('.cb')||e.target.closest('a'))return;openCase(el.dataset.open)});
 
 
@@ -1404,7 +1405,8 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
-  {id:'2026-11-12-0150',date:'11/12',title:'防止重複新增案件',items:[['重複提醒','新增案件時，如果已經有同名的案子，會先跳出提醒，可以直接打開原本那筆，避免收入和月結算錯'],['已清理','之前重複的 3 筆（711元進莊、ARIH POP UP、Glad2Glow唇部精華）已經刪掉，11 月月結恢復正確']]},
+  {id:'2026-11-12-0155',date:'11/12',title:'Brief、腳本一鍵打開',items:[['連結按鈕','案件可以分別填 Brief（PDF）和腳本（Google 試算表）連結，清單上會出現小圖示，點了直接打開'],['電腦版左右分欄','案件頁點左邊的案子，右邊直接顯示詳情、連結和時程，點圓圈就能打勾']]},
+{id:'2026-11-12-0150',date:'11/12',title:'防止重複新增案件',items:[['重複提醒','新增案件時，如果已經有同名的案子，會先跳出提醒，可以直接打開原本那筆，避免收入和月結算錯'],['已清理','之前重複的 3 筆（711元進莊、ARIH POP UP、Glad2Glow唇部精華）已經刪掉，11 月月結恢復正確']]},
 {id:'2026-11-12-0125',date:'11/12',title:'信件功能先拿掉',items:[['下方分頁','手機下方回到：首頁、案件、日曆、財務、支出']]},
 {id:'2026-11-11-2300',date:'11/11',title:'信件摘要＋案件排序',items:[['信件摘要','打開邀約會先看到重點：產品、合作內容、檔期、費用／預算、其他要求；原信收在「看原信」'],['只要確認報價','不用看草稿了，勾好內容、確認金額，按「存草稿」就會用報價單範本存進 Gmail'],['案件排序','依 確定合作 → 審稿 → 剪輯 → 發布 → 結案 排，同狀態下一個日期越近越前面']]},
 {id:'2026-11-11-2035',date:'11/11',title:'信件搬到下方分頁',items:[['信件','手機版下方的「聊天」換成「信件」，紅色數字是還沒回的合作邀約'],['報價範本','每封報價草稿都會自動附上合作條件 1～9 點、LINE 官方帳號和「MIZU工作室 YUNA」簽名']]},
@@ -1817,7 +1819,7 @@ function renderFinance(){
 
 
 function renderExpenses(){
-  document.getElementById('topAct').innerHTML='<button class="btn primary newbtn" id="add">＋<span class="lbl"> 記一筆</span></button>';
+  document.getElementById('topAct').innerHTML='<button class="btn primary newbtn" id="add"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span class="lbl">記一筆</span></button>';
   document.getElementById('add').onclick=()=>openExp(null);
   const m=ui.expM;
   const list=S.expenses.filter(e=>ym(e.date)===m).sort((a,b)=>b.date.localeCompare(a.date));
@@ -1905,7 +1907,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/12 01:42</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/12 01:49</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
