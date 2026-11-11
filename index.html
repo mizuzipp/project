@@ -269,6 +269,40 @@ details summary::-webkit-details-marker{display:none}
 .fi>label{display:block;padding-bottom:6px;font-size:14px}
 .fi .inp{width:100%}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
+.mlk{display:inline-flex;gap:2px;flex:none}.mlk-i{display:inline-flex;width:22px;height:22px;border-radius:6px;align-items:center;justify-content:center}
+.mlk-i:hover{background:#F0F0F0}.mlk-i svg{width:18px;height:18px}
+.lks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%}.lk{min-width:0}
+.lk{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;border:1px solid #EFEFEF;background:#fff;text-align:left;color:inherit;text-decoration:none;cursor:pointer;transition:box-shadow .2s,transform .15s,border-color .2s;font:inherit}
+.lk:hover{box-shadow:0 6px 18px rgba(0,0,0,.07);transform:translateY(-1px);border-color:#E3E3E3}
+.lk-i{flex:none;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#FAFAFA}.lk-i svg{width:26px;height:26px}
+.lk-t{flex:1;min-width:0;display:flex;flex-direction:column}.lk-t b{font-size:15px;font-weight:600}.lk-t small{font-size:12px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lk-go{color:var(--text4);font-size:16px}
+.lk.empty{border-style:dashed;background:#FCFCFC}.lk.empty .lk-i{filter:grayscale(1);opacity:.45}.lk.empty small{color:var(--primary)}.lk.empty:disabled{cursor:default}.lk.empty:disabled small{color:var(--text4)}
+.lk-o{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.lk-o a{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--text2);background:#F5F5F5;border-radius:12px;padding:3px 10px 3px 8px}.lk-o svg{width:14px;height:14px}
+.lkin{display:flex;align-items:center;gap:8px}.lkin>span{flex:none;width:28px;height:28px;display:flex}.lkin svg{width:28px;height:28px}.lkin .inp{flex:1}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;align-items:start}
+.split th:nth-child(3),.split td:nth-child(3),.split th:nth-child(4),.split td:nth-child(4),.split th:nth-child(8),.split td:nth-child(8){display:none}
+.split tr[data-open]{cursor:pointer}.split tr.sel td{background:#F9F0FF!important}.split tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--primary)}
+.sp-r{position:sticky;top:12px;max-height:calc(100vh - 110px);overflow:auto;padding:0!important}
+.dp{padding:20px}.dp-empty{padding:60px 20px;text-align:center;color:var(--text3)}
+.dp-h{display:flex;justify-content:space-between;gap:12px;margin-bottom:16px}
+.dp-t{font-size:20px;font-weight:700;line-height:1.35;letter-spacing:-.01em}
+.dp-tags{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+.dp-amt{text-align:right;flex:none}.dp-amt b{display:block;font-size:20px;font-variant-numeric:tabular-nums}.dp-amt small{color:var(--text3);font-size:12px}
+.dp-sec{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.06em;margin:22px 0 8px}
+.tl{position:relative}
+.tl-i{position:relative;display:flex;gap:12px;padding:0 0 14px}
+.tl-i:not(:last-child)::before{content:"";position:absolute;left:11px;top:26px;bottom:2px;width:2px;background:#F0F0F0}
+.tl-i.d:not(:last-child)::before{background:#D3ADF7}
+.tl-c{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid #D9D9D9;background:#fff;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;position:relative;z-index:1}
+.tl-c:hover:not(:disabled){border-color:var(--primary)}.tl-c svg{width:16px;height:16px}
+.tl-i.d .tl-c{background:var(--primary);border-color:var(--primary)}
+.tl-i.n .tl-c{border-color:var(--primary);box-shadow:0 0 0 4px rgba(114,46,209,.12)}
+.tl-b{flex:1;min-width:0;padding-top:1px}.tl-n{display:flex;align-items:center;gap:8px;font-weight:500}.tl-i.d .tl-n{color:var(--text3);text-decoration:line-through;text-decoration-color:#d9d9d9}
+.tl-who{display:inline-flex;gap:4px;margin-left:auto}.tl-d{font-size:13px;margin-top:2px;font-variant-numeric:tabular-nums}.tl-i.n .tl-d{color:var(--primary);font-weight:500}
+.dp-info>div{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--split);font-size:14px}.dp-info>div:last-child{border-bottom:none}
+.dp-info>div>span{flex:none;width:64px;color:var(--text3);font-size:13px;padding-top:1px}.dp-info .tag{margin:0 4px 4px 0}
+.dp-f{margin-top:18px;display:flex;gap:8px}.dp-f .btn{flex:1;height:38px}
 #mailBtn{position:relative}#mailBtn.on{color:var(--primary)}
 .mbadge{position:absolute;top:2px;right:0;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--error);color:#fff;font-size:10px;line-height:16px;font-weight:600}
 .mailtop{display:flex;align-items:center;gap:8px;margin-bottom:8px}.mailtop .spacer{flex:1}
@@ -729,6 +763,7 @@ const NEWF=true;
 const MONTH_DEMO=false;
 const MONTH_MODE='A';
 const UXD_DEMO=false;
+const D2=false;   // 連結按鈕＋左右詳情 demo
 const HOLD_DEMO=false;const HOLD_MODE='1';
 const HMODES=[['1','清單底部區塊'],['2','On hold 分頁'],['3','翻到最後一頁'],['4','置頂在本月'],['5','首頁提醒＋一次補']];
 const noShoot=c=>!(c.month||c.ms.shoot.date);
@@ -1009,7 +1044,7 @@ function openMeMenu(anchor){
 function closeMenu(){document.getElementById('meMenu')?.remove()}
 const M=()=>document.getElementById('main');
 const newBtn=()=>{document.getElementById('topAct').innerHTML='<button class="btn primary newbtn" id="newCase">＋<span class="lbl"> 新增案件</span></button>';document.getElementById('newCase').onclick=()=>openCase(null)};
-const bindOpen=root=>root.querySelectorAll('[data-open]').forEach(el=>el.onclick=e=>{if(e.target.closest('.cb'))return;openCase(el.dataset.open)});
+const bindOpen=root=>root.querySelectorAll('[data-open]').forEach(el=>el.onclick=e=>{if(e.target.closest('.cb')||e.target.closest('a'))return;openCase(el.dataset.open)});
 
 
 function taskItem(t){
@@ -1085,9 +1120,48 @@ const mLabel=k=>k==='none'?'上線未定':ymLabel(k);
 const mShort=k=>k==='none'?'未定':(k.slice(0,4)===TODAY.slice(0,4)?'':k.slice(2,4)+'年')+(+k.slice(5))+'月';
 function progBar(c){const ks=MS.map(([k])=>k),ni=ks.findIndex(k=>!c.ms[k].done);
   return `<div class="prog">${ks.map((k,i)=>`<i class="${c.ms[k].done?'d':i===ni?'n':''}"></i>`).join('')}</div><div class="prog-l">${ni<0?'全部完成 🎉':'下一步：'+MSL[ks[ni]]+(c.ms[ks[ni]].date?'・'+md(c.ms[ks[ni]].date):'')}</div>`}
-function caseRowsMob(list){return list.map(c=>`<div class="item" data-open="${c.id}"><div class="main"><div class="ttl">${esc(c.title)}</div><div class="meta">${otag(c.owner)}${stag(c.status)}${c.owner==='mizu'?`<span>收款 ${esc(NAMES[c.lead])}</span>`:''}${c.month&&c.month!==ym(c.ms.shoot.date)?`<span class="tag tg-gold">算${mShort(c.month)}</span>`:''}</div></div>
+function caseRowsMob(list){return list.map(c=>`<div class="item" data-open="${c.id}"><div class="main"><div class="ttl" style="display:flex;align-items:center;gap:6px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.title)}</span>${miniLinks(c)}</div><div class="meta">${otag(c.owner)}${stag(c.status)}${c.owner==='mizu'?`<span>收款 ${esc(NAMES[c.lead])}</span>`:''}${c.month&&c.month!==ym(c.ms.shoot.date)?`<span class="tag tg-gold">算${mShort(c.month)}</span>`:''}</div></div>
       <div class="rt"><div class="num ${ui.uxd&&!c.amount?'amt0':''}" style="color:var(--text);font-weight:500">${ui.uxd&&!c.amount?'金額未填':money(c.amount)}</div><div class="small">${c.ms.shoot.date?'拍攝 '+md(c.ms.shoot.date):'拍攝未定'}</div></div></div>`).join('')}
-function caseRowsDesk(list){return list.map(c=>`<tr data-open="${c.id}"><td style="max-width:280px"><div style="font-weight:500">${esc(c.title)}</div>${c.brand||!canEdit(c)?`<div class="muted small">${esc(c.brand)}${canEdit(c)?'':(c.brand?'・':'')+'僅檢視'}</div>`:''}</td>
+function parseLinks(s){const o={brief:'',script:'',other:[]};
+  String(s||'').split(/\n+/).map(x=>x.trim()).filter(Boolean).forEach(l=>{const m=l.match(/^(Brief|腳本|其他)[｜|]\s*(.+)$/i);
+    if(m){const k=/brief/i.test(m[1])?'brief':m[1]==='腳本'?'script':'other';if(k==='other')o.other.push(m[2]);else o[k]=m[2]}else o.other.push(l)});return o}
+function serLinks(o){return [o.brief&&'Brief｜'+o.brief,o.script&&'腳本｜'+o.script,...(o.other||[]).filter(Boolean).map(u=>'其他｜'+u)].filter(Boolean).join('\n')}
+const ICO_PDF='<svg viewBox="0 0 24 24" fill="none"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#FDECEC" stroke="#E5484D" stroke-width="1.6"/><path d="M14 2v5h5" stroke="#E5484D" stroke-width="1.6"/><text x="12" y="17.5" text-anchor="middle" font-size="5.6" font-weight="700" fill="#E5484D" font-family="-apple-system,sans-serif">PDF</text></svg>';
+const ICO_SHEET='<svg viewBox="0 0 24 24" fill="none"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#E6F4EA" stroke="#1E8E3E" stroke-width="1.6"/><path d="M14 2v5h5" stroke="#1E8E3E" stroke-width="1.6"/><path d="M7.5 11h9v7h-9zM7.5 14.5h9M12 11v7" stroke="#1E8E3E" stroke-width="1.3"/></svg>';
+const ICO_LINK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>';
+const linkHost=u=>{try{return new URL(u).hostname.replace(/^www\./,'')}catch(e){return '連結'}};
+function miniLinks(c){if(!D2)return '';const L=parseLinks(c.link);if(!L.brief&&!L.script)return '';
+  return `<span class="mlk">${L.brief?`<a href="${esc(L.brief)}" target="_blank" rel="noopener" title="打開 Brief" class="mlk-i">${ICO_PDF}</a>`:''}${L.script?`<a href="${esc(L.script)}" target="_blank" rel="noopener" title="打開腳本" class="mlk-i">${ICO_SHEET}</a>`:''}</span>`}
+function bigLinks(c,canAdd){const L=parseLinks(c.link);
+  const b=(u,ic,t,sub)=>u?`<a class="lk" href="${esc(u)}" target="_blank" rel="noopener"><span class="lk-i">${ic}</span><span class="lk-t"><b>${t}</b><small>${sub}</small></span><span class="lk-go">↗</span></a>`
+    :`<button class="lk empty" ${canAdd?'data-addlink':'disabled'}><span class="lk-i">${ic}</span><span class="lk-t"><b>${t}</b><small>${canAdd?'＋ 加上連結':'還沒有連結'}</small></span></button>`;
+  return `<div class="lks">${b(L.brief,ICO_PDF,'Brief','PDF 文件')}${b(L.script,ICO_SHEET,'腳本','試算表')}</div>
+    ${L.other.length?`<div class="lk-o">${L.other.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener">${ICO_LINK}<span>${esc(linkHost(u))}</span></a>`).join('')}</div>`:''}`}
+function relDay(d){const n=diffDays(TODAY,d);return n===0?'今天':n===1?'明天':n===-1?'昨天':n>0?n+' 天後':(-n)+' 天前'}
+function renderDetail(c){
+  const el=document.getElementById('dpane');if(!el)return;
+  if(!c){el.innerHTML='<div class="dp-empty">點左邊的案子看詳情</div>';return}
+  const ed=canEdit(c),ks=MS.map(([k])=>k),nx=ks.find(k=>!c.ms[k].done);
+  el.innerHTML=`<div class="dp">
+    <div class="dp-h"><div style="min-width:0"><div class="dp-t">${esc(c.title)}</div><div class="dp-tags">${otag(c.owner)}${stag(c.status)}${c.owner==='mizu'?`<span class="muted small">收款 ${esc(NAMES[c.lead])}</span>`:''}</div></div>
+      <div class="dp-amt"><b>${c.amount?money(c.amount):'—'}</b><small>實拿金額</small></div></div>
+    ${bigLinks(c,ed)}
+    <div class="dp-sec">時程</div>
+    <div class="tl">${ks.map(k=>{const m=c.ms[k],who=responsible(c,k);return `<div class="tl-i ${m.done?'d':''} ${k===nx?'n':''}">
+      <button class="tl-c" ${ed?`data-tk="${k}"`:'disabled'} title="${m.done?'取消完成':'標成完成'}">${m.done?'<svg viewBox="0 0 24 24"><path d="m6 12 4 4 8-8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}</button>
+      <div class="tl-b"><div class="tl-n">${esc(taskLabel(c,k))}<span class="tl-who">${who.map(otag).join('')}</span></div>
+      <div class="tl-d">${m.date?`${md(m.date)}${m.time?' '+m.time:''}<span class="muted">・${relDay(m.date)}</span>`:'<span class="muted">未排日期</span>'}</div></div></div>`}).join('')}</div>
+    <div class="dp-sec">資訊</div>
+    <div class="dp-info"><div><span>規格</span><div>${c.specs.length?c.specs.map(s=>`<span class="tag">${esc(s)}</span>`).join(''):'—'}</div></div>
+      <div><span>隸屬月份</span><div>${pubMonth(c)?ymLabel(pubMonth(c)):'On hold（未排拍攝）'}${c.month?'':'<span class="muted small">・跟拍攝日</span>'}</div></div>
+      ${c.owner==='mizu'?`<div><span>分帳</span><div>${c.split==='fixed'?`00 ${money(c.fixed['00'])}・米米 ${money(c.fixed.mimi)}`:'對半'}</div></div>`:''}
+      ${c.note?`<div><span>備註</span><div style="white-space:pre-wrap">${esc(c.note)}</div></div>`:''}</div>
+    <div class="dp-f">${ed?`<button class="btn primary" data-dedit>編輯案件</button>`:'<span class="muted small">對方的個人案，僅檢視</span>'}</div></div>`;
+  el.querySelectorAll('[data-tk]').forEach(b=>b.onclick=async()=>{const k=b.dataset.tk,v=!c.ms[k].done;const ch=v?applyDone(c,k,true):(c.ms[k].done=false,null);c.updatedBy=me;
+    toast(`${taskLabel(c,k)}${v?'完成':'改回未完成'}`+(ch?`，狀態改為「${ch}」`:''));renderCases();await Data.run('apiSaveCase',c)});
+  el.querySelectorAll('[data-dedit],[data-addlink]').forEach(b=>b.onclick=()=>openCase(c.id));
+}
+function caseRowsDesk(list){return list.map(c=>`<tr data-open="${c.id}" class="${ui.sel===c.id?'sel':''}"><td style="max-width:280px"><div style="font-weight:500;display:flex;align-items:center;gap:6px"><span style="overflow:hidden;text-overflow:ellipsis">${esc(c.title)}</span>${miniLinks(c)}</div>${c.brand||!canEdit(c)?`<div class="muted small">${esc(c.brand)}${canEdit(c)?'':(c.brand?'・':'')+'僅檢視'}</div>`:''}</td>
     <td>${otag(c.owner)}</td><td>${c.owner==='mizu'?esc(NAMES[c.lead]):'<span class="muted">—</span>'}</td><td class="muted small" style="max-width:180px">${c.specs.join('、')||'—'}</td>
     <td>${stag(c.status)}</td><td class="num">${c.ms.shoot.date?md(c.ms.shoot.date):'<span class="muted">未定</span>'}${c.month&&c.month!==ym(c.ms.shoot.date)?` <span class="tag tg-gold">算${mShort(c.month)}</span>`:''}</td><td class="r num">${money(c.amount)}</td>
     <td>${isPaid(c)?'<span style="color:#389E0D">已匯</span>':c.ms.publish.done?'<span style="color:#D48806">待匯款</span>':'<span class="muted">—</span>'}</td></tr>`).join('')}
@@ -1173,8 +1247,13 @@ function renderCases(){
     const pinD=pin4.length?`<tr class="grp-row">${hd(pin4,'📌 待排拍攝（On hold）','pinh','td colspan="8"').replace('</td colspan="8">','</td>')}</tr>${caseRowsDesk(pin4)}<tr class="grp-row"><td colspan="8" class="mgroup"><b>${mLabel(ui.cMonth)}</b></td></tr>`:'';
     const s1M=sec1.length?`<div class="card" style="margin-top:12px">${hd(sec1,'On hold・未排拍攝',(ui.hOpen?'':'closed ')+'tog','div')}${ui.hOpen?caseRowsMob(sec1):''}</div>`:'';
     const s1D=sec1.length?`<tr class="grp-row">${hd(sec1,'On hold・未排拍攝',(ui.hOpen?'':'closed ')+'tog','td colspan="8"').replace('</td colspan="8">','</td>')}</tr>${ui.hOpen?caseRowsDesk(sec1):''}`:'';
+    const split=D2&&innerWidth>=1100;
+    const deskT=`<div class="card tbl only-desk"><table>${TH}<tbody>${pinD}${caseRowsDesk(list)||'<tr><td colspan="8" class="empty">這個月沒有拍攝</td></tr>'}${s1D}</tbody></table></div>`;
     cv.innerHTML=`<div class="only-mob">${pinM}<div class="card">${caseRowsMob(list)||'<div class="empty">'+(holdPage?'沒有未排拍攝的案子 ✨':'這個月沒有拍攝')+'</div>'}</div>${s1M}</div>
-    <div class="card tbl only-desk"><table>${TH}<tbody>${pinD}${caseRowsDesk(list)||'<tr><td colspan="8" class="empty">這個月沒有拍攝</td></tr>'}${s1D}</tbody></table></div>`;
+    ${split?`<div class="split"><div class="sp-l">${deskT}</div><aside class="sp-r card" id="dpane"></aside></div>`:deskT}`;
+    if(split){const all=[...pin4,...list,...(ui.hOpen?sec1:[])];if(!all.some(c=>c.id===ui.sel))ui.sel=all[0]?.id;
+      setTimeout(()=>{cv.querySelectorAll('.split tr[data-open]').forEach(tr=>tr.onclick=e=>{if(e.target.closest('a'))return;ui.sel=tr.dataset.open;cv.querySelectorAll('.split tr.sel').forEach(x=>x.classList.remove('sel'));tr.classList.add('sel');renderDetail(S.cases.find(x=>x.id===ui.sel))});
+        renderDetail(S.cases.find(x=>x.id===ui.sel))},0)}
     cv.querySelectorAll('[data-hold]').forEach(h=>h.onclick=e=>{e.stopPropagation();ui.hOpen=!ui.hOpen;renderCases()});
   }else{
     const cols=STATUSES;
@@ -1226,11 +1305,15 @@ function openCase(id,preset){
       ${c.split==='fixed'?`<div class="fi"><label>${esc(NAMES['00'])} 拿</label><input class="inp" type="number" id="f_fx00" value="${c.fixed['00']||0}" ${dis}></div><div class="fi"><label>${esc(NAMES['mimi'])} 拿</label><input class="inp" type="number" id="f_fxmimi" value="${c.fixed['mimi']||0}" ${dis}></div>`:''}`:''}
       <div class="fi"><label>實拿金額</label><input class="inp" type="number" id="f_amount" value="${c.amount||''}" placeholder="NT$" ${dis}></div>
       <div class="fi"><label>隸屬月份（算錢用）</label><select class="inp" id="f_month" ${dis}>${monthOpts(c)}</select></div>
+      ${D2&&!isNew&&(parseLinks(c.link).brief||parseLinks(c.link).script)?`<div class="fi full">${bigLinks(c,false)}</div>`:''}
       <div class="fi full"><label>規格</label><div class="chips">${SPECS.map(s=>`<label class="${c.specs.includes(s)?'on':''}"><input type="checkbox" value="${s}" ${c.specs.includes(s)?'checked':''} ${dis}>${s}</label>`).join('')}</div>${NEWF&&!ro?`<div class="qref" id="qref">${quoteRef(c.specs,c.id)}</div>`:''}</div>
       <div class="fi full"><label>時程</label><div class="ms">${MS.map(([k,l])=>`<div class="msr"><div class="ms-l"><span class="ms-n">${l}</span>${responsible(c,k).map(otag).join('')}</div>
         <div class="ms-r"><input class="inp" type="date" data-msd="${k}" value="${c.ms[k].date}" ${dis}><span class="tsel ${tm(c,k)?'has':''}"><button type="button" class="tall" ${dis}>整天</button><input class="inp tin" type="time" data-mst="${k}" value="${tm(c,k)}" ${dis}>${ro?'':'<button type="button" class="tx" title="改回整天">✕</button>'}</span><label class="chk" title="完成"><input type="checkbox" data-msk="${k}" ${c.ms[k].done?'checked':''} ${dis}><span>完成</span></label></div>${NEWF?'<div class="ms-warn"></div>':''}</div>`).join('')}</div>
         <div class="hint">勾「完成」會自動跳到下一個狀態。</div></div>
-      <div class="fi full"><label>相關連結</label><input class="inp" id="f_link" value="${esc(c.link)}" placeholder="brief、雲端資料夾" ${dis}></div>
+      ${D2?(()=>{const L=parseLinks(c.link);return `<div class="fi full"><label>Brief 連結（PDF）</label><div class="lkin"><span>${ICO_PDF}</span><input class="inp" id="f_brief" value="${esc(L.brief)}" placeholder="貼上 brief 的 PDF 或雲端連結" ${dis}></div></div>
+      <div class="fi full"><label>腳本連結（Google 試算表）</label><div class="lkin"><span>${ICO_SHEET}</span><input class="inp" id="f_script" value="${esc(L.script)}" placeholder="貼上腳本的 Google Sheet 連結" ${dis}></div></div>
+      <div class="fi full"><label>其他連結</label><input class="inp" id="f_link" value="${esc(L.other.join(' '))}" placeholder="雲端資料夾、成品…（多個用空白隔開）" ${dis}></div>`})()
+      :`<div class="fi full"><label>相關連結</label><input class="inp" id="f_link" value="${esc(c.link)}" placeholder="brief、雲端資料夾" ${dis}></div>`}
       <div class="fi full"><label>備註</label><textarea class="inp" id="f_note" rows="2" ${dis}>${esc(c.note)}</textarea></div>
     </div></div>
     <div class="mf">${!isNew&&!ro?'<button class="btn danger" id="cdel">刪除</button>':''}${NEWF&&!isNew?'<button class="btn dup" id="cdup">複製成新案件</button>':''}<span style="flex:1"></span>${c.updatedBy?`<span class="muted small" style="margin-right:8px">最後修改：${esc(NAMES[c.updatedBy])}</span>`:''}
@@ -1261,7 +1344,7 @@ function openCase(id,preset){
     if(c.owner!=='mizu')c.lead=c.owner;
     if(document.getElementById('f_split'))c.split=v('f_split');
     if(document.getElementById('f_fx00'))c.fixed={'00':+v('f_fx00')||0,'mimi':+v('f_fxmimi')||0};
-    c.amount=+v('f_amount')||0;c.month=v('f_month')||'';c.link=v('f_link');c.note=v('f_note');
+    c.amount=+v('f_amount')||0;c.month=v('f_month')||'';c.link=D2?serLinks({brief:(v('f_brief')||'').trim(),script:(v('f_script')||'').trim(),other:(v('f_link')||'').split(/\s+/).filter(Boolean)}):v('f_link');c.note=v('f_note');
     c.specs=[...document.querySelectorAll('.chips input:checked')].map(x=>x.value);
     document.querySelectorAll('[data-msd]').forEach(x=>c.ms[x.dataset.msd].date=x.value);
     document.querySelectorAll('[data-mst]').forEach(x=>{const m=c.ms[x.dataset.mst];m.time=m.date&&x.closest('.tsel').classList.contains('has')?x.value:''});
@@ -1271,6 +1354,10 @@ function openCase(id,preset){
     collect();
     if(!c.title){toast('請填案名',true);return}
     if(c.owner==='mizu'&&c.split==='fixed'&&(c.fixed['00']+c.fixed['mimi'])!==c.amount){toast('固定金額加總跟實拿金額不一樣',true);return}
+    const nrm=s=>String(s||'').replace(/[\s　（）()「」『』《》【】]/g,'').toLowerCase();
+    const dup=!S.cases.some(x=>x.id===c.id)&&!c._dupOk&&S.cases.find(x=>nrm(x.title)===nrm(c.title));
+    if(dup){dupBox(dup,()=>{c._dupOk=true;save()},()=>{closeSheet(root);setTimeout(()=>openCase(dup.id),280)});return}
+    delete c._dupOk;
     const nd=c._done;delete c._done;
     const was=S.cases.find(x=>x.id===c.id);
     const prev=was?{...was.ms}:null;
@@ -1317,7 +1404,8 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
-  {id:'2026-11-12-0125',date:'11/12',title:'信件功能先拿掉',items:[['下方分頁','手機下方回到：首頁、案件、日曆、財務、支出']]},
+  {id:'2026-11-12-0150',date:'11/12',title:'防止重複新增案件',items:[['重複提醒','新增案件時，如果已經有同名的案子，會先跳出提醒，可以直接打開原本那筆，避免收入和月結算錯'],['已清理','之前重複的 3 筆（711元進莊、ARIH POP UP、Glad2Glow唇部精華）已經刪掉，11 月月結恢復正確']]},
+{id:'2026-11-12-0125',date:'11/12',title:'信件功能先拿掉',items:[['下方分頁','手機下方回到：首頁、案件、日曆、財務、支出']]},
 {id:'2026-11-11-2300',date:'11/11',title:'信件摘要＋案件排序',items:[['信件摘要','打開邀約會先看到重點：產品、合作內容、檔期、費用／預算、其他要求；原信收在「看原信」'],['只要確認報價','不用看草稿了，勾好內容、確認金額，按「存草稿」就會用報價單範本存進 Gmail'],['案件排序','依 確定合作 → 審稿 → 剪輯 → 發布 → 結案 排，同狀態下一個日期越近越前面']]},
 {id:'2026-11-11-2035',date:'11/11',title:'信件搬到下方分頁',items:[['信件','手機版下方的「聊天」換成「信件」，紅色數字是還沒回的合作邀約'],['報價範本','每封報價草稿都會自動附上合作條件 1～9 點、LINE 官方帳號和「MIZU工作室 YUNA」簽名']]},
 {id:'2026-11-11-2020',date:'11/11',title:'信件＋報價建議 ✉️',items:[['信件','右上角多了信封按鈕，會讀 mizu.zipp@gmail.com 的收件匣，自動挑出合作邀約，紅色數字是還沒回的'],['報價建議','打開邀約會自動勾出規格、用價目表算報價，並參考過去同規格案子的實拿金額'],['回信草稿','幫你寫好回信，可以直接改，按「存草稿」就存進 Gmail 草稿匣，不會自己寄出']]},
@@ -1498,6 +1586,16 @@ function iosify(root){
   const dup=m.querySelector('.mf .btn.dup');
   if(dup){const d=document.createElement('button');d.type='button';d.className='ios-dup only-mob';d.textContent=dup.textContent;d.onclick=()=>dup.click();m.querySelector('.mb').appendChild(d)}
   if(del){const d=document.createElement('button');d.type='button';d.className='ios-del only-mob';d.textContent=m.dataset.delLabel||'刪除';d.onclick=()=>del.click();m.querySelector('.mb').appendChild(d)}
+}
+function dupBox(d,goOn,openOld){
+  const r=document.createElement('div');
+  r.innerHTML=`<div class="mask alert-mask" style="z-index:60;align-items:center"><div class="modal sm alert"><div class="mh" style="display:block"><h2>已經有「${esc(d.title)}」了</h2>
+    <div class="muted small" style="margin-top:6px;font-weight:400">${esc(NAMES[d.owner]||d.owner)}・${esc(d.status)}・${d.ms.shoot.date?'拍攝 '+md(d.ms.shoot.date):'拍攝未定'}・${money(d.amount)}<br>重複的案子會讓收入和月結算錯，確定要再新增一筆嗎？</div></div>
+    <div class="mf"><button class="btn" data-o>打開原本那筆</button><button class="btn" data-y>還是要新增</button></div></div></div>`;
+  document.body.appendChild(r);
+  r.querySelector('[data-o]').onclick=()=>{r.remove();openOld()};
+  r.querySelector('[data-y]').onclick=()=>{r.remove();goOn()};
+  r.querySelector('.mask').onmousedown=e=>{if(e.target.classList.contains('mask'))r.remove()};
 }
 function confirmBox(msg,ok){
   const r=document.createElement('div');
@@ -1807,7 +1905,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/12 01:21</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/12 01:42</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
