@@ -1405,7 +1405,8 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
-  {id:'2026-11-12-0155',date:'11/12',title:'Brief、腳本一鍵打開',items:[['連結按鈕','案件可以分別填 Brief（PDF）和腳本（Google 試算表）連結，清單上會出現小圖示，點了直接打開'],['電腦版左右分欄','案件頁點左邊的案子，右邊直接顯示詳情、連結和時程，點圓圈就能打勾']]},
+  {id:'2026-11-12-0205',date:'11/12',title:'Mizu 案改進自己的日曆',items:[['日曆','Mizu 的案子不再放「mizu 米事」，改放進負責人自己的日曆：腳本→TZU、AC→Miranda、過稿／上線／匯款→接案人，拍攝兩個人都放'],['清重複','順便清掉日曆裡同一天同名的重複行程']]},
+{id:'2026-11-12-0155',date:'11/12',title:'Brief、腳本一鍵打開',items:[['連結按鈕','案件可以分別填 Brief（PDF）和腳本（Google 試算表）連結，清單上會出現小圖示，點了直接打開'],['電腦版左右分欄','案件頁點左邊的案子，右邊直接顯示詳情、連結和時程，點圓圈就能打勾']]},
 {id:'2026-11-12-0150',date:'11/12',title:'防止重複新增案件',items:[['重複提醒','新增案件時，如果已經有同名的案子，會先跳出提醒，可以直接打開原本那筆，避免收入和月結算錯'],['已清理','之前重複的 3 筆（711元進莊、ARIH POP UP、Glad2Glow唇部精華）已經刪掉，11 月月結恢復正確']]},
 {id:'2026-11-12-0125',date:'11/12',title:'信件功能先拿掉',items:[['下方分頁','手機下方回到：首頁、案件、日曆、財務、支出']]},
 {id:'2026-11-11-2300',date:'11/11',title:'信件摘要＋案件排序',items:[['信件摘要','打開邀約會先看到重點：產品、合作內容、檔期、費用／預算、其他要求；原信收在「看原信」'],['只要確認報價','不用看草稿了，勾好內容、確認金額，按「存草稿」就會用報價單範本存進 Gmail'],['案件排序','依 確定合作 → 審稿 → 剪輯 → 發布 → 結案 排，同狀態下一個日期越近越前面']]},
@@ -1628,7 +1629,7 @@ function renderCalendar(){
   ${cells.map(d=>`<div class="dc ${ym(d)!==ui.calM?'out':''} ${d===TODAY?'today':''} ${d===ui.calDay?'sel':''}" data-d="${d}"><div class="dn"><span>${+d.slice(8)}</span></div><div class="dots">${evs(d).slice(0,4).map(x=>`<i style="background:${ocol(x.c.owner)};${x.done?'opacity:.35':''}"></i>`).join('')}${gevs(d).slice(0,2).map(e=>`<i style="border:1.5px solid ${ocol(e.who)};width:4px;height:4px"></i>`).join('')}</div>${evs(d).map(x=>`<div class="ev ${x.done?'done':''}" data-open="${x.c.id}" title="${esc((tm(x.c,x.k)?tm(x.c,x.k)+' ':'')+MSL[x.k]+'・'+x.c.title)}"><span class="dot" style="background:${ocol(x.c.owner)}"></span>${tpre(x.c,x.k)}${esc(MSL[x.k])}・${esc(x.c.title)}</div>`).join('')}${gevs(d).map(e=>`<div class="ev gev" title="${esc(e.title)}"><span class="dot" style="border-color:${ocol(e.who)}"></span>${e.time?e.time+' ':''}${esc(e.title)}</div>`).join('')}</div>`).join('')}</div></div>
   <div class="card only-mob" style="margin-top:10px"><div class="card-h"><h3>${md(ui.calDay||TODAY)}</h3></div>
     ${(()=>{const d=ui.calDay||TODAY,a=evs(d),g=gevs(d);return a.map(x=>`<div class="item" data-open="${x.c.id}"><span class="dot" style="background:${ocol(x.c.owner)};width:8px;height:8px"></span><div class="main"><div class="ttl" style="${x.done?'color:var(--text4);text-decoration:line-through':''}">${tpre(x.c,x.k)}${esc(taskLabel(x.c,x.k))}・${esc(x.c.title)}</div></div>${otag(x.c.owner)}</div>`).join('')+g.map(e=>`<div class="item"><span class="dot" style="border:1.5px solid ${ocol(e.who)};width:8px;height:8px"></span><div class="main"><div class="ttl" style="color:var(--text2)">${e.time?e.time+' ':''}${esc(e.title)}</div></div><span class="muted small">Google 日曆</span></div>`).join('')||'<div class="empty">這天沒有行程</div>'})()}</div>
-  <div class="muted small" style="margin-top:10px">${GAS?'案件時程會自動寫進 Google 日曆：'+esc(NAMES['00'])+' 的個人案 → TZU、'+esc(NAMES['mimi'])+' 的個人案 → Miranda、Mizu 案 → mizu 米事':'預覽模式不會讀寫 Google 日曆'}</div>`;
+  <div class="muted small" style="margin-top:10px">${GAS?'案件時程會自動寫進 Google 日曆：'+esc(NAMES['00'])+' 的個人案 → TZU、'+esc(NAMES['mimi'])+' 的個人案 → Miranda；Mizu 案放進負責人自己的日曆（拍攝兩個人都放）':'預覽模式不會讀寫 Google 日曆'}</div>`;
   bindOpen(M());
   M().querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{ui.calScope=b.dataset.sc;renderCalendar()});
   M().querySelectorAll('.dc[data-d]').forEach(c=>c.addEventListener('click',e=>{if(window.innerWidth>768&&e.target.closest('.ev'))return;if(window.innerWidth<=768){e.stopPropagation();ui.calDay=c.dataset.d;renderCalendar()}}));
@@ -1907,7 +1908,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/12 01:49</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/12 01:56</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
