@@ -57,7 +57,7 @@ function doPost(e) {
 }
 function api_(b) {
   const fns = { apiPublic, apiLogin, apiLogout, apiLoad, apiSaveCase, apiDeleteCase, apiSaveExpense, apiDeleteExpense,
-    apiSetSettlement, apiSaveUser, apiSetPassword, apiLineCode, apiCalendar, apiChat, apiChatSend };
+    apiSetSettlement, apiSaveUser, apiSetPassword, apiLineCode, apiCalendar, apiChat, apiChatSend, apiMail, apiSaveDraft, apiSetPrices };
   let res;
   if (!fns[b.fn]) res = { ok: false, error: '不支援的操作' };
   else {
@@ -206,6 +206,67 @@ function writeTimes_(c) {
   if (i < 0) return;
   s.getRange(i + 1, h.indexOf('時間') + 1).setNumberFormat('@').setValue(timesStr_(c));
   s.getRange(i + 1, h.indexOf('隸屬月份') + 1).setNumberFormat('@').setValue(/^\d{4}-\d{2}$/.test(c.month || '') ? c.month : '');
+}
+
+/* ---------- 信件＋報價建議 ---------- */
+// 第一次更新後，請在 Apps Script 編輯器上方選 authorizeGmail → 執行，允許讀取 Gmail 和建立草稿
+function authorizeGmail() { GmailApp.getInboxUnreadCount(); GmailApp.getDrafts(); }
+const DEF_PRICES = { 'Reels': 3500, '配音': 500, 'Threads': 1000, '抖音': 1000, '限動': 500, '廣告主': 1000, '素材授權': 1500, '圖文': 1500 };
+const SPEC_RX = [
+  ['Reels', /reels?|短影音|短影片|影片|video/i], ['配音', /配音|旁白|口播|voice/i], ['Threads', /threads|脆/i],
+  ['抖音', /抖音|tiktok/i], ['限動', /限動|限時動態|stor(y|ies)/i], ['廣告主', /廣告主|投放|白名單|ads?\b|廣告授權|boost/i],
+  ['素材授權', /素材授權|授權使用|二次使用|二次利用|官方使用|usage right/i], ['圖文', /圖文|貼文|\bpost\b|輪播/i]];
+const INQ_RX = /合作|邀約|邀請|業配|報價|詢價|費用|預算|開箱|體驗|試吃|試用|推廣|宣傳|媒體日|kol|influencer|collab|sponsor|quotation|rate card|業務洽談/i;
+function getPrices_() {
+  try { const v = PropertiesService.getScriptProperties().getProperty('prices'); if (v) return Object.assign({}, DEF_PRICES, JSON.parse(v)); } catch (e) {}
+  return Object.assign({}, DEF_PRICES);
+}
+function apiSetPrices(token, o) {
+  auth_(token);
+  const clean = {};
+  Object.keys(DEF_PRICES).forEach(k => clean[k] = Math.max(0, Math.round(+o[k] || 0)));
+  PropertiesService.getScriptProperties().setProperty('prices', JSON.stringify(clean));
+  return clean;
+}
+function draftMap_() {
+  const m = {};
+  GmailApp.getDrafts().forEach(d => { try { const msg = d.getMessage(); m[msg.getThread().getId()] = { id: d.getId(), body: msg.getPlainBody() }; } catch (e) {} });
+  return m;
+}
+function apiMail(token) {
+  auth_(token);
+  const mine = Session.getEffectiveUser().getEmail().toLowerCase();
+  const drafts = draftMap_();
+  const threads = GmailApp.search('in:inbox newer_than:45d -category:promotions -category:social', 0, 30);
+  const out = threads.map(th => {
+    const msgs = th.getMessages();
+    const first = msgs.filter(x => x.getFrom().toLowerCase().indexOf(mine) < 0)[0] || msgs[0];
+    const last = msgs[msgs.length - 1];
+    const fromRaw = first.getFrom(), mm = fromRaw.match(/^\s*"?([^"<]*)"?\s*<([^>]+)>/);
+    const body = first.getPlainBody().replace(/\r/g, '').replace(/\n{3,}/g, '\n\n').trim();
+    const text = th.getFirstMessageSubject() + '\n' + body.slice(0, 4000);
+    const replied = msgs.some(x => x.getFrom().toLowerCase().indexOf(mine) >= 0 && !x.isDraft());
+    return {
+      id: th.getId(), subject: th.getFirstMessageSubject() || '（沒有主旨）',
+      from: mm ? (mm[1].trim() || mm[2]) : fromRaw, email: mm ? mm[2] : fromRaw,
+      date: Utilities.formatDate(last.getDate(), TZ, "yyyy-MM-dd'T'HH:mm"),
+      snippet: body.replace(/\s+/g, ' ').slice(0, 90), body: body.slice(0, 6000),
+      inquiry: INQ_RX.test(text), specs: SPEC_RX.filter(r => r[1].test(text)).map(r => r[0]),
+      replied: replied, draft: drafts[th.getId()] || null
+    };
+  });
+  return { threads: out, prices: getPrices_() };
+}
+function apiSaveDraft(token, threadId, body) {
+  auth_(token);
+  const th = GmailApp.getThreadById(threadId);
+  if (!th) throw new Error('找不到這封信');
+  GmailApp.getDrafts().forEach(d => { try { if (d.getMessage().getThread().getId() === threadId) d.deleteDraft(); } catch (e) {} });
+  const mine = Session.getEffectiveUser().getEmail().toLowerCase();
+  const others = th.getMessages().filter(x => x.getFrom().toLowerCase().indexOf(mine) < 0 && !x.isDraft());
+  const target = others.length ? others[others.length - 1] : null;   // 回覆對方最後一封
+  const d = target ? target.createDraftReply(String(body || '')) : th.createDraftReply(String(body || ''));
+  return { id: d.getId() };
 }
 
 /* ---------- 聊天室 ---------- */

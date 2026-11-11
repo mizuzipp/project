@@ -269,6 +269,23 @@ details summary::-webkit-details-marker{display:none}
 .fi>label{display:block;padding-bottom:6px;font-size:14px}
 .fi .inp{width:100%}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
+#mailBtn{position:relative}#mailBtn.on{color:var(--primary)}
+.mbadge{position:absolute;top:2px;right:0;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--error);color:#fff;font-size:10px;line-height:16px;font-weight:600}
+.mailtop{display:flex;align-items:center;gap:8px;margin-bottom:8px}.mailtop .spacer{flex:1}
+.mrow{cursor:pointer}.mrow .mfrom{display:flex;justify-content:space-between;gap:8px;margin-bottom:2px}
+.mrow .mfrom b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrow.unread .mfrom b,.mrow.unread .ttl{font-weight:700}
+.msnip{color:var(--text3);font-size:13px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mhead{margin-bottom:8px}
+.mbody{white-space:pre-wrap;background:#FAFAFA;border-radius:10px;padding:12px;font-size:14px;line-height:1.7;color:var(--text2)}
+.mbody.clip{max-height:160px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 70%,transparent)}
+.linkbtn{border:none;background:none;color:var(--primary);padding:6px 0;font-size:13px;cursor:pointer}
+.qsec{margin-top:16px}.qh{font-weight:600;margin-bottom:8px}
+.qtable{margin-top:10px;border:1px solid var(--split);border-radius:10px;overflow:hidden}
+.ql{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--split)}
+.ql:last-child{border-bottom:none}.ql .inp{width:120px;text-align:right}.ql.tot{background:#F9F0FF}.ql.tot b{font-size:16px;color:var(--primary)}
+.modal .mb .ql{padding:8px 0}
+#dbody{width:100%!important;display:block;font-size:15px}.qh .spacer{flex:1}.qtable .ql{padding:8px 12px!important}
 .chips label{display:inline-flex;align-items:center;height:28px;padding:0 12px;border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all .2s;background:#fff}
 .chips label:hover{color:var(--primary)}
 .chips label.on{border-color:var(--primary);color:var(--primary);background:var(--primary-bg)}
@@ -313,6 +330,73 @@ details summary::-webkit-details-marker{display:none}
 .loading{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:12px;color:var(--text3)}
 .spin{width:28px;height:28px;border:3px solid var(--primary-bg);border-top-color:var(--primary);border-radius:50%;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
+/* ===== UX demo（只在預覽版） ===== */
+.uxbar{position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom) + 72px);z-index:60;display:flex;gap:2px;padding:3px;border-radius:20px;background:rgba(0,0,0,.78);backdrop-filter:blur(10px);box-shadow:0 6px 20px rgba(0,0,0,.18)}
+@media (max-width:768px){
+  body.uxd .topbar{height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 16px 0;background:rgba(245,245,247,.82);border-bottom:.5px solid transparent;transition:border-color .2s,background .2s}
+  body.uxd .topbar.scrolled{border-bottom-color:rgba(0,0,0,.12);background:rgba(249,249,249,.94)}
+  body.uxd .topbar h1{position:static;transform:none;font-size:26px;font-weight:700;letter-spacing:-.02em;order:0;margin-right:auto}
+  body.uxd .topbar .spacer{display:none}
+  body.uxd .topbar .bell{order:1;width:36px;height:36px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  body.uxd .topbar #topAct{order:2}
+  body.uxd .topbar .top-me{order:3;margin-left:4px}
+  body.uxd .topbar .top-me .av{width:36px!important;height:36px!important}
+  body.uxd .topbar .sync{order:4;margin-left:-14px;margin-top:24px;z-index:1}
+  body.uxd .topbar .sync i{width:10px;height:10px;border:2px solid #f5f5f7;box-sizing:content-box}
+}
+body:has(#login:not(.hidden)) .uxbar{bottom:auto;top:calc(env(safe-area-inset-top) + 12px)}
+.uxbar button{border:none;background:none;color:#fff;font-size:12px;padding:5px 12px;border-radius:16px;opacity:.7}
+.uxbar button.on{background:#fff;color:#000;opacity:1;font-weight:600}
+#login.uxd-login{position:fixed;inset:0;height:100dvh;overflow:hidden}
+@media (max-width:820px){
+  #login.uxd-login .lg-art{flex:1 1 auto;min-height:0;padding:0}
+  #login.uxd-login .lg-art img{width:min(30vh,150px);height:min(30vh,150px)}
+  #login.uxd-login .lg-form{flex:none;align-items:flex-start;padding:28px 24px calc(env(safe-area-inset-bottom) + 20px);border-radius:24px 24px 0 0;margin-top:-24px;background:#fff;position:relative;z-index:2;box-shadow:0 -8px 24px rgba(114,46,209,.08)}
+  #login.uxd-login .lg-box .sub{margin-bottom:20px}
+  #login.uxd-login .lg-foot{display:none}
+}
+.focus{display:flex;align-items:center;gap:14px;padding:16px;margin-bottom:16px;border-radius:16px;background:linear-gradient(135deg,#722ED1,#9254DE);color:#fff;box-shadow:0 10px 24px -8px rgba(114,46,209,.5)}
+.focus .fl{flex:1;min-width:0}.focus .fk{font-size:12px;opacity:.8;letter-spacing:.04em}
+.focus .ft{font-size:17px;font-weight:600;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.focus .fw{font-size:13px;opacity:.85;margin-top:2px}
+.focus .fd{flex:none;height:40px;padding:0 16px;border-radius:20px;border:none;background:#fff;color:#722ED1;font-weight:600;font-size:15px}
+.focus.done{background:linear-gradient(135deg,#52C41A,#73D13D)}
+.focus{transition:opacity .3s,transform .3s,max-height .3s,margin .3s,padding .3s;max-height:120px}
+.focus.bye{opacity:0;transform:scale(.96);max-height:0;margin:0;padding-top:0;padding-bottom:0}
+.oldbox{margin:4px 16px 8px;padding:10px 12px;border-radius:10px;background:var(--fill,#FAFAFA);display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)}
+.oldbox .btn{flex:none;margin-left:auto}
+.prog{display:flex;gap:3px;margin-top:8px;max-width:220px}
+.prog i{flex:1;height:4px;border-radius:2px;background:#F0F0F0}
+.prog i.d{background:#B37FEB}.prog i.n{background:#722ED1;animation:pulse 1.4s ease-in-out infinite}
+.prog-l{font-size:11px;color:var(--text3);margin-top:3px}
+@keyframes pulse{50%{opacity:.4}}
+.amt0{color:var(--text4)!important;font-weight:400!important;font-size:13px}
+.utoast{position:fixed;left:0;right:0;margin:0 auto;width:max-content;bottom:calc(env(safe-area-inset-bottom) + 136px);z-index:3000;display:flex;align-items:center;gap:14px;padding:10px 10px 10px 16px;border-radius:14px;background:rgba(30,30,30,.92);color:#fff;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:utUp .32s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:92vw}
+@keyframes utUp{from{transform:translateY(28px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+.utoast button{border:none;background:rgba(255,255,255,.15);color:#D3ADF7;font-weight:600;border-radius:8px;padding:6px 12px;font-size:14px}
+.ptr{height:0;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;color:var(--text3);font-size:12px;transition:height .2s}
+.ptr .spin{width:18px;height:18px;border-width:2px;margin-right:8px}
+.xfer2{margin:14px 0 6px;width:100%}
+.xfer2 .xamt{font-size:32px;font-weight:700;letter-spacing:-.01em;color:#1f1f1f;font-variant-numeric:tabular-nums;text-align:center}
+.xfer2 .xrow{display:flex;align-items:center;gap:12px;margin-top:14px}
+.xfer2 .xa{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--text3);flex:none;width:64px}
+.xfer2 .xm{flex:1;position:relative;height:2px;background:repeating-linear-gradient(90deg,#D3ADF7 0 8px,transparent 8px 14px);margin-bottom:22px}
+.xfer2 .xm::after{content:"";position:absolute;right:-4px;top:-6px;border:7px solid transparent;border-left-color:#9254DE}
+.xfer2 .xm i{position:absolute;top:-5px;width:12px;height:12px;border-radius:50%;background:#722ED1;box-shadow:0 0 0 4px rgba(114,46,209,.15);animation:fly 1.8s ease-in-out infinite}
+.xfer{display:flex;align-items:center;gap:10px;margin:10px 0 4px}
+.xfer .xa{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--text3)}
+.xfer .xm{flex:1;position:relative;height:2px;background:repeating-linear-gradient(90deg,#D3ADF7 0 6px,transparent 6px 10px);margin-bottom:18px}
+.xfer .xm b{position:absolute;left:50%;top:-26px;transform:translateX(-50%);font-size:20px;color:#722ED1;white-space:nowrap}
+.xfer .xm::after{content:"";position:absolute;right:-2px;top:-5px;border:6px solid transparent;border-left-color:#B37FEB}
+.xfer .xm i{position:absolute;top:-4px;width:10px;height:10px;border-radius:50%;background:#722ED1;animation:fly 1.8s ease-in-out infinite}
+@keyframes fly{from{left:0;opacity:0}20%{opacity:1}80%{opacity:1}to{left:calc(100% - 10px);opacity:0}}
+@media (max-width:768px){
+  body.uxd .modal .msr{flex-direction:column;align-items:stretch;gap:8px;padding:10px 0}
+  body.uxd .modal .ms-l{justify-content:space-between}
+  body.uxd .modal .ms-l .ms-n{font-weight:600;margin-right:auto}
+  body.uxd .modal .ms-r{margin-left:0;justify-content:space-between}
+  body.uxd .modal .ms-r .inp[type=date]{flex:1;width:auto!important}
+}
 .splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 80% at 50% 35%,#fff 0%,#F7F3FF 55%,#EFE8FF 100%);transition:opacity .35s ease,transform .35s ease}
 .splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
 .splash.hidden{display:none}
@@ -602,7 +686,7 @@ td.mgroup{display:table-cell}
     <div class="me-box" id="meBox"></div>
   </aside>
   <div class="content">
-    <div class="topbar"><h1 id="pageTitle"></h1><span class="spacer"></span><span class="sync" id="sync"></span><button class="bell" id="bell" aria-label="公告"></button><span id="topAct"></span><button class="top-me" id="meTop"></button></div>
+    <div class="topbar"><h1 id="pageTitle"></h1><span class="spacer"></span><span class="sync" id="sync"></span><button class="bell" id="mailBtn" aria-label="信件"></button><button class="bell" id="bell" aria-label="公告"></button><span id="topAct"></span><button class="top-me" id="meTop"></button></div>
     <main id="main"></main>
   </div>
   <nav class="tabbar" id="tabbar"></nav>
@@ -629,16 +713,18 @@ const NAV=[['home','首頁','<path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H
   ['cases','案件','<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/>'],
   ['calendar','日曆','<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
   ['finance','財務','<path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'],
-  ['expenses','支出','<path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/>']];
+  ['expenses','支出','<path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/>'],
+  ['mail','信件','<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>']];
 const CHAT=true;
 const NEWF=true;
 const MONTH_DEMO=false;
 const MONTH_MODE='A';
+const UXD_DEMO=false;
 const HOLD_DEMO=false;const HOLD_MODE='1';
 const HMODES=[['1','清單底部區塊'],['2','On hold 分頁'],['3','翻到最後一頁'],['4','置頂在本月'],['5','首頁提醒＋一次補']];
 const noShoot=c=>!(c.month||c.ms.shoot.date);
 if(CHAT)NAV.splice(4,0,['chat','聊天','<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/>']);
-const PAGES={chat:'聊天',home:'首頁',cases:'案件',calendar:'日曆',finance:'財務',expenses:'支出',profile:'個人設定'};
+const PAGES={mail:'信件',chat:'聊天',home:'首頁',cases:'案件',calendar:'日曆',finance:'財務',expenses:'支出',profile:'個人設定'};
 const ico=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 
 
@@ -796,6 +882,10 @@ function applyColors(){
   r.setProperty('--primary-bg',`color-mix(in srgb,${th} 8%,#fff)`);r.setProperty('--primary-border',`color-mix(in srgb,${th} 40%,#fff)`);
   NAMES['00']=S.users['00'].name;NAMES['mimi']=S.users['mimi'].name;
 }
+function undoToast(text,undo){document.querySelectorAll('.utoast').forEach(x=>x.remove());
+  const el=document.createElement('div');el.className='utoast';el.innerHTML=`<span>${esc(text)}</span>${undo?'<button>復原</button>':''}`;document.body.appendChild(el);
+  if(undo)el.querySelector('button').onclick=()=>{el.remove();undo();toast('已復原')};
+  setTimeout(()=>{el.style.transition='opacity .3s';el.style.opacity=0;setTimeout(()=>el.remove(),300)},4000)}
 function toast(t,err){
   const el=document.createElement('div');el.className='toast'+(err?' err':'');el.innerHTML=`<i>${err?'!':'✓'}</i>${esc(t)}`;document.body.appendChild(el);
   setTimeout(()=>{el.style.opacity=0;setTimeout(()=>el.remove(),300)},2600);
@@ -812,7 +902,7 @@ let loginSel='00';
 function renderLogin(){
   applyColors();
   splashOut();
-  const el=document.getElementById('login');el.classList.remove('hidden');
+  uxBar();const el=document.getElementById('login');el.classList.remove('hidden');el.classList.toggle('uxd-login',!!ui.uxd);
   el.innerHTML=`<div class="lg-art"><img src="${LOGO}" alt="MIZU"><div class="brand-t">MIZU</div><div class="brand-s">00 × 米米 的接案小基地</div></div>
     <div class="lg-form"><div class="lg-box">
     <h2>歡迎回來 👋</h2><div class="sub">登入看看今天有什麼要做</div>
@@ -837,6 +927,15 @@ function renderLogin(){
   setTimeout(()=>document.getElementById('pin')?.focus(),50);
 }
 let poll=null;
+function initPTR(){const m=M();if(!m||m._ptr)return;m._ptr=1;m.addEventListener('scroll',()=>{const tb=document.querySelector('.topbar');if(tb)tb.classList.toggle('scrolled',m.scrollTop>4)},{passive:true});let y0=null,dy=0,bar=null;
+  m.addEventListener('touchstart',e=>{if(!ui.uxd||m.scrollTop>0||page==='chat'||document.getElementById('modalRoot').innerHTML)return;y0=e.touches[0].clientY;dy=0},{passive:true});
+  m.addEventListener('touchmove',e=>{if(y0===null)return;dy=Math.max(0,e.touches[0].clientY-y0);if(!dy)return;
+    if(!bar){bar=document.createElement('div');bar.className='ptr';m.prepend(bar)}bar.style.transition='none';bar.style.height=Math.min(dy*.5,70)+'px';
+    bar.innerHTML=dy*.5>56?'<div class="spin"></div>放開就同步':'↓ 下拉同步最新資料'},{passive:true});
+  m.addEventListener('touchend',async()=>{if(y0===null)return;y0=null;if(!bar)return;const go=dy*.5>56,b=bar;bar=null;b.style.transition='';
+    if(go){b.style.height='44px';b.innerHTML='<div class="spin"></div>同步中…';try{navigator.vibrate&&navigator.vibrate(8)}catch(e){}
+      if(GAS)await Data.reload().catch(()=>{});else await new Promise(r=>setTimeout(r,900));b.innerHTML='✓ 已是最新';setTimeout(()=>{b.style.height='0';setTimeout(()=>{b.remove();route()},220)},500)}
+    else{b.style.height='0';setTimeout(()=>b.remove(),220)}})}
 const BOOT_T=Date.now();
 function splashOut(){const b=document.getElementById('boot');if(!b||b.classList.contains('hidden')||b.classList.contains('out'))return;
   const wait=Math.max(0,750-(Date.now()-BOOT_T));setTimeout(()=>{b.classList.add('out');setTimeout(()=>b.classList.add('hidden'),380)},wait)}
@@ -845,6 +944,7 @@ function startApp(){
   setTimeout(()=>{if(me&&annUnseen().length&&!document.getElementById('modalRoot').innerHTML)openAnn(true)},600);
   splashOut();
   document.getElementById('app').classList.remove('hidden');
+  if(UXD_DEMO)initPTR();
   route();
   if(GAS&&CHAT){chatPull();chatLoop()}
   if(GAS&&!poll)poll=setInterval(async()=>{if(document.hidden||document.getElementById('modalRoot').innerHTML)return;try{await Data.reload();route()}catch(e){}},60000);
@@ -852,17 +952,21 @@ function startApp(){
 async function logout(){await Data.logout();document.getElementById('app').classList.add('hidden');renderLogin()}
 
 
-const ui={hMode:'1',hTab:'m',hOpen:true,cMonth:ym(TODAY),eMonth:'',mClosed:{},calDay:TODAY,scope:'mine',view:'table',fStatus:'',fOwner:'',fSpec:'',q:'',calM:ym(TODAY),calScope:'mine',finM:ym(TODAY),expM:ym(TODAY),laterOpen:false,histQ:''};
+const ui={uxd:UXD_DEMO,hMode:'1',hTab:'m',hOpen:true,cMonth:ym(TODAY),eMonth:'',mClosed:{},calDay:TODAY,scope:'mine',view:'table',fStatus:'',fOwner:'',fSpec:'',q:'',calM:ym(TODAY),calScope:'mine',finM:ym(TODAY),expM:ym(TODAY),laterOpen:false,histQ:''};
 let page='home';
+function uxBar(){if(!UXD_DEMO)return;document.body.classList.toggle('uxd',ui.uxd);let b=document.getElementById('uxbar');
+  if(!b){b=document.createElement('div');b.id='uxbar';b.className='uxbar';document.body.appendChild(b)}
+  b.innerHTML=`<button data-ux="0" class="${ui.uxd?'':'on'}">現在的</button><button data-ux="1" class="${ui.uxd?'on':''}">UX 改版 demo</button>`;
+  b.querySelectorAll('button').forEach(x=>x.onclick=()=>{ui.uxd=x.dataset.ux==='1';if(me)route();else renderLogin();uxBar()})}
 function route(){
-  applyColors();
+  applyColors();uxBar();
   if(GAS&&CHAT&&page==='chat'&&!route._c){route._c=1;setTimeout(()=>{route._c=0;chatPull();chatLoop()},0)}
   const r=(location.hash||'').slice(1);
   if(PAGES[r])page=r;
   const unread=CHAT?chatUnread():0;
   const navItem=([k,t,p])=>`<a href="#${k}" data-p="${k}" class="${k===page?'on':''}">${ico(p)}<span>${t}</span>${k==='chat'&&unread?`<b class="badge">${unread>99?'99+':unread}</b>`:''}</a>`;
   document.getElementById('nav').innerHTML=NAV.map(navItem).join('');
-  document.getElementById('tabbar').innerHTML=NAV.filter(n=>!(CHAT&&n[0]==='expenses')).map(navItem).join('');
+  document.getElementById('tabbar').innerHTML=NAV.filter(n=>!(CHAT&&n[0]==='expenses')&&n[0]!=='mail').map(navItem).join('');
   document.getElementById('main').classList.toggle('chat-mode',page==='chat');
   document.querySelectorAll('#nav a,#tabbar a').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
   document.getElementById('meTop').innerHTML=avatar(me,30);
@@ -872,8 +976,8 @@ function route(){
   document.getElementById('meBox').onclick=e=>{e.stopPropagation();openMeMenu(e.currentTarget)};
   document.getElementById('pageTitle').textContent=PAGES[page];
   document.getElementById('topAct').innerHTML='';
-  renderSync();renderBell();
-  ({home:renderHome,cases:renderCases,calendar:renderCalendar,finance:renderFinance,expenses:renderExpenses,profile:renderProfile,chat:renderChat})[page]();
+  renderSync();renderBell();renderMailBtn();
+  ({mail:renderMail,home:renderHome,cases:renderCases,calendar:renderCalendar,finance:renderFinance,expenses:renderExpenses,profile:renderProfile,chat:renderChat})[page]();
   const nb=document.querySelector('#topAct .newbtn'),fab=document.getElementById('fab');
   fab.classList.toggle('show',!!nb);fab.onclick=()=>nb&&nb.click();if(nb)fab.setAttribute('aria-label',nb.textContent.replace('＋','').trim());
   window.scrollTo?.(0,window.scrollY);
@@ -912,7 +1016,7 @@ function renderHome(){
   const pending=S.cases.filter(c=>collector(c)===me&&c.ms.publish.done&&!isPaid(c));
   const active=S.cases.filter(c=>mine(c)&&c.status!=='已結案');
   const ts=tasksFor(me),in7=addDays(TODAY,7);
-  const over=ts.filter(t=>t.date<TODAY),soon=ts.filter(t=>t.date>=TODAY&&t.date<=in7),later=ts.filter(t=>t.date>in7);
+  const overAll=ts.filter(t=>t.date<TODAY),old=ui.uxd?overAll.filter(t=>diffDays(TODAY,t.date)<-30):[],over=ui.uxd?overAll.filter(t=>diffDays(TODAY,t.date)>=-30):overAll,soon=ts.filter(t=>t.date>=TODAY&&t.date<=in7),later=ts.filter(t=>t.date>in7);
   const days=[...Array(7)].map((_,i)=>rel(i));
   const evs=d=>{const o=[];S.cases.forEach(c=>MS.forEach(([k])=>{if(c.ms[k].date===d&&responsible(c,k).includes(me))o.push({c,k,done:c.ms[k].done})}));return o.sort((a,b)=>(tm(a.c,a.k)||'99').localeCompare(tm(b.c,b.k)||'99'))};
   const h=new Date().getHours();
@@ -920,6 +1024,7 @@ function renderHome(){
   <div style="margin-bottom:16px"><div style="font-size:20px;font-weight:600">${h<11?'早安':h<18?'午安':'晚安'}，${esc(S.users[me].name)}</div>
     <div class="muted">${S.users[me].prefs&&S.users[me].prefs.greet?esc(S.users[me].prefs.greet)+'　':''}今天 ${md(TODAY)}・有 ${over.length+soon.filter(t=>t.date===TODAY).length} 件事要處理</div></div>
   ${hmode()==='5'?(()=>{const n=S.cases.filter(c=>mine(c)&&noShoot(c)).length;return n?`<div class="holdban" id="hbHome"><div><b>有 ${n} 件還沒排拍攝日</b><div class="small">這些案子算 On hold，不會出現在月份清單和收入</div></div><button class="btn primary">一次補日期</button></div>`:''})():''}
+  ${ui.uxd&&LS.get('mizu_focus_'+me)!==TODAY?(()=>{const f=soon.filter(x=>x.date===TODAY)[0];return f?`<div class="focus" data-open="${f.c.id}"><div class="fl"><div class="fk">今天最急 🔥</div><div class="ft">${esc(taskLabel(f.c,f.k))}・${esc(f.c.title)}</div>${f.time?`<div class="fw">${f.time}</div>`:''}</div><button class="fd" data-fcid="${f.c.id}" data-k="${f.k}">完成</button></div>`:''})():''}
   <div class="row c3">
     <div class="card stat"><div class="t">我本月實拿</div><div class="v">${money(inc.total)}</div><div class="h">個人案 ${money(inc.personal)}・Mizu ${money(inc.mizu)}</div></div>
     <div class="card stat"><div class="t">待收款（我負責追的）</div><div class="v" style="color:${pending.length?'#D48806':'inherit'}">${money(pending.reduce((s,c)=>s+(c.amount||0),0))}</div><div class="h">${pending.length} 筆已上線、廠商還沒匯</div></div>
@@ -927,7 +1032,8 @@ function renderHome(){
   </div>
   <div class="row c21">
     <div class="card"><div class="card-h"><h3>待辦</h3><span class="muted small">只顯示你要做的事・打勾就完成</span></div>
-      <div class="sec"><span class="dot" style="background:var(--error)"></span>已逾期 ${over.length}</div>${over.map(taskItem).join('')||'<div class="empty">沒有逾期的事 ✨</div>'}
+      <div class="sec"><span class="dot" style="background:var(--error)"></span>已逾期 ${over.length+old.length}</div>${over.map(taskItem).join('')||(old.length?'':'<div class="empty">沒有逾期的事 ✨</div>')}
+      ${old.length?`<div class="oldbox"><span>還有 ${old.length} 件逾期超過 30 天，可能是匯入的舊資料</span><button class="btn sm" id="oldAll">全部標完成</button></div>`:''}
       <div class="sec"><span class="dot" style="background:var(--warning)"></span>7 天內 ${soon.length}</div>${soon.map(taskItem).join('')||'<div class="empty">這週沒有排程</div>'}
       <div class="sec" id="tl" style="cursor:pointer"><span class="dot" style="background:var(--text4)"></span>之後 ${later.length}　<span style="color:var(--primary)">${ui.laterOpen?'收起':'展開'}</span></div>${ui.laterOpen?later.map(taskItem).join(''):''}
     </div>
@@ -939,12 +1045,20 @@ function renderHome(){
         ${e.map(x=>`<div class="ev ${x.done?'done':''}" data-open="${x.c.id}"><span class="dot" style="background:${ocol(x.c.owner)}"></span>${tpre(x.c,x.k)}${esc(MSL[x.k])}・${esc(x.c.title)}${NEWF&&x.k==='shoot'&&e.filter(y=>y.k==='shoot').length>1?'<span class="clash">撞期</span>':''}</div>`).join('')||'<div class="muted small">—</div>'}</div>`}).join('')}
     </div></div>
   </div>`;
-  M().querySelectorAll('.cb[data-cid]').forEach(b=>b.onclick=async e=>{
-    e.stopPropagation();b.classList.add('on');
-    const c=S.cases.find(x=>x.id===b.dataset.cid);const ch=applyDone(c,b.dataset.k,true);c.updatedBy=me;
-    toast(`${taskLabel(c,b.dataset.k)}完成`+(ch?`，狀態改為「${ch}」`:''));
+  const doneTask=async(cid,k,b)=>{
+    const c=S.cases.find(x=>x.id===cid);
+    if(ui.uxd){const prev={status:c.status,done:c.ms[k].done};const ch=applyDone(c,k,true);c.updatedBy=me;try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}
+      undoToast(`✓ ${taskLabel(c,k)}完成`+(ch?`・改為「${ch}」`:''),()=>{c.ms[k].done=prev.done;c.status=prev.status;route();Data.run('apiSaveCase',c)});
+      setTimeout(route,250);await Data.run('apiSaveCase',c);return}
+    const ch=applyDone(c,k,true);c.updatedBy=me;
+    toast(`${taskLabel(c,k)}完成`+(ch?`，狀態改為「${ch}」`:''));
     setTimeout(route,250);await Data.run('apiSaveCase',c);
-  });
+  };
+  M().querySelectorAll('.cb[data-cid]').forEach(b=>b.onclick=e=>{e.stopPropagation();b.classList.add('on');doneTask(b.dataset.cid,b.dataset.k,b)});
+  M().querySelectorAll('[data-fcid]').forEach(b=>b.onclick=e=>{e.stopPropagation();b.textContent='✓';const f=b.closest('.focus');f.classList.add('done');LS.set('mizu_focus_'+me,TODAY);
+    setTimeout(()=>{f.classList.add('bye');setTimeout(()=>doneTask(b.dataset.fcid,b.dataset.k,b),320)},350)});
+  if(document.getElementById('oldAll'))document.getElementById('oldAll').onclick=async()=>{const cs=new Set();old.forEach(t=>{applyDone(t.c,t.k,true);t.c.updatedBy=me;cs.add(t.c)});
+    undoToast(`已把 ${old.length} 件舊待辦標完成`,null);route();for(const c of cs)await Data.run('apiSaveCase',c)};
   bindOpen(M());
   if(document.getElementById('hbHome'))document.getElementById('hbHome').onclick=()=>openBulkShoot();
   document.getElementById('tl').onclick=()=>{ui.laterOpen=!ui.laterOpen;renderHome()};
@@ -960,8 +1074,10 @@ const MMODES=[['A','月份切換'],['B','依月份分組'],['C','月份標籤'],
 const caseMonth=c=>pubMonth(c)||'none';
 const mLabel=k=>k==='none'?'上線未定':ymLabel(k);
 const mShort=k=>k==='none'?'未定':(k.slice(0,4)===TODAY.slice(0,4)?'':k.slice(2,4)+'年')+(+k.slice(5))+'月';
+function progBar(c){const ks=MS.map(([k])=>k),ni=ks.findIndex(k=>!c.ms[k].done);
+  return `<div class="prog">${ks.map((k,i)=>`<i class="${c.ms[k].done?'d':i===ni?'n':''}"></i>`).join('')}</div><div class="prog-l">${ni<0?'全部完成 🎉':'下一步：'+MSL[ks[ni]]+(c.ms[ks[ni]].date?'・'+md(c.ms[ks[ni]].date):'')}</div>`}
 function caseRowsMob(list){return list.map(c=>`<div class="item" data-open="${c.id}"><div class="main"><div class="ttl">${esc(c.title)}</div><div class="meta">${otag(c.owner)}${stag(c.status)}${c.owner==='mizu'?`<span>收款 ${esc(NAMES[c.lead])}</span>`:''}${c.month&&c.month!==ym(c.ms.shoot.date)?`<span class="tag tg-gold">算${mShort(c.month)}</span>`:''}</div></div>
-      <div class="rt"><div class="num" style="color:var(--text);font-weight:500">${money(c.amount)}</div><div class="small">${c.ms.shoot.date?'拍攝 '+md(c.ms.shoot.date):'拍攝未定'}</div></div></div>`).join('')}
+      <div class="rt"><div class="num ${ui.uxd&&!c.amount?'amt0':''}" style="color:var(--text);font-weight:500">${ui.uxd&&!c.amount?'金額未填':money(c.amount)}</div><div class="small">${c.ms.shoot.date?'拍攝 '+md(c.ms.shoot.date):'拍攝未定'}</div></div></div>`).join('')}
 function caseRowsDesk(list){return list.map(c=>`<tr data-open="${c.id}"><td style="max-width:280px"><div style="font-weight:500">${esc(c.title)}</div>${c.brand||!canEdit(c)?`<div class="muted small">${esc(c.brand)}${canEdit(c)?'':(c.brand?'・':'')+'僅檢視'}</div>`:''}</td>
     <td>${otag(c.owner)}</td><td>${c.owner==='mizu'?esc(NAMES[c.lead]):'<span class="muted">—</span>'}</td><td class="muted small" style="max-width:180px">${c.specs.join('、')||'—'}</td>
     <td>${stag(c.status)}</td><td class="num">${c.ms.shoot.date?md(c.ms.shoot.date):'<span class="muted">未定</span>'}${c.month&&c.month!==ym(c.ms.shoot.date)?` <span class="tag tg-gold">算${mShort(c.month)}</span>`:''}</td><td class="r num">${money(c.amount)}</td>
@@ -1189,7 +1305,8 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
-  {id:'2026-11-11-1740',date:'11/11',title:'打開更快了 ⚡',items:[['開場動畫','打開 App 時會有 MIZU 的開場動畫，不再只有轉圈圈'],['秒開','會先顯示上次的資料，同時在背景跟 Google 同步，右上角綠點亮起就是最新的']]},
+  {id:'2026-11-11-2020',date:'11/11',title:'信件＋報價建議 ✉️',items:[['信件','右上角多了信封按鈕，會讀 mizu.zipp@gmail.com 的收件匣，自動挑出合作邀約，紅色數字是還沒回的'],['報價建議','打開邀約會自動勾出規格、用價目表算報價，並參考過去同規格案子的實拿金額'],['回信草稿','幫你寫好回信，可以直接改，按「存草稿」就存進 Gmail 草稿匣，不會自己寄出']]},
+{id:'2026-11-11-1740',date:'11/11',title:'打開更快了 ⚡',items:[['開場動畫','打開 App 時會有 MIZU 的開場動畫，不再只有轉圈圈'],['秒開','會先顯示上次的資料，同時在背景跟 Google 同步，右上角綠點亮起就是最新的']]},
 {id:'2026-11-10-2010',date:'11/10',title:'聊天室上線＋隸屬月份',items:[['聊天室','下方多了「聊天」分頁，可以直接傳訊息給對方，也有常用句可以一鍵送出。手機版下方的「支出」換成「聊天」，支出紀錄改從財務頁的「支出紀錄」按鈕進去'],['隸屬月份','案件裡多一個「隸屬月份（算錢用）」，預設跟拍攝日，想算到別的月份可以自己選；選了別的月份，清單上會出現「算 X月」的標籤']]},
 {id:'2026-11-10-1610',date:'11/10',title:'時程可以加時間了',items:[['預設整天','案件時程的日期預設是整天，跟以前一樣'],['加時間','日期旁邊按「整天」就能選幾點，按 ✕ 改回整天；Google 日曆會變成有時間的行程']]},
 {id:'2026-11-10-1535',date:'11/10',title:'沒排拍攝日的案子回來了',items:[['On hold・未排拍攝','每個月的案件清單最下面都有這一區，還沒填拍攝日的案子都在這裡，點標題可以收合'],['自動歸月','幫案子填上拍攝日，它就會自動移到那個月']]},
@@ -1208,6 +1325,107 @@ const ANN=[
 ];
 const annKey=()=>'mizu_ann_'+me;
 const annUnseen=()=>{const s=LS.get(annKey())||'';return ANN.filter(a=>a.id>s)};
+/* ===== 信件＋報價建議 ===== */
+const MAIL_ICO='<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>';
+const DEF_PRICES={'Reels':3500,'配音':500,'Threads':1000,'抖音':1000,'限動':500,'廣告主':1000,'素材授權':1500,'圖文':1500};
+let mailBusy=false;
+function mailTodo(){return S.mail?S.mail.threads.filter(m=>m.inquiry&&!m.replied&&!m.draft).length:0}
+function renderMailBtn(){const b=document.getElementById('mailBtn');if(!b)return;const n=mailTodo();
+  b.innerHTML=ico(MAIL_ICO)+(n?`<span class="mbadge">${n>9?'9+':n}</span>`:'');b.classList.toggle('on',page==='mail');b.onclick=()=>go('mail');
+  if(!S.mail&&!mailBusy)loadMail(false)}
+async function loadMail(force){
+  if(mailBusy)return;mailBusy=true;
+  try{if(GAS)S.mail=await call('apiMail',token);else{await new Promise(r=>setTimeout(r,force?600:0));S.mail=S.mail||demoMail()}
+    S.mail.loadedAt=Date.now();}catch(e){if(page==='mail')toast('讀取信件失敗：'+String(e.message||e).replace(/^Error:\s+/,''),true);S.mail=S.mail||{threads:[],prices:DEF_PRICES,err:String(e.message||e)}}
+  finally{mailBusy=false}
+  renderMailBtn();if(page==='mail'&&!document.getElementById('modalRoot').innerHTML)renderMail();
+}
+function demoMail(){const d=k=>addDays(TODAY,-k);return {prices:{...DEF_PRICES},threads:[
+  {id:'t1',subject:'【合作邀約】冬季新品火鍋湯底 Reels 推廣',from:'王小姐',email:'pr@example-food.com',date:d(0)+'T10:24',snippet:'您好，我們是○○食品行銷部，想邀請您拍攝一支 Reels 介紹冬季新品湯底…',body:'00 您好：\n\n我們是○○食品行銷部，最近推出冬季新品火鍋湯底，想邀請您拍攝一支 Reels（需配音），並同步發一則限動。\n預計 12 月上旬上線，也想詢問廣告主授權 30 天的費用。\n\n麻煩提供報價，謝謝！\n王小姐',inquiry:true,specs:['Reels','配音','限動','廣告主'],replied:false,draft:null},
+  {id:'t2',subject:'美妝品牌 Threads + 抖音合作詢價',from:'Lily｜Glow Agency',email:'lily@example-agency.com',date:d(1)+'T16:02',snippet:'Hi 米米，想詢問 Threads 與抖音同步發布的合作費用…',body:'Hi 米米：\n\n想詢問 Threads 與抖音同步發布的合作費用，產品為新款唇釉，預計 11 月底寄出。\n是否也能提供素材授權給品牌官方使用？\n\nLily',inquiry:true,specs:['Threads','抖音','素材授權'],replied:false,draft:{id:'d2',body:'Hi Lily 您好，謝謝邀約！…'}},
+  {id:'t3',subject:'Re: 快閃店媒體日邀請',from:'Kevin',email:'kevin@example-event.com',date:d(3)+'T09:15',snippet:'感謝回覆，這邊已幫您保留 11/22 的名額…',body:'感謝回覆，這邊已幫您保留 11/22 的名額，當天見！',inquiry:true,specs:['Reels'],replied:true,draft:null},
+  {id:'t4',subject:'您的帳單已出爐',from:'中華電信',email:'bill@example.com',date:d(2)+'T08:00',snippet:'本期帳單金額…',body:'本期帳單金額 NT$ 999',inquiry:false,specs:[],replied:false,draft:null}]}}
+function renderMail(){
+  M().innerHTML=`<div class="mailtop"><div class="seg"><button data-mf="inq" class="${ui.mailAll?'':'on'}">合作邀約</button><button data-mf="all" class="${ui.mailAll?'on':''}">全部信件</button></div>
+    <span class="spacer"></span><button class="btn" id="mPrice">價目表</button><button class="btn" id="mReload" ${mailBusy?'disabled':''}>${mailBusy?'讀取中…':'重新整理'}</button></div>
+    <div class="muted small" style="margin:0 2px 10px">讀取 mizu.zipp@gmail.com 最近 45 天的收件匣・自動挑出像合作邀約的信</div>
+    <div class="card" id="mlist">${!S.mail?'<div class="empty"><div class="spin" style="margin:0 auto 8px"></div>讀取信件中…</div>':mailList()}</div>`;
+  M().querySelectorAll('[data-mf]').forEach(b=>b.onclick=()=>{ui.mailAll=b.dataset.mf==='all';renderMail()});
+  document.getElementById('mReload').onclick=()=>{loadMail(true);renderMail()};
+  document.getElementById('mPrice').onclick=openPrices;
+  M().querySelectorAll('[data-mail]').forEach(r=>r.onclick=()=>openMail(r.dataset.mail));
+  if(!S.mail&&!mailBusy)loadMail(false);
+}
+function mailList(){
+  if(S.mail.err&&!S.mail.threads.length)return `<div class="empty">讀不到信件：${esc(S.mail.err)}<br><span class="small">如果剛更新 Apps Script，請先在編輯器執行一次 authorizeGmail 授權</span></div>`;
+  const l=S.mail.threads.filter(m=>ui.mailAll||m.inquiry);
+  if(!l.length)return '<div class="empty">目前沒有新的合作邀約 📭</div>';
+  return l.map(m=>{const st=m.replied?'<span class="tag tg-green">已回覆</span>':m.draft?'<span class="tag tg-blue">有草稿</span>':m.inquiry?'<span class="tag tg-orange">待回覆</span>':'';
+    const dt=m.date.slice(0,10),when=dt===TODAY?m.date.slice(11,16):md(dt);
+    return `<div class="item mrow ${m.inquiry&&!m.replied&&!m.draft?'unread':''}" data-mail="${m.id}"><div class="main"><div class="mfrom"><b>${esc(m.from)}</b><span class="muted small">${when}</span></div>
+      <div class="ttl">${esc(m.subject)}</div><div class="msnip">${esc(m.snippet)}</div>
+      <div class="meta">${st}${m.specs.map(s=>`<span class="tag">${esc(s)}</span>`).join('')}</div></div></div>`}).join('');
+}
+function quoteLines(specs,pr){return specs.map(s=>[s,+(pr[s]??DEF_PRICES[s]??0)])}
+function draftText(m,specs,pr,total){
+  const lines=quoteLines(specs,pr).map(([s,v])=>`・${s}　${money(v)}`).join('\n');
+  const nm=(m.from||'').replace(/[｜|].*$/,'').trim();
+  return `${nm||''}您好：\n\n謝謝您的邀約，很開心有機會合作！\n針對這次的合作內容，報價如下：\n\n${lines||'・（請填寫合作內容）'}\n合計 ${money(total)}（未稅）\n\n如果內容或預算需要調整，都可以再跟我們討論 🙏\n期待合作！\n\n${S.users[me].name}｜MIZU 米事`;
+}
+function openMail(id){
+  const m=S.mail.threads.find(x=>x.id===id);if(!m)return;
+  const pr=S.mail.prices||DEF_PRICES;
+  let specs=m.specs.slice(),prices={},dirty=!!m.draft;
+  SPECS.forEach(s=>prices[s]=+(pr[s]??DEF_PRICES[s]??0));
+  const total=()=>specs.reduce((a,s)=>a+(+prices[s]||0),0);
+  const root=document.getElementById('modalRoot');
+  root.innerHTML=`<div class="mask" id="mk"><div class="modal"><div class="mh"><h2>${esc(m.subject)}</h2><button class="x" id="cx">✕</button></div>
+    <div class="mb">
+      <div class="mhead"><b>${esc(m.from)}</b> <span class="muted small">&lt;${esc(m.email)}&gt;・${md(m.date.slice(0,10))} ${m.date.slice(11,16)}</span></div>
+      <div class="mbody ${m.body.length>300?'clip':''}" id="mbody">${esc(m.body)}</div>${m.body.length>300?'<button class="linkbtn" id="mMore">展開全文</button>':''}
+      <div class="qsec"><div class="qh">報價建議</div>
+        <div class="chips" id="qchips">${SPECS.map(s=>`<label class="${specs.includes(s)?'on':''}"><input type="checkbox" value="${s}" ${specs.includes(s)?'checked':''}>${s}</label>`).join('')}</div>
+        <div id="qlines"></div>
+        <div class="qref" id="qref2"></div>
+      </div>
+      <div class="qh" style="margin-top:16px;display:flex;align-items:center">回信草稿${m.draft?'<span class="tag tg-blue" style="margin-left:8px">Gmail 已有草稿</span>':''}<span class="spacer"></span><button class="linkbtn" id="regen">依報價重新產生</button></div>
+      <textarea class="inp" id="dbody" rows="12" style="height:auto;line-height:1.6;padding:10px 12px"></textarea>
+      <div class="muted small" style="margin-top:6px">按「存草稿」會存到 Gmail 的草稿匣（回覆這封信），不會直接寄出。<a href="https://mail.google.com/mail/u/0/#all/${esc(m.id)}" target="_blank" rel="noopener" class="only-mob">在 Gmail 打開 ›</a></div>
+    </div>
+    <div class="mf"><a class="btn" href="https://mail.google.com/mail/u/0/#all/${esc(m.id)}" target="_blank" rel="noopener">在 Gmail 打開</a><span class="spacer"></span><button class="btn" id="cc">取消</button><button class="btn primary" id="dsave">存草稿</button></div></div></div>`;
+  const $=x=>document.getElementById(x),ta=$('dbody');
+  const drawQ=()=>{
+    $('qlines').innerHTML=specs.length?`<div class="qtable">${specs.map(s=>`<div class="ql"><span>${s}</span><input class="inp num" type="number" data-qp="${s}" value="${prices[s]}"></div>`).join('')}<div class="ql tot"><span>合計（未稅）</span><b>${money(total())}</b></div></div>`:'<div class="muted small" style="margin-top:8px">勾選這次的合作內容，會用價目表算出報價</div>';
+    $('qref2').innerHTML=specs.length?quoteRef(specs):'';
+    $('qlines').querySelectorAll('[data-qp]').forEach(i=>i.oninput=()=>{prices[i.dataset.qp]=+i.value||0;$('qlines').querySelector('.tot b').textContent=money(total());if(!dirty)ta.value=draftText(m,specs,prices,total())});
+  };
+  drawQ();
+  ta.value=m.draft?m.draft.body:draftText(m,specs,prices,total());
+  ta.oninput=()=>dirty=true;
+  $('qchips').querySelectorAll('input').forEach(i=>i.onchange=()=>{i.parentElement.classList.toggle('on',i.checked);specs=SPECS.filter(s=>$('qchips').querySelector(`input[value="${s}"]`).checked);drawQ();if(!dirty)ta.value=draftText(m,specs,prices,total())});
+  $('regen').onclick=()=>{if(dirty&&!confirm('重新產生會蓋掉你改過的草稿，確定嗎？'))return;ta.value=draftText(m,specs,prices,total());dirty=false};
+  if($('mMore'))$('mMore').onclick=e=>{$('mbody').classList.remove('clip');e.target.remove()};
+  const close=()=>closeSheet(root);
+  $('cx').onclick=$('cc').onclick=close;$('mk').onmousedown=e=>{if(e.target.id==='mk')close()};
+  $('dsave').onclick=async()=>{const body=ta.value.trim();if(!body){toast('草稿是空的',true);return}
+    const b=$('dsave');b.disabled=true;b.textContent='儲存中…';
+    try{const r=GAS?await call('apiSaveDraft',token,m.id,body):{id:'demo'};m.draft={id:r.id,body};close();toast('已存到 Gmail 草稿');renderMailBtn();if(page==='mail')renderMail()}
+    catch(e){b.disabled=false;b.textContent='存草稿';toast('存草稿失敗：'+String(e.message||e).replace(/^Error:\s+/,''),true)}};
+  iosify(root);
+}
+function openPrices(){
+  const pr={...DEF_PRICES,...((S.mail&&S.mail.prices)||{})};
+  const root=document.getElementById('modalRoot');
+  root.innerHTML=`<div class="mask" id="mk"><div class="modal sm"><div class="mh"><h2>價目表</h2><button class="x" id="cx">✕</button></div>
+    <div class="mb"><div class="muted small" style="margin-bottom:10px">報價建議會用這裡的單價相加，再參考過去同規格案子的實拿金額。兩個人共用同一份。</div>
+    ${SPECS.map(s=>`<div class="ql"><span>${s}</span><input class="inp num" type="number" data-pp="${s}" value="${pr[s]}"></div>`).join('')}</div>
+    <div class="mf"><button class="btn" id="cc">取消</button><button class="btn primary" id="psave">儲存</button></div></div></div>`;
+  const close=()=>closeSheet(root);
+  document.getElementById('cx').onclick=document.getElementById('cc').onclick=close;
+  document.getElementById('psave').onclick=async()=>{const o={};root.querySelectorAll('[data-pp]').forEach(i=>o[i.dataset.pp]=+i.value||0);
+    if(!S.mail)S.mail={threads:[],prices:o};else S.mail.prices=o;close();toast('價目表已更新');if(GAS)await Data.run('apiSetPrices',o)};
+  iosify(root);
+}
 function renderBell(){
   const b=document.getElementById('bell');if(!b)return;
   b.innerHTML=ico('<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/>')+(annUnseen().length?'<span class="rd"></span>':'');
@@ -1424,7 +1642,7 @@ function renderFinance(){
   M().innerHTML=`<div class="toolbar"><span class="muted tb-note">依隸屬月份計算</span>${CHAT?'<button class="btn only-mob" id="toExp" style="display:inline-flex!important">支出紀錄</button>':''}<span class="spacer"></span>${monthPicker(m,'fm')}</div>
   <div class="card" style="margin-bottom:16px"><div class="hero">
     <div style="flex:1;min-width:240px"><div class="lbl">${ymLabel(m)} Mizu 月結</div>
-      <div class="big">${Math.abs(st.net)<1?'不用轉帳':`${esc(NAMES[from])} 要轉 ${money(Math.abs(st.net))} 給 ${esc(NAMES[to])}`}</div>
+      ${ui.uxd&&Math.abs(st.net)>=1?`<div class="xfer2"><div class="xamt">${money(Math.abs(st.net))}</div><div class="xrow"><div class="xa">${avatar(from,52)}<span>${esc(NAMES[from])} 轉出</span></div><div class="xm"><i></i></div><div class="xa">${avatar(to,52)}<span>${esc(NAMES[to])} 收</span></div></div></div>`:`<div class="big">${Math.abs(st.net)<1?'不用轉帳':`${esc(NAMES[from])} 要轉 ${money(Math.abs(st.net))} 給 ${esc(NAMES[to])}`}</div>`}
       <div class="sub">Mizu 案 ${st.mc.length} 件共 ${money(st.total)}${st.exTotal?`・代墊 ${money(st.exTotal)} 已依分攤方式抵掉`:''}</div></div>
     ${NEWF?'<button class="btn" id="copySet">複製月結明細</button>':''}<div style="display:flex;align-items:center;gap:10px"><button class="switch ${sd?.done?'on':''}" id="sdone"></button><span>${sd?.done?`已轉帳<span class="muted small">（${esc(NAMES[sd.by]||'')}）</span>`:'還沒轉'}</span></div>
   </div>
@@ -1548,7 +1766,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/11 17:33</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/11 20:13</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
