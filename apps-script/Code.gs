@@ -13,11 +13,11 @@ const MS = [['shoot','拍攝'],['script','腳本'],['review','AC'],['approve','�
 const TO_KEY = {'00':'00','0':'00','米米':'mimi','mimi':'mimi','Mizu':'mizu','MIZU':'mizu','mizu':'mizu'};
 const TO_LABEL = {'00':'00','mimi':'米米','mizu':'Mizu'};
 
-// 你們現有的 Google 日曆：00 → TZU、米米 → Miranda（Mizu 案放負責人自己的日曆；mizu 米事已不再使用）
+// 你們現有的 Google 日曆：00 個人案 → TZU、米米個人案 → Miranda、Mizu 案 → mizu.zipp@gmail.com 預設日曆
 const CALS = {
   '00': '3802fe65a1dfdde93b7bd8fd6d9acb977ff4d429a770f29f9ba9b5b17a9e1c49@group.calendar.google.com',
   'mimi': 'c3777fdcdd59fcf07841cfac3c5d12192e69ff026b1217e85d5594872d39266d@group.calendar.google.com',
-  'mizu': '1560368ba62edb977ee3c119b950ddb5337a3c90d93e570f3ce750f96f3cb8c7@group.calendar.google.com'
+  'mizu': 'mizu.zipp@gmail.com'   // Mizu 案放 mizu.zipp 的預設日曆（原本是「mizu 米事」）
 };
 // 日曆上的事件名稱，照你們原本的寫法：「拍攝｜案名」
 const CAL_WORD = { shoot: '拍攝', script: '腳本', review: 'AC', approve: '過稿', publish: '上線', payment: '匯款' };
@@ -253,36 +253,19 @@ function setRec_(ctx, key, cal, id, date, title) {
   else { ctx.s.appendRow(row); ctx.m[key] = { row: ctx.s.getLastRow() }; }
   Object.assign(ctx.m[key], { cal: cal, id: id, date: date, title: title || '' });
 }
-// Mizu 的案子不放「mizu 米事」，改放到負責人自己的日曆（拍攝兩個人都放）
-const SFX = ['', '_00', '_mimi'];
 function syncCase_(c, ctx) {
   ctx = ctx || syncCtx_();
-  MS.forEach(([k]) => {
-    const targets = c.owner === 'mizu'
-      ? responsible_(c, k).filter(w => CALS[w]).map(w => [c.id + '_' + k + '_' + w, CALS[w]])
-      : [[c.id + '_' + k, CALS[c.owner]]];
-    let moved = false;
-    SFX.forEach(sx => {   // 不該存在的舊紀錄（例如以前放在 mizu 米事、或換了負責人）就刪掉
-      const key = c.id + '_' + k + sx;
-      if (targets.some(t => t[0] === key)) return;
-      const r = ctx.m[key];
-      if (r && r.id) { try { cal_(ctx, r.cal).getEventById(r.id).deleteEvent(); } catch (e) {} setRec_(ctx, key, '', '', ''); moved = true; }
-    });
-    targets.forEach(([key, calId]) => { try { syncOne_(c, k, key, calId, ctx, moved); } catch (e) { console.log(c.title, k, e); } });
-  });
-}
-function syncOne_(c, k, key, calId, ctx, force) {
   const oldest = Utilities.formatDate(new Date(Date.now() - 30 * 864e5), TZ, 'yyyy-MM-dd');
-  {
-    const rec = ctx.m[key], date = c.ms[k].date, time = date ? (c.ms[k].time || '') : '';
+  MS.forEach(([k]) => {
+    const key = c.id + '_' + k, rec = ctx.m[key], date = c.ms[k].date, time = date ? (c.ms[k].time || '') : '';
     const dk = date + (time ? ' ' + time : '');
-    const title = CAL_WORD[k] + '｜' + c.title;
+    const calId = CALS[c.owner], title = CAL_WORD[k] + '｜' + c.title;
     if (!date && !(rec && rec.id)) return;
     if (date && rec && rec.id && rec.date === dk && rec.cal === calId && rec.title === title) return; // 沒變就跳過
     let ev = null;
     if (rec && rec.id) { try { ev = cal_(ctx, rec.cal).getEventById(rec.id); } catch (e) { ev = null; } }
     if (!date) { if (ev) ev.deleteEvent(); if (rec && rec.id) setRec_(ctx, key, '', '', ''); return; }
-    if (!ev && date < oldest && !force) return; // 太久以前的不補（搬日曆時例外）
+    if (!ev && date < oldest) return; // 太久以前的不補
     if (ev && rec.cal !== calId) { ev.deleteEvent(); ev = null; } // 歸屬改了，換日曆
     const cal = cal_(ctx, calId);
     if (!ev) {
@@ -311,7 +294,7 @@ function syncOne_(c, k, key, calId, ctx, force) {
       }
     }
     setRec_(ctx, key, calId, ev.getId(), dk, title);
-  }
+  });
 }
 // 沒選時間 → 整天；有選時間 → 從那個時間開始 1 小時
 function newEv_(cal, title, date, time, k) {
@@ -337,10 +320,10 @@ function setEvTime_(ev, date, time) {
 }
 function unsyncCase_(id) {
   const ctx = syncCtx_();
-  MS.forEach(([k]) => SFX.forEach(sx => {
-    const key = id + '_' + k + sx, rec = ctx.m[key];
-    if (rec && rec.id) { try { cal_(ctx, rec.cal).getEventById(rec.id).deleteEvent(); } catch (e) {} setRec_(ctx, key, '', '', ''); }
-  }));
+  MS.forEach(([k]) => {
+    const rec = ctx.m[id + '_' + k];
+    if (rec && rec.id) { try { cal_(ctx, rec.cal).getEventById(rec.id).deleteEvent(); } catch (e) {} setRec_(ctx, id + '_' + k, '', '', ''); }
+  });
 }
 function syncAll() {
   const lock = LockService.getScriptLock();
@@ -350,9 +333,10 @@ function syncAll() {
     casesFromSheet_().forEach(c => { try { syncCase_(c, ctx); } catch (e) { console.log(c.title, e); } });
   } finally { lock.releaseLock(); }
 }
-// 一次性：把 Mizu 案子從「mizu 米事」搬到各自的日曆，再清掉 TZU / Miranda 裡重複的同名行程
-function moveMizuToPersonal() {
-  syncAll();
+// 一次性：把 Mizu 案從「mizu 米事」搬到 mizu.zipp 預設日曆，再清掉三本日曆裡重複的同名行程
+function moveMizuToMain() {
+  const ctx = syncCtx_();
+  casesFromSheet_().forEach(c => { try { syncCase_(c, ctx); } catch (e) { console.log(c.title, e); } });
   dedupeCalendars();
 }
 function dedupeCalendars() {
@@ -360,7 +344,7 @@ function dedupeCalendars() {
   Object.keys(ctx.m).forEach(k => { const r = ctx.m[k]; if (r.id) keep[r.id] = 1; });
   const from = new Date(Date.now() - 120 * 864e5), to = new Date(Date.now() + 365 * 864e5);
   let n = 0;
-  ['00', 'mimi'].forEach(w => {
+  Object.keys(CALS).forEach(w => {
     const cal = CalendarApp.getCalendarById(CALS[w]), seen = {};
     cal.getEvents(from, to).forEach(e => {
       const t = e.getTitle().trim(); if (t.indexOf('｜') < 0) return;
