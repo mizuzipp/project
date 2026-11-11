@@ -277,6 +277,12 @@ details summary::-webkit-details-marker{display:none}
 .mrow.unread .mfrom b,.mrow.unread .ttl{font-weight:700}
 .msnip{color:var(--text3);font-size:13px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mhead{margin-bottom:8px}
+.msum{background:#FAFAFA;border-radius:12px;padding:6px 12px 10px}
+.msum .sr{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--split);font-size:14px;line-height:1.6}
+.msum .sr:last-of-type{border-bottom:none}
+.msum .sr>span{flex:none;width:68px;color:var(--text3);font-size:13px}
+.msum .sr>div{flex:1;min-width:0}.msum .tag{margin:0 4px 2px 0}
+.mbody.hidden{display:none}
 .mbody{white-space:pre-wrap;background:#FAFAFA;border-radius:10px;padding:12px;font-size:14px;line-height:1.7;color:var(--text2)}
 .mbody.clip{max-height:160px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 70%,transparent)}
 .linkbtn{border:none;background:none;color:var(--primary);padding:6px 0;font-size:13px;cursor:pointer}
@@ -698,6 +704,10 @@ td.mgroup{display:table-cell}
 const LOGO=document.querySelector('.sider .brand img').src;
 const DEMO_CASES=[];
 
+const FLOW_RANK={'確定合作':0,'過腳本中':1,'過稿中':2,'剪輯中':3,'待發布':4,'未發布已結帳':5,'待匯款':6,'已結案':7,'On hold':8};
+function flowDate(c){const ks=MS.map(([k])=>k);
+  if(c.status==='已結案'){const ds=ks.map(k=>c.ms[k].date).filter(Boolean).sort();return ds[ds.length-1]||''}
+  const nx=ks.filter(k=>!c.ms[k].done&&c.ms[k].date).map(k=>c.ms[k].date).sort();return nx[0]||c.ms.shoot.date||''}
 const STATUSES=['確定合作','On hold','過腳本中','剪輯中','過稿中','待發布','未發布已結帳','待匯款','已結案'];
 const ST_COLOR={'確定合作':'blue','On hold':'default','過腳本中':'cyan','剪輯中':'geekblue','過稿中':'purple','待發布':'orange','待匯款':'gold','未發布已結帳':'lime','已結案':'green'};
 const RANK={'確定合作':0,'On hold':0,'過腳本中':1,'剪輯中':2,'過稿中':3,'待發布':4,'待匯款':5,'未發布已結帳':5,'已結案':6};
@@ -1106,6 +1116,9 @@ function renderCases(){
   const mode=MONTH_DEMO?ui.mMode:MONTH_MODE;
   const order=new Map(S.cases.map((c,i)=>[c.id,i]));
   const byNew=(a,b)=>order.get(b.id)-order.get(a.id);
+  // 排序：確定合作 → 審稿（過腳本/過稿）→ 剪輯 → 發布 → 結案；同狀態日期近的在前
+  const byFlow=(a,b)=>{const d=(FLOW_RANK[a.status]??9)-(FLOW_RANK[b.status]??9);if(d)return d;
+    const ka=flowDate(a),kb=flowDate(b);if(ka!==kb){if(!ka)return 1;if(!kb)return -1;return a.status==='已結案'?kb.localeCompare(ka):ka.localeCompare(kb)}return byNew(a,b)};
   const base=filtered();
   const months=[...new Set(base.map(caseMonth))].sort((a,b)=>a==='none'?-1:b==='none'?1:b.localeCompare(a));
   const mcount=k=>base.filter(c=>caseMonth(c)===k).length;
@@ -1117,7 +1130,7 @@ function renderCases(){
   const sec1=hm==='1'&&!ui.q?holdL:[];
   const showOverview=mode==='E'&&!ui.eMonth;
   const view=isMob||mode==='B'||showOverview?'table':ui.view;
-  const list=baseM.filter(c=>!ui.fStatus||c.status===ui.fStatus).sort(byNew);
+  const list=baseM.filter(c=>!ui.fStatus||c.status===ui.fStatus).sort(byFlow);
   const cnt=s=>baseM.filter(c=>c.status===s).length;
   const sum=l=>l.reduce((s,c)=>s+(c.amount||0),0);
   let mctl='';
@@ -1305,7 +1318,8 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
-  {id:'2026-11-11-2035',date:'11/11',title:'信件搬到下方分頁',items:[['信件','手機版下方的「聊天」換成「信件」，紅色數字是還沒回的合作邀約'],['報價範本','每封報價草稿都會自動附上合作條件 1～9 點、LINE 官方帳號和「MIZU工作室 YUNA」簽名']]},
+  {id:'2026-11-11-2300',date:'11/11',title:'信件摘要＋案件排序',items:[['信件摘要','打開邀約會先看到重點：產品、合作內容、檔期、費用／預算、其他要求；原信收在「看原信」'],['只要確認報價','不用看草稿了，勾好內容、確認金額，按「存草稿」就會用報價單範本存進 Gmail'],['案件排序','依 確定合作 → 審稿 → 剪輯 → 發布 → 結案 排，同狀態下一個日期越近越前面']]},
+{id:'2026-11-11-2035',date:'11/11',title:'信件搬到下方分頁',items:[['信件','手機版下方的「聊天」換成「信件」，紅色數字是還沒回的合作邀約'],['報價範本','每封報價草稿都會自動附上合作條件 1～9 點、LINE 官方帳號和「MIZU工作室 YUNA」簽名']]},
 {id:'2026-11-11-2020',date:'11/11',title:'信件＋報價建議 ✉️',items:[['信件','右上角多了信封按鈕，會讀 mizu.zipp@gmail.com 的收件匣，自動挑出合作邀約，紅色數字是還沒回的'],['報價建議','打開邀約會自動勾出規格、用價目表算報價，並參考過去同規格案子的實拿金額'],['回信草稿','幫你寫好回信，可以直接改，按「存草稿」就存進 Gmail 草稿匣，不會自己寄出']]},
 {id:'2026-11-11-1740',date:'11/11',title:'打開更快了 ⚡',items:[['開場動畫','打開 App 時會有 MIZU 的開場動畫，不再只有轉圈圈'],['秒開','會先顯示上次的資料，同時在背景跟 Google 同步，右上角綠點亮起就是最新的']]},
 {id:'2026-11-10-2010',date:'11/10',title:'聊天室上線＋隸屬月份',items:[['聊天室','下方多了「聊天」分頁，可以直接傳訊息給對方，也有常用句可以一鍵送出。手機版下方的「支出」換成「聊天」，支出紀錄改從財務頁的「支出紀錄」按鈕進去'],['隸屬月份','案件裡多一個「隸屬月份（算錢用）」，預設跟拍攝日，想算到別的月份可以自己選；選了別的月份，清單上會出現「算 X月」的標籤']]},
@@ -1385,6 +1399,18 @@ function mailList(){
       <div class="ttl">${esc(m.subject)}</div><div class="msnip">${esc(m.snippet)}</div>
       <div class="meta">${st}${m.specs.map(s=>`<span class="tag">${esc(s)}</span>`).join('')}</div></div></div>`}).join('');
 }
+function mailSummary(m){
+  const txt=m.body.replace(/\r/g,''),sents=txt.split(/[。！？!?；;，,\n]+/).map(s=>s.replace(/^[\s・\-*•>]+/,'').trim()).filter(s=>s.length>1&&!/^(您好|hi|hello|謝謝|感謝|麻煩|best|regards)/i.test(s));
+  const used=new Set();const pick=(rx,n=2)=>[...new Set(sents.filter(s=>rx.test(s)&&!used.has(s)))].slice(0,n).map(s=>(used.add(s),s)).map(s=>esc(s.length>70?s.slice(0,68)+'…':s)).join('<br>');
+  const fee=pick(/預算|費用|報價|價格|酬勞|稿費|NT\$?|\d[\d,]*\s*元|互惠|公關品|免費|業配金/i);
+  const req=pick(/授權|投放|廣告|二次|官方使用|hashtag|標註|tag|腳本|審稿/i);
+  const prod=pick(/產品|新品|商品|品項|系列|上市|推出|口味|門市|快閃|展覽|活動/)||esc(m.subject.replace(/^(re|fw|fwd)[:：]\s*/i,'').replace(/【[^】]*】/g,'').trim());
+  const when=pick(/\d{1,2}\s*[\/月]\s*\d{0,2}|上旬|中旬|下旬|月底|月初|檔期|上線|發布|拍攝日|寄出|截止|期限|deadline|週[一二三四五六日]/i,3);
+  const rows=[['來信',esc(m.from)],['產品',prod],['合作內容',m.specs.length?m.specs.map(s=>`<span class="tag">${esc(s)}</span>`).join(''):'<span class="muted">信裡沒寫清楚</span>'],
+    ['檔期',when||'<span class="muted">信裡沒提到</span>'],['費用／預算',fee||'<span class="muted">沒提到，等我們報價</span>']];
+  if(req)rows.push(['其他要求',req]);
+  return rows;
+}
 function quoteLines(specs,pr){return specs.map(s=>[s,+(pr[s]??DEF_PRICES[s]??0)])}
 function draftText(m,specs,pr,total){
   const lines=quoteLines(specs,pr).map(([s,v])=>`・${s}　${money(v)}`).join('\n');
@@ -1401,32 +1427,28 @@ function openMail(id){
   root.innerHTML=`<div class="mask" id="mk"><div class="modal"><div class="mh"><h2>${esc(m.subject)}</h2><button class="x" id="cx">✕</button></div>
     <div class="mb">
       <div class="mhead"><b>${esc(m.from)}</b> <span class="muted small">&lt;${esc(m.email)}&gt;・${md(m.date.slice(0,10))} ${m.date.slice(11,16)}</span></div>
-      <div class="mbody ${m.body.length>300?'clip':''}" id="mbody">${esc(m.body)}</div>${m.body.length>300?'<button class="linkbtn" id="mMore">展開全文</button>':''}
+      <div class="msum">${mailSummary(m).map(([k,v])=>`<div class="sr"><span>${k}</span><div>${v}</div></div>`).join('')}<div class="muted small" style="margin-top:6px">依關鍵字自動整理，細節請以原信為準</div></div>
+      <button class="linkbtn" id="mMore">看原信 ›</button><div class="mbody hidden" id="mbody">${esc(m.body)}</div>
       <div class="qsec"><div class="qh">報價建議</div>
         <div class="chips" id="qchips">${SPECS.map(s=>`<label class="${specs.includes(s)?'on':''}"><input type="checkbox" value="${s}" ${specs.includes(s)?'checked':''}>${s}</label>`).join('')}</div>
         <div id="qlines"></div>
         <div class="qref" id="qref2"></div>
       </div>
-      <div class="qh" style="margin-top:16px;display:flex;align-items:center">回信草稿${m.draft?'<span class="tag tg-blue" style="margin-left:8px">Gmail 已有草稿</span>':''}<span class="spacer"></span><button class="linkbtn" id="regen">依報價重新產生</button></div>
-      <textarea class="inp" id="dbody" rows="12" style="height:auto;line-height:1.6;padding:10px 12px"></textarea>
-      <div class="muted small" style="margin-top:6px">按「存草稿」會存到 Gmail 的草稿匣（回覆這封信），不會直接寄出。<a href="https://mail.google.com/mail/u/0/#all/${esc(m.id)}" target="_blank" rel="noopener" class="only-mob">在 Gmail 打開 ›</a></div>
+      <div class="muted small" style="margin-top:14px">確認報價後按「存草稿」，會用報價單範本（含合作條件與簽名）存到 Gmail 草稿匣，不會直接寄出。${m.draft?'這封信已經有草稿，存的話會換成新的。':''}<a href="https://mail.google.com/mail/u/0/#all/${esc(m.id)}" target="_blank" rel="noopener" class="only-mob">在 Gmail 打開 ›</a></div>
     </div>
     <div class="mf"><a class="btn" href="https://mail.google.com/mail/u/0/#all/${esc(m.id)}" target="_blank" rel="noopener">在 Gmail 打開</a><span class="spacer"></span><button class="btn" id="cc">取消</button><button class="btn primary" id="dsave">存草稿</button></div></div></div>`;
-  const $=x=>document.getElementById(x),ta=$('dbody');
+  const $=x=>document.getElementById(x);
   const drawQ=()=>{
-    $('qlines').innerHTML=specs.length?`<div class="qtable">${specs.map(s=>`<div class="ql"><span>${s}</span><input class="inp num" type="number" data-qp="${s}" value="${prices[s]}"></div>`).join('')}<div class="ql tot"><span>合計（未稅）</span><b>${money(total())}</b></div></div>`:'<div class="muted small" style="margin-top:8px">勾選這次的合作內容，會用價目表算出報價</div>';
+    $('qlines').innerHTML=specs.length?`<div class="qtable">${specs.map(s=>`<div class="ql"><span>${s}</span><input class="inp num" type="number" data-qp="${s}" value="${prices[s]}"></div>`).join('')}<div class="ql tot"><span>合計</span><b>${money(total())}</b></div></div>`:'<div class="muted small" style="margin-top:8px">勾選這次的合作內容，會用價目表算出報價</div>';
     $('qref2').innerHTML=specs.length?quoteRef(specs):'';
-    $('qlines').querySelectorAll('[data-qp]').forEach(i=>i.oninput=()=>{prices[i.dataset.qp]=+i.value||0;$('qlines').querySelector('.tot b').textContent=money(total());if(!dirty)ta.value=draftText(m,specs,prices,total())});
+    $('qlines').querySelectorAll('[data-qp]').forEach(i=>i.oninput=()=>{prices[i.dataset.qp]=+i.value||0;$('qlines').querySelector('.tot b').textContent=money(total())});
   };
   drawQ();
-  ta.value=m.draft?m.draft.body:draftText(m,specs,prices,total());
-  ta.oninput=()=>dirty=true;
-  $('qchips').querySelectorAll('input').forEach(i=>i.onchange=()=>{i.parentElement.classList.toggle('on',i.checked);specs=SPECS.filter(s=>$('qchips').querySelector(`input[value="${s}"]`).checked);drawQ();if(!dirty)ta.value=draftText(m,specs,prices,total())});
-  $('regen').onclick=()=>{if(dirty&&!confirm('重新產生會蓋掉你改過的草稿，確定嗎？'))return;ta.value=draftText(m,specs,prices,total());dirty=false};
-  if($('mMore'))$('mMore').onclick=e=>{$('mbody').classList.remove('clip');e.target.remove()};
+  $('qchips').querySelectorAll('input').forEach(i=>i.onchange=()=>{i.parentElement.classList.toggle('on',i.checked);specs=SPECS.filter(s=>$('qchips').querySelector(`input[value="${s}"]`).checked);drawQ()});
+  $('mMore').onclick=e=>{const h=$('mbody').classList.toggle('hidden');e.target.textContent=h?'看原信 ›':'收起原信'};
   const close=()=>closeSheet(root);
   $('cx').onclick=$('cc').onclick=close;$('mk').onmousedown=e=>{if(e.target.id==='mk')close()};
-  $('dsave').onclick=async()=>{const body=ta.value.trim();if(!body){toast('草稿是空的',true);return}
+  $('dsave').onclick=async()=>{if(!specs.length){toast('先勾選合作內容',true);return}const body=draftText(m,specs,prices,total());
     const b=$('dsave');b.disabled=true;b.textContent='儲存中…';
     try{const r=GAS?await call('apiSaveDraft',token,m.id,body):{id:'demo'};m.draft={id:r.id,body};close();toast('已存到 Gmail 草稿');renderMailBtn();if(page==='mail')renderMail()}
     catch(e){b.disabled=false;b.textContent='存草稿';toast('存草稿失敗：'+String(e.message||e).replace(/^Error:\s+/,''),true)}};
@@ -1785,7 +1807,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/11 20:28</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/11 22:51</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
