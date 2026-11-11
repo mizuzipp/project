@@ -211,6 +211,7 @@ function writeTimes_(c) {
 /* ---------- 信件＋報價建議 ---------- */
 // 第一次更新後，請在 Apps Script 編輯器上方選 authorizeGmail → 執行，允許讀取 Gmail 和建立草稿
 function authorizeGmail() { GmailApp.getInboxUnreadCount(); GmailApp.getDrafts(); }
+const MY_MAIL = 'mizu.zipp@gmail.com';   // 讀信的帳號（用來判斷哪些信是我們寄的）
 const DEF_PRICES = { 'Reels': 3500, '配音': 500, 'Threads': 1000, '抖音': 1000, '限動': 500, '廣告主': 1000, '素材授權': 1500, '圖文': 1500 };
 const SPEC_RX = [
   ['Reels', /reels?|短影音|短影片|影片|video/i], ['配音', /配音|旁白|口播|voice/i], ['Threads', /threads|脆/i],
@@ -235,7 +236,7 @@ function draftMap_() {
 }
 function apiMail(token) {
   auth_(token);
-  const mine = Session.getEffectiveUser().getEmail().toLowerCase();
+  const mine = MY_MAIL;
   const drafts = draftMap_();
   const threads = GmailApp.search('in:inbox newer_than:45d -category:promotions -category:social', 0, 30);
   const out = threads.map(th => {
@@ -262,7 +263,7 @@ function apiSaveDraft(token, threadId, body) {
   const th = GmailApp.getThreadById(threadId);
   if (!th) throw new Error('找不到這封信');
   GmailApp.getDrafts().forEach(d => { try { if (d.getMessage().getThread().getId() === threadId) d.deleteDraft(); } catch (e) {} });
-  const mine = Session.getEffectiveUser().getEmail().toLowerCase();
+  const mine = MY_MAIL;
   const others = th.getMessages().filter(x => x.getFrom().toLowerCase().indexOf(mine) < 0 && !x.isDraft());
   const target = others.length ? others[others.length - 1] : null;   // 回覆對方最後一封
   const d = target ? target.createDraftReply(String(body || '')) : th.createDraftReply(String(body || ''));
