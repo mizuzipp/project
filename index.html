@@ -723,8 +723,7 @@ const NAV=[['home','首頁','<path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H
   ['cases','案件','<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/>'],
   ['calendar','日曆','<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
   ['finance','財務','<path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'],
-  ['expenses','支出','<path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/>'],
-  ['mail','信件','<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>']];
+  ['expenses','支出','<path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/>']];
 const CHAT=false;
 const NEWF=true;
 const MONTH_DEMO=false;
@@ -976,7 +975,7 @@ function route(){
   const unread=CHAT?chatUnread():0;
   const navItem=([k,t,p])=>`<a href="#${k}" data-p="${k}" class="${k===page?'on':''}">${ico(p)}<span>${t}</span>${k==='chat'&&unread?`<b class="badge">${unread>99?'99+':unread}</b>`:''}${k==='mail'&&mailTodo()?`<b class="badge">${mailTodo()>9?'9+':mailTodo()}</b>`:''}</a>`;
   document.getElementById('nav').innerHTML=NAV.map(navItem).join('');
-  document.getElementById('tabbar').innerHTML=NAV.filter(n=>n[0]!=='expenses'&&n[0]!=='chat').map(navItem).join('');
+  document.getElementById('tabbar').innerHTML=NAV.filter(n=>n[0]!=='chat').map(navItem).join('');
   document.getElementById('main').classList.toggle('chat-mode',page==='chat');
   document.querySelectorAll('#nav a,#tabbar a').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
   document.getElementById('meTop').innerHTML=avatar(me,30);
@@ -986,7 +985,7 @@ function route(){
   document.getElementById('meBox').onclick=e=>{e.stopPropagation();openMeMenu(e.currentTarget)};
   document.getElementById('pageTitle').textContent=PAGES[page];
   document.getElementById('topAct').innerHTML='';
-  renderSync();renderBell();renderMailBtn();
+  renderSync();renderBell();
   ({mail:renderMail,home:renderHome,cases:renderCases,calendar:renderCalendar,finance:renderFinance,expenses:renderExpenses,profile:renderProfile,chat:renderChat})[page]();
   const nb=document.querySelector('#topAct .newbtn'),fab=document.getElementById('fab');
   fab.classList.toggle('show',!!nb);fab.onclick=()=>nb&&nb.click();if(nb)fab.setAttribute('aria-label',nb.textContent.replace('＋','').trim());
@@ -1318,7 +1317,8 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
-  {id:'2026-11-11-2300',date:'11/11',title:'信件摘要＋案件排序',items:[['信件摘要','打開邀約會先看到重點：產品、合作內容、檔期、費用／預算、其他要求；原信收在「看原信」'],['只要確認報價','不用看草稿了，勾好內容、確認金額，按「存草稿」就會用報價單範本存進 Gmail'],['案件排序','依 確定合作 → 審稿 → 剪輯 → 發布 → 結案 排，同狀態下一個日期越近越前面']]},
+  {id:'2026-11-12-0125',date:'11/12',title:'信件功能先拿掉',items:[['下方分頁','手機下方回到：首頁、案件、日曆、財務、支出']]},
+{id:'2026-11-11-2300',date:'11/11',title:'信件摘要＋案件排序',items:[['信件摘要','打開邀約會先看到重點：產品、合作內容、檔期、費用／預算、其他要求；原信收在「看原信」'],['只要確認報價','不用看草稿了，勾好內容、確認金額，按「存草稿」就會用報價單範本存進 Gmail'],['案件排序','依 確定合作 → 審稿 → 剪輯 → 發布 → 結案 排，同狀態下一個日期越近越前面']]},
 {id:'2026-11-11-2035',date:'11/11',title:'信件搬到下方分頁',items:[['信件','手機版下方的「聊天」換成「信件」，紅色數字是還沒回的合作邀約'],['報價範本','每封報價草稿都會自動附上合作條件 1～9 點、LINE 官方帳號和「MIZU工作室 YUNA」簽名']]},
 {id:'2026-11-11-2020',date:'11/11',title:'信件＋報價建議 ✉️',items:[['信件','右上角多了信封按鈕，會讀 mizu.zipp@gmail.com 的收件匣，自動挑出合作邀約，紅色數字是還沒回的'],['報價建議','打開邀約會自動勾出規格、用價目表算報價，並參考過去同規格案子的實拿金額'],['回信草稿','幫你寫好回信，可以直接改，按「存草稿」就存進 Gmail 草稿匣，不會自己寄出']]},
 {id:'2026-11-11-1740',date:'11/11',title:'打開更快了 ⚡',items:[['開場動畫','打開 App 時會有 MIZU 的開場動畫，不再只有轉圈圈'],['秒開','會先顯示上次的資料，同時在背景跟 Google 同步，右上角綠點亮起就是最新的']]},
@@ -1680,7 +1680,7 @@ function renderFinance(){
   const from=st.net>=0?'00':'mimi',to=other(from);
   const i00=incomeFor('00',m),imi=incomeFor('mimi',m);
   const pend=S.cases.filter(c=>c.ms.publish.done&&!isPaid(c)).sort((a,b)=>(a.ms.payment.date||'9999').localeCompare(b.ms.payment.date||'9999'));
-  M().innerHTML=`<div class="toolbar"><span class="muted tb-note">依隸屬月份計算</span>${true?'<button class="btn only-mob" id="toExp" style="display:inline-flex!important">支出紀錄</button>':''}<span class="spacer"></span>${monthPicker(m,'fm')}</div>
+  M().innerHTML=`<div class="toolbar"><span class="muted tb-note">依隸屬月份計算</span>${false?'<button class="btn only-mob" id="toExp" style="display:inline-flex!important">支出紀錄</button>':''}<span class="spacer"></span>${monthPicker(m,'fm')}</div>
   <div class="card" style="margin-bottom:16px"><div class="hero">
     <div style="flex:1;min-width:240px"><div class="lbl">${ymLabel(m)} Mizu 月結</div>
       ${ui.uxd&&Math.abs(st.net)>=1?`<div class="xfer2"><div class="xamt">${money(Math.abs(st.net))}</div><div class="xrow"><div class="xa">${avatar(from,52)}<span>${esc(NAMES[from])} 轉出</span></div><div class="xm"><i></i></div><div class="xa">${avatar(to,52)}<span>${esc(NAMES[to])} 收</span></div></div></div>`:`<div class="big">${Math.abs(st.net)<1?'不用轉帳':`${esc(NAMES[from])} 要轉 ${money(Math.abs(st.net))} 給 ${esc(NAMES[to])}`}</div>`}
@@ -1807,7 +1807,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/11 22:51</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/12 01:21</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
