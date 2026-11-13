@@ -51,6 +51,7 @@
 
 ## 預覽版 demo 開關（模板裡的 placeholder）
 - `__UXD__`：UX 改版 demo（首頁今天最急卡片、復原 toast、月結轉帳圖、標題列、時程兩行、下拉同步）— 只在預覽版開，還沒正式上線
+- `__EDT__`：電腦版詳情的「編輯案件」移到標題下面 — 只在預覽版開，等 00 確認
 - `__RPT__`：回報問題（右上角按鈕）— 已正式上線（true）
 - `__D2__`：Brief/腳本連結＋電腦版左右分欄 — 已正式上線（true）
 - `__HDEMO__`/`__HMODE__`、`__MDEMO__`/`__MMODE__`、`__CHAT__`：舊 demo 開關，保持現值
@@ -58,6 +59,8 @@
 ## 存檔機制（11/13 修正）
 - 前端改資料時，先把 S 寫進 localStorage 暫存（`mizu_cache_v1`），API 呼叫排進 outbox（`mizu_outbox_v1`），送成功才移除；開網頁時先補送 outbox 再跟 Google 同步
 - 原因：以前改完案件馬上重新整理，畫面會先顯示舊的暫存資料，看起來像沒存到
+- 11/14：outbox 改成記憶體佇列（`Data._q`），localStorage 只當備份（`Data.put` 滿了會清掉非 mizu 必要的 key）；之前 localStorage 滿時，變更根本沒送出
+- 存檔失敗會跳 `saveFailBox`，並用 `autoReport` 自動送「（自動回報）」到回報分頁，附 localStorage 用量
 
 ## 回報問題（Claude 自己處理）
 - 網頁送到 Sheet「回報」分頁；Claude 用 `mizu/tools/claude_reports.py` 讀寫（金鑰在本機 `~/.mizu/claude_key`，Apps Script 那邊是 Script Properties `CLAUDE_KEY`，用選單「MIZU → 設定 Claude 回報金鑰」設定）
