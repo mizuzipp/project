@@ -486,6 +486,8 @@ td.mgroup{display:table-cell}
 .mc-n span{font-size:14px;font-weight:400;color:var(--text3)}
 .mc-bar{height:6px;background:var(--fill);border-radius:3px;margin:10px 0 4px;overflow:hidden}
 .mc-bar i{display:block;height:100%;background:var(--success);border-radius:3px}
+.dp-top{margin:-4px 0 14px}
+.dp-top .btn{width:100%}
 .rpt-btn{display:none;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid color-mix(in srgb,var(--primary) 35%,transparent);border-radius:16px;background:color-mix(in srgb,var(--primary) 8%,#fff);color:var(--primary);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
 .rpt-btn.show{display:flex}
 .rpt-btn:hover{background:color-mix(in srgb,var(--primary) 14%,#fff)}
@@ -747,6 +749,7 @@ td.mgroup{display:table-cell}
 <script>
 // 最近的 JS 錯誤，回報問題時一起附上給 Claude 看
 const RPT=true;
+const EDT=false;   // 電腦版詳情：編輯按鈕放上面
 const ERRS=[];const errLog=t=>{ERRS.push(new Date().toTimeString().slice(0,8)+' '+t);if(ERRS.length>10)ERRS.shift()};
 window.addEventListener('error',e=>errLog(`${e.message} @${String(e.filename||'').split('/').pop()}:${e.lineno}:${e.colno}`));
 window.addEventListener('unhandledrejection',e=>errLog('promise: '+String(e.reason&&e.reason.message||e.reason)));
@@ -807,8 +810,10 @@ const API_URL='https://script.google.com/macros/s/AKfycbxTTw26633tgnWgNWRzv9GgxQ
 const GAS=!!API_URL;
 async function call(fn,...args){
   let r;
-  try{r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn,args})})}
-  catch(e){throw new Error('連不上 Google，請檢查網路')}
+  const ac=typeof AbortController!=='undefined'?new AbortController():null,tm=ac&&setTimeout(()=>ac.abort(),90000);
+  try{r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn,args}),signal:ac?ac.signal:undefined})}
+  catch(e){throw new Error(ac&&ac.signal.aborted?'Google 回應太久':'連不上 Google，請檢查網路')}
+  finally{if(tm)clearTimeout(tm)}
   const j=await r.json().catch(()=>({ok:false,error:'伺服器回應怪怪的，請重新整理'}));
   if(!j.ok)throw new Error(j.error);
   return j.data;
@@ -841,7 +846,7 @@ const Data={
     if(GAS){const t=await call('apiLogin',u,pw);if(!t)return false;token=t;LS.set('mizu_tok',t);await Data.flush();await Data.reload();return true}
     if(S.users[u].pw!==pw)return false;me=u;LS.set('mizu_demo_me',u);return true;
   },
-  async logout(){if(GAS){try{await call('apiLogout',token)}catch(e){}LS.del('mizu_tok');LS.del(CACHE_KEY);LS.del(OUTBOX_KEY);token=null}else LS.del('mizu_demo_me');me=null},
+  async logout(){if(GAS){try{await call('apiLogout',token)}catch(e){}LS.del('mizu_tok');LS.del(CACHE_KEY);LS.del(OUTBOX_KEY);Data._q=[];token=null}else LS.del('mizu_demo_me');me=null},
   async refresh(){syncState='busy';renderSync();
     try{await Data.flush();if(Data.outbox().length)throw new Error('還有沒存到的變更');await Data.reload();renderSync();if(!document.getElementById('modalRoot').innerHTML)route()}
     catch(e){if(/登入|token|過期/.test(String(e.message))){logoutQuiet();document.getElementById('app').classList.add('hidden');S.users=await call('apiPublic').catch(()=>S.users);renderLogin()}else{syncState='err';renderSync()}}},
@@ -849,38 +854,64 @@ const Data={
   async reload(){if(!GAS)return;const g0=Data._gen||0;const d=await call('apiLoad',token);
     if(me&&S&&(Data.outbox().length||(Data._gen||0)!==g0)){setTimeout(()=>Data.refresh(),3000);return}
     me=d.me;const ch=S&&S.chat;S={users:d.users,cases:d.cases,expenses:d.expenses,settlements:d.settlements,chat:ch||null};
-    LS.set(CACHE_KEY,JSON.stringify({me,users:d.users,cases:d.cases,expenses:d.expenses,settlements:d.settlements,at:Date.now()}));lastSync=new Date();syncState='ok'},
+    Data.cache();lastSync=new Date();syncState='ok'},
   saveLocal(){if(!GAS)LS.set(DEMO_KEY,JSON.stringify(S))},
-  // 改過的資料先存進這台電腦（重新整理也不會看到舊資料），還沒送到 Google 的變更排在 outbox，送成功才拿掉
-  cache(){if(GAS&&S&&me)LS.set(CACHE_KEY,JSON.stringify({me,users:S.users,cases:S.cases,expenses:S.expenses,settlements:S.settlements,at:lastSync?lastSync.getTime():Date.now()}))},
-  outbox(){try{return JSON.parse(LS.get(OUTBOX_KEY)||'[]')}catch(e){return []}},
+  // 寫進這台電腦；空間滿了就清掉舊功能留下的資料再試，還是不行就回傳 false
+  put(k,v){
+    const tryset=()=>{try{localStorage.setItem(k,v);return true}catch(e){return false}};
+    if(tryset())return true;
+    try{Object.keys(localStorage).forEach(x=>{if(!/^mizu_(tok|outbox_v1|cache_v1|rpt_seen)$/.test(x)&&x!==k)localStorage.removeItem(x)})}catch(e){}
+    if(tryset())return true;
+    errLog('localStorage 滿了，寫不進 '+k+'（'+v.length+' 字）');return false;
+  },
+  // 改過的資料先存進這台電腦（重新整理也不會看到舊資料）；存不進去就把舊暫存刪掉，免得重新整理看到舊資料
+  cache(){if(GAS&&S&&me&&!Data.put(CACHE_KEY,JSON.stringify({me,users:S.users,cases:S.cases,expenses:S.expenses,settlements:S.settlements,at:lastSync?lastSync.getTime():Date.now()})))LS.del(CACHE_KEY)},
+  // 還沒送到 Google 的變更：主要放在記憶體（一定送得出去），同時備份到這台電腦（重新整理後補送）
+  _q:null,
+  outbox(){if(!Data._q){try{Data._q=JSON.parse(LS.get(OUTBOX_KEY)||'[]')}catch(e){Data._q=[]}}return Data._q},
+  _saveQ(){if(!Data._q.length){LS.del(OUTBOX_KEY);return}Data.put(OUTBOX_KEY,JSON.stringify(Data._q))},
   async run(fn,...a){
     if(!GAS){Data.saveLocal();return}
     Data._gen=(Data._gen||0)+1;
-    const ob=Data.outbox();ob.push({fn,a:JSON.parse(JSON.stringify(a))});LS.set(OUTBOX_KEY,JSON.stringify(ob));
+    Data.outbox().push({fn,a:JSON.parse(JSON.stringify(a)),at:Date.now()});Data._saveQ();
     Data.cache();
     await Data.flush();
   },
   flush(){if(!GAS||!token)return Promise.resolve();return Data._fl||(Data._fl=(async()=>{
     try{
-      let ob;
-      while((ob=Data.outbox()).length){
-        const it=ob[0];syncState='busy';renderSync();
+      while(Data.outbox().length){
+        const it=Data.outbox()[0];syncState='busy';renderSync();
         try{await call(it.fn,token,...it.a);syncState='ok';lastSync=new Date();if(it.fn==='apiSaveCase'||it.fn==='apiDeleteCase')for(const k in gcal)delete gcal[k]}
         catch(e){
           const msg=String(e.message||e).replace(/^Error:\s+/,'');
+          errLog('存檔失敗 '+it.fn+'：'+msg);
           if(/登入|token|過期/.test(msg)){syncState='err';break}
-          if(/連不上|怪怪的|lock|timeout|逾時|service|稍後/i.test(msg)){syncState='err';if(!Data._warned)toast('還沒存到 Google，變更先留在這台電腦，等一下會自動補存',true);Data._warned=true;setTimeout(()=>Data.flush(),15000);break}
-          syncState='err';toast(msg,true);
-          LS.set(OUTBOX_KEY,JSON.stringify(Data.outbox().slice(1)));
+          if(/連不上|怪怪的|lock|timeout|逾時|service|稍後|太久/i.test(msg)){syncState='err';if(!Data._warned)toast('還沒存到 Google，變更先留在這台電腦，等一下會自動補存',true);Data._warned=true;setTimeout(()=>Data.flush(),15000);break}
+          syncState='err';Data.outbox().shift();Data._saveQ();
+          saveFailBox(msg);autoReport('存檔失敗（'+it.fn+'）：'+msg,it);
           if(!Data.outbox().length){await Data.reload().catch(()=>{});route()}
           continue}
-        LS.set(OUTBOX_KEY,JSON.stringify(Data.outbox().slice(1)));Data._warned=false;
+        Data.outbox().shift();Data._saveQ();Data._warned=false;
       }
       Data.cache();
     }finally{Data._fl=null;renderSync()}
   })())}
 };
+// 存檔失敗：跳出明顯的提示（不只是一閃而過的 toast）
+function saveFailBox(msg){
+  const r=document.createElement('div');
+  r.innerHTML=`<div class="mask alert-mask" style="z-index:70;align-items:center"><div class="modal sm alert"><div class="mh" style="display:block"><h2>剛剛的修改沒有存到 Google</h2>
+    <div class="muted small" style="margin-top:6px;font-weight:400">原因：${esc(msg)}<br>已經自動回報給 Claude 了。畫面會換回 Google 上的資料，麻煩再改一次。</div></div>
+    <div class="mf"><button class="btn primary" data-y>知道了</button></div></div></div>`;
+  document.body.appendChild(r);r.querySelector('[data-y]').onclick=()=>r.remove();
+}
+// 自動回報給 Claude（附上錯誤、這台電腦的儲存空間）
+function lsInfo(){try{let t=0;const ks=Object.keys(localStorage).map(k=>{const n=(localStorage.getItem(k)||'').length;t+=n;return k+' '+Math.round(n/1024)+'KB'});return `localStorage 共 ${Math.round(t/1024)}KB：`+ks.join('、')}catch(e){return 'localStorage 讀不到：'+e.message}}
+function autoReport(text,it){
+  if(!GAS||!RPT||!token)return;
+  const extra=it&&it.a&&it.a[0]&&it.a[0].id?`\n案件 id：${it.a[0].id}`+(it.a[0].ms?`，拍攝日送出 ${it.a[0].ms.shoot.date||'（空白）'}`:''):'';
+  call('apiReport',token,{text:'（自動回報）'+text+extra,page:page,ver:'11/14 00:32',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n')+'\n'+lsInfo(),pending:Data.outbox().length}).catch(()=>{});
+}
 const OUTBOX_KEY='mizu_outbox_v1';
 window.addEventListener('beforeunload',e=>{if(GAS&&Data.outbox().length){e.preventDefault();e.returnValue=''}});
 window.addEventListener('online',()=>{if(GAS&&token&&Data.outbox().length)Data.flush()});
@@ -1188,6 +1219,7 @@ function renderDetail(c){
   el.innerHTML=`<div class="dp">
     <div class="dp-h"><div style="min-width:0"><div class="dp-t">${esc(c.title)}</div><div class="dp-tags">${otag(c.owner)}${stag(c.status)}${c.owner==='mizu'?`<span class="muted small">收款 ${esc(NAMES[c.lead])}</span>`:''}</div></div>
       <div class="dp-amt"><b>${c.amount?money(c.amount):'—'}</b><small>實拿金額</small></div></div>
+    ${EDT?`<div class="dp-top">${ed?`<button class="btn primary" data-dedit>✏️ 編輯案件</button>`:'<span class="muted small">對方的個人案，僅檢視</span>'}</div>`:''}
     ${bigLinks(c,ed)}
     <div class="dp-sec">時程</div>
     <div class="tl">${ks.map(k=>{const m=c.ms[k],who=responsible(c,k);return `<div class="tl-i ${m.done?'d':''} ${k===nx?'n':''}">
@@ -1199,7 +1231,7 @@ function renderDetail(c){
       <div><span>隸屬月份</span><div>${pubMonth(c)?ymLabel(pubMonth(c)):'On hold（未排拍攝）'}${c.month?'':'<span class="muted small">・跟拍攝日</span>'}</div></div>
       ${c.owner==='mizu'?`<div><span>分帳</span><div>${c.split==='fixed'?`00 ${money(c.fixed['00'])}・米米 ${money(c.fixed.mimi)}`:'對半'}</div></div>`:''}
       ${c.note?`<div><span>備註</span><div style="white-space:pre-wrap">${esc(c.note)}</div></div>`:''}</div>
-    <div class="dp-f">${ed?`<button class="btn primary" data-dedit>編輯案件</button>`:'<span class="muted small">對方的個人案，僅檢視</span>'}</div></div>`;
+    ${EDT?'':`<div class="dp-f">${ed?`<button class="btn primary" data-dedit>編輯案件</button>`:'<span class="muted small">對方的個人案，僅檢視</span>'}</div>`}</div>`;
   el.querySelectorAll('[data-tk]').forEach(b=>b.onclick=async()=>{const k=b.dataset.tk,v=!c.ms[k].done;const ch=v?applyDone(c,k,true):(c.ms[k].done=false,null);c.updatedBy=me;
     toast(`${taskLabel(c,k)}${v?'完成':'改回未完成'}`+(ch?`，狀態改為「${ch}」`:''));renderCases();await Data.run('apiSaveCase',c)});
   el.querySelectorAll('[data-dedit],[data-addlink]').forEach(b=>b.onclick=()=>openCase(c.id));
@@ -1447,6 +1479,8 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
+{id:'2026-11-14-1030',date:'11/14',title:'修好：改了日期沒存到 Google',items:[['存檔','改完會確實送到 Google，不會再因為這台電腦的暫存空間滿了而沒送出去'],['沒存到會講','萬一真的沒存到，會跳出明顯的提示，也會自動回報給 Claude']]},
+...(EDT?[{id:'2026-11-14-1031',date:'11/14',title:'編輯按鈕移到上面',items:[['電腦版','案件詳情的「編輯案件」移到標題下面，不用再往下滑']]}]:[]),
 {id:'2026-11-14-0930',date:'11/14',title:'修好：改了日期又跳回去',items:[['存檔更穩','改完拍攝日後，網頁剛好在背景跟 Google 同步時，會把舊日期蓋回畫面上。現在改成：還在存檔時不會用舊資料蓋掉你剛改的內容']]},
 ...(RPT?[{id:'2026-11-13-2300',date:'11/13',title:'回報問題 💬',items:[['回報問題','右上角多了「回報問題」按鈕，哪裡怪怪的、想要什麼功能都可以寫，Claude 會自己去看、自己修'],['處理結果','按鈕上出現綠點，就是有新的處理結果，點開就看得到']]}]:[]),
 {id:'2026-11-13-2200',date:'11/13',title:'改了會確實存好',items:[['存檔更穩','改完案件馬上重新整理，也不會再跳回舊資料；網路不穩時變更會先留在這台電腦，連上後自動補存，還沒存完就關網頁會提醒你']]},
@@ -1947,7 +1981,7 @@ function openReport(){
     LS.set('mizu_rpt_seen',list.reduce((a,r)=>((r.doneAt||r.at)>a?(r.doneAt||r.at):a),LS.get('mizu_rpt_seen')||''))};
   b.onclick=async()=>{
     const t=inp.value.trim();if(!t){toast('請寫一下發生什麼事',true);return}
-    const r={text:t,page:page,ver:'11/14 00:23',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n'),pending:Data.outbox?Data.outbox().length:0};
+    const r={text:t,page:page,ver:'11/14 00:32',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n')+'\n'+lsInfo(),pending:Data.outbox?Data.outbox().length:0};
     b.disabled=true;
     try{
       if(GAS)await call('apiReport',token,r);
@@ -1998,7 +2032,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/14 00:23</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/14 00:32</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
