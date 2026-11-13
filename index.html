@@ -749,7 +749,7 @@ td.mgroup{display:table-cell}
 <script>
 // 最近的 JS 錯誤，回報問題時一起附上給 Claude 看
 const RPT=true;
-const EDT=false;   // 電腦版詳情：編輯按鈕放上面
+const EDT=true;   // 電腦版詳情：編輯按鈕放上面
 const ERRS=[];const errLog=t=>{ERRS.push(new Date().toTimeString().slice(0,8)+' '+t);if(ERRS.length>10)ERRS.shift()};
 window.addEventListener('error',e=>errLog(`${e.message} @${String(e.filename||'').split('/').pop()}:${e.lineno}:${e.colno}`));
 window.addEventListener('unhandledrejection',e=>errLog('promise: '+String(e.reason&&e.reason.message||e.reason)));
@@ -910,7 +910,7 @@ function lsInfo(){try{let t=0;const ks=Object.keys(localStorage).map(k=>{const n
 function autoReport(text,it){
   if(!GAS||!RPT||!token)return;
   const extra=it&&it.a&&it.a[0]&&it.a[0].id?`\n案件 id：${it.a[0].id}`+(it.a[0].ms?`，拍攝日送出 ${it.a[0].ms.shoot.date||'（空白）'}`:''):'';
-  call('apiReport',token,{text:'（自動回報）'+text+extra,page:page,ver:'11/14 00:32',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n')+'\n'+lsInfo(),pending:Data.outbox().length}).catch(()=>{});
+  call('apiReport',token,{text:'（自動回報）'+text+extra,page:page,ver:'11/14 00:36',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n')+'\n'+lsInfo(),pending:Data.outbox().length}).catch(()=>{});
 }
 const OUTBOX_KEY='mizu_outbox_v1';
 window.addEventListener('beforeunload',e=>{if(GAS&&Data.outbox().length){e.preventDefault();e.returnValue=''}});
@@ -1981,7 +1981,7 @@ function openReport(){
     LS.set('mizu_rpt_seen',list.reduce((a,r)=>((r.doneAt||r.at)>a?(r.doneAt||r.at):a),LS.get('mizu_rpt_seen')||''))};
   b.onclick=async()=>{
     const t=inp.value.trim();if(!t){toast('請寫一下發生什麼事',true);return}
-    const r={text:t,page:page,ver:'11/14 00:32',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n')+'\n'+lsInfo(),pending:Data.outbox?Data.outbox().length:0};
+    const r={text:t,page:page,ver:'11/14 00:36',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n')+'\n'+lsInfo(),pending:Data.outbox?Data.outbox().length:0};
     b.disabled=true;
     try{
       if(GAS)await call('apiReport',token,r);
@@ -2032,7 +2032,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/14 00:32</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/14 00:36</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
