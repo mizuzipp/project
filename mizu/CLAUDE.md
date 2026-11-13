@@ -59,6 +59,7 @@
 ## 存檔機制（11/13 修正）
 - 前端改資料時，先把 S 寫進 localStorage 暫存（`mizu_cache_v1`），API 呼叫排進 outbox（`mizu_outbox_v1`），送成功才移除；開網頁時先補送 outbox 再跟 Google 同步
 - 原因：以前改完案件馬上重新整理，畫面會先顯示舊的暫存資料，看起來像沒存到
+- 11/14 真正原因：`Data.flush` 在佇列空的時候 finally 先跑完、`_fl` 卡住，之後的修改都要重新整理才送出（已修，測試時要用「有暫存、重新整理過」的情況測）
 - 11/14：outbox 改成記憶體佇列（`Data._q`），localStorage 只當備份（`Data.put` 滿了會清掉非 mizu 必要的 key）；之前 localStorage 滿時，變更根本沒送出
 - 存檔失敗會跳 `saveFailBox`，並用 `autoReport` 自動送「（自動回報）」到回報分頁，附 localStorage 用量
 
