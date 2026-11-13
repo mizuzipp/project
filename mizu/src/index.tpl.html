@@ -486,6 +486,11 @@ td.mgroup{display:table-cell}
 .mc-n span{font-size:14px;font-weight:400;color:var(--text3)}
 .mc-bar{height:6px;background:var(--fill);border-radius:3px;margin:10px 0 4px;overflow:hidden}
 .mc-bar i{display:block;height:100%;background:var(--success);border-radius:3px}
+.rpt-btn{display:none;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid color-mix(in srgb,var(--primary) 35%,transparent);border-radius:16px;background:color-mix(in srgb,var(--primary) 8%,#fff);color:var(--primary);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+.rpt-btn.show{display:flex}
+.rpt-btn:hover{background:color-mix(in srgb,var(--primary) 14%,#fff)}
+.rpt-btn svg{width:16px;height:16px}
+.rpt-btn .rd{width:7px;height:7px;border-radius:50%;background:#52C41A}
 .bell{position:relative;width:32px;height:32px;border:none;background:none;border-radius:8px;color:var(--text2);display:flex;align-items:center;justify-content:center;padding:0}
 .bell:hover{background:rgba(0,0,0,.04);color:var(--text)}
 .bell svg{width:20px;height:20px}
@@ -583,6 +588,10 @@ td.mgroup{display:table-cell}
   .sync i{width:8px;height:8px}
   .top-me{display:block}
   .bell{width:30px;height:30px}
+  .rpt-btn{height:30px;padding:0 10px;font-size:12px}
+  body:not(.uxd) .rpt-btn{position:relative;width:30px;padding:0;justify-content:center;border-radius:50%}
+  body:not(.uxd) .rpt-btn span:not(.rd){display:none}
+  body:not(.uxd) .rpt-btn .rd{position:absolute;top:2px;right:2px;border:1.5px solid #fff}
   .modal .ann ul{font-size:15px}
   #topAct .newbtn{display:none}
   .fab.show{display:flex;align-items:center;justify-content:center;position:fixed;right:16px;bottom:calc(49px + env(safe-area-inset-bottom) + 16px);z-index:35;width:56px;height:56px;border:none;border-radius:50%;background:var(--primary);color:#fff;font-size:30px;font-weight:300;line-height:1;box-shadow:0 6px 18px color-mix(in srgb,var(--primary) 40%,transparent),0 2px 6px rgba(0,0,0,.12);-webkit-tap-highlight-color:transparent;transition:transform .15s}
@@ -727,7 +736,7 @@ td.mgroup{display:table-cell}
     <div class="me-box" id="meBox"></div>
   </aside>
   <div class="content">
-    <div class="topbar"><h1 id="pageTitle"></h1><span class="spacer"></span><span class="sync" id="sync"></span><button class="bell" id="bell" aria-label="公告"></button><span id="topAct"></span><button class="top-me" id="meTop"></button></div>
+    <div class="topbar"><h1 id="pageTitle"></h1><span class="spacer"></span><span class="sync" id="sync"></span><button class="rpt-btn" id="rptBtn" aria-label="回報問題"></button><button class="bell" id="bell" aria-label="公告"></button><span id="topAct"></span><button class="top-me" id="meTop"></button></div>
     <main id="main"></main>
   </div>
   <nav class="tabbar" id="tabbar"></nav>
@@ -1050,7 +1059,7 @@ function route(){
   document.getElementById('meBox').onclick=e=>{e.stopPropagation();openMeMenu(e.currentTarget)};
   document.getElementById('pageTitle').textContent=PAGES[page];
   document.getElementById('topAct').innerHTML='';
-  renderSync();renderBell();
+  renderSync();renderBell();renderRptBtn();
   ({mail:renderMail,home:renderHome,cases:renderCases,calendar:renderCalendar,finance:renderFinance,expenses:renderExpenses,profile:renderProfile,chat:renderChat})[page]();
   const nb=document.querySelector('#topAct .newbtn'),fab=document.getElementById('fab');
   fab.classList.toggle('show',!!nb);fab.onclick=()=>nb&&nb.click();if(nb)fab.setAttribute('aria-label',nb.textContent.replace('＋','').trim());
@@ -1434,7 +1443,8 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
-{id:'2026-11-13-2200',date:'11/13',title:RPT?'改了會確實存好＋回報問題':'改了會確實存好',items:[['存檔更穩','改完案件馬上重新整理，也不會再跳回舊資料；網路不穩時變更會先留在這台電腦，連上後自動補存，還沒存完就關網頁會提醒你'],...(RPT?[['回報問題','個人設定裡多了「回報問題」，寫下哪裡怪怪的就好，Claude 會自己去看、自己修，處理結果會寫在下面']]:[])]},
+...(RPT?[{id:'2026-11-13-2300',date:'11/13',title:'回報問題 💬',items:[['回報問題','右上角多了「回報問題」按鈕，哪裡怪怪的、想要什麼功能都可以寫，Claude 會自己去看、自己修'],['處理結果','按鈕上出現綠點，就是有新的處理結果，點開就看得到']]}]:[]),
+{id:'2026-11-13-2200',date:'11/13',title:'改了會確實存好',items:[['存檔更穩','改完案件馬上重新整理，也不會再跳回舊資料；網路不穩時變更會先留在這台電腦，連上後自動補存，還沒存完就關網頁會提醒你']]},
   {id:'2026-11-12-0205',date:'11/12',title:'Mizu 案改放 mizu.zipp 預設日曆',items:[['日曆','Mizu 的案子不再放「mizu 米事」，改放進 mizu.zipp@gmail.com 的預設日曆'],['清重複','順便清掉日曆裡同一天同名的重複行程']]},
 {id:'2026-11-12-0155',date:'11/12',title:'Brief、腳本一鍵打開',items:[['連結按鈕','案件可以分別填 Brief（PDF）和腳本（Google 試算表）連結，清單上會出現小圖示，點了直接打開'],['電腦版左右分欄','案件頁點左邊的案子，右邊直接顯示詳情、連結和時程，點圓圈就能打勾']]},
 {id:'2026-11-12-0150',date:'11/12',title:'防止重複新增案件',items:[['重複提醒','新增案件時，如果已經有同名的案子，會先跳出提醒，可以直接打開原本那筆，避免收入和月結算錯'],['已清理','之前重複的 3 筆（711元進莊、ARIH POP UP、Glad2Glow唇部精華）已經刪掉，11 月月結恢復正確']]},
@@ -1900,16 +1910,36 @@ function openExp(id){
 
 
 const RPT_TAG={'待處理':'tg-default','處理中':'tg-blue','已修好':'tg-green','等你確認':'tg-orange','需要你幫忙':'tg-gold','不用處理':'tg-default'};
-async function loadReports(){
-  const el=document.getElementById('rpList');if(!el)return;
-  let list=[];try{list=GAS?await call('apiMyReports',token):(S.reports||[])}catch(e){return}
-  if(!document.getElementById('rpList'))return;
-  el.innerHTML=list.length?`<div style="margin-top:16px;border-top:1px solid var(--border,#f0f0f0)">`+list.map(r=>`<div style="padding:10px 0;border-bottom:1px solid var(--border,#f0f0f0)">
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="tag ${RPT_TAG[r.status]||'tg-default'}">${esc(r.status)}</span><span class="muted small">${esc(r.who||'')}・${esc(r.at)}</span></div>
-    <div style="margin-top:4px;white-space:pre-wrap">${esc(r.text)}</div>${r.reply?`<div class="small" style="margin-top:4px;white-space:pre-wrap;color:var(--text2,#595959)">🤖 ${esc(r.reply)}</div>`:''}</div>`).join('')+'</div>':'';
+function renderRptBtn(){
+  const b=document.getElementById('rptBtn');if(!b)return;
+  b.classList.toggle('show',RPT);if(!RPT)return;
+  if(!rptNew.loaded&&me){rptNew.loaded=1;fetchReports().then(renderRptBtn)}
+  b.innerHTML=ico('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM12 7v4M12 14.5v.01"/>')+'<span>回報問題</span>'+(rptNew()?'<span class="rd" title="有新的處理結果"></span>':'');
+  b.onclick=openReport;
 }
-function bindReports(){
-  const b=document.getElementById('rpSend'),inp=document.getElementById('rpIn');if(!b)return;
+// 有沒有還沒看過的處理結果（綠點）
+const rptNew=()=>{const l=rptNew.list||[],seen=LS.get('mizu_rpt_seen')||'';return l.some(r=>r.reply&&(r.doneAt||r.at)>seen)};
+async function fetchReports(){
+  try{rptNew.list=GAS?await call('apiMyReports',token):(S.reports||[])}catch(e){rptNew.list=rptNew.list||[]}
+  return rptNew.list;
+}
+function openReport(){
+  const root=document.getElementById('modalRoot');
+  root.innerHTML=`<div class="mask" id="mk"><div class="modal sm"><div class="mh"><h2>回報問題</h2><button class="x" id="cx">✕</button></div>
+    <div class="mb"><div class="muted small" style="margin-bottom:8px">哪裡怪怪的、想要什麼功能都可以寫。Claude 會自己去看、自己修，結果會寫在下面。</div>
+      <textarea class="inp" id="rpIn" rows="4" style="width:100%;resize:vertical" placeholder="例如：在電腦改了拍攝日期，重新整理後又變回原本的日期"></textarea>
+      <div class="muted small" style="margin-top:6px">會自動附上你在哪一頁、用什麼裝置</div>
+      <div id="rpList"><div class="muted small" style="margin-top:16px">讀取中…</div></div></div>
+    <div class="mf"><button class="btn" id="cc">關閉</button><button class="btn primary" id="rpSend">送出</button></div></div></div>`;
+  const close=()=>{closeSheet(root);renderRptBtn()};
+  document.getElementById('cx').onclick=document.getElementById('cc').onclick=close;
+  document.getElementById('mk').onmousedown=e=>{if(e.target.id==='mk')close()};
+  const inp=document.getElementById('rpIn'),b=document.getElementById('rpSend');
+  const draw=list=>{const el=document.getElementById('rpList');if(!el)return;
+    el.innerHTML=list.length?`<div style="margin-top:16px;font-weight:600">最近的回報</div>`+list.map(r=>`<div style="padding:10px 0;border-bottom:1px solid var(--split)">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="tag ${RPT_TAG[r.status]||'tg-default'}">${esc(r.status)}</span><span class="muted small">${esc(r.who||'')}・${esc(r.at)}</span></div>
+      <div style="margin-top:4px;white-space:pre-wrap">${esc(r.text)}</div>${r.reply?`<div class="small" style="margin-top:4px;white-space:pre-wrap;color:var(--text2)">🤖 ${esc(r.reply)}</div>`:''}</div>`).join(''):'';
+    LS.set('mizu_rpt_seen',list.reduce((a,r)=>((r.doneAt||r.at)>a?(r.doneAt||r.at):a),LS.get('mizu_rpt_seen')||''))};
   b.onclick=async()=>{
     const t=inp.value.trim();if(!t){toast('請寫一下發生什麼事',true);return}
     const r={text:t,page:page,ver:'__VER__',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n'),pending:Data.outbox?Data.outbox().length:0};
@@ -1917,11 +1947,12 @@ function bindReports(){
     try{
       if(GAS)await call('apiReport',token,r);
       else{(S.reports||(S.reports=[])).unshift({id:uid(),at:TODAY+' '+pad(new Date().getHours())+':'+pad(new Date().getMinutes()),who:NAMES[me],text:t,status:'待處理',reply:''});Data.saveLocal()}
-      inp.value='';toast('收到了！Claude 會去看');loadReports();
+      inp.value='';toast('收到了！Claude 會去看');draw(await fetchReports());
     }catch(e){toast(String(e.message||e).replace(/^Error:\s+/,''),true)}
     finally{b.disabled=false}
   };
-  loadReports();
+  iosify(root);if(!matchMedia('(max-width:768px)').matches)setTimeout(()=>inp.focus(),300);
+  fetchReports().then(draw);
 }
 const THEMES=['#9254DE','#722ED1','#2F54EB','#1677FF','#13C2C2','#52C41A','#FA8C16','#FA541C','#F5222D','#EB2F96','#F759AB','#A0522D','#595959'];
 const GREETS=['今天也要元氣滿滿 ✨','慢慢來比較快 🌱','拍好拍滿 📸','今天也是可愛的一天 🎀'];
@@ -1962,10 +1993,6 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  ${RPT?`<div class="card" style="margin-bottom:16px" id="rpCard"><div class="card-h"><h3>回報問題</h3><span class="muted small">Claude 會自己去看、自己修，處理結果會寫在下面</span></div><div class="card-b">
-    <textarea class="inp" id="rpIn" rows="3" style="width:100%;resize:vertical" placeholder="哪裡怪怪的？例如：在電腦改了拍攝日期，重新整理後又變回原本的日期"></textarea>
-    <div style="margin-top:10px;display:flex;gap:12px;align-items:center"><button class="btn primary" id="rpSend">送出</button><span class="muted small">會自動附上你在哪一頁、用什麼裝置</span></div>
-    <div id="rpList"></div></div></div>`:''}
   <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 __VER__</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
@@ -1973,7 +2000,6 @@ function renderProfile(){
     <div><button class="btn primary" id="sp">更新密碼</button></div></div></div></div>`;
   const $=i=>document.getElementById(i);
   $('lo').onclick=logout;
-  bindReports();
   const saveU=async f=>{Object.assign(u,f);Data.saveLocal();route();await Data.run('apiSaveUser',f)};
   $('nmIn').onchange=()=>{const v=$('nmIn').value.trim();if(v){saveU({name:v});toast('名稱已更新')}};
   M().querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>saveU({emoji:b.dataset.e,photo:''}));

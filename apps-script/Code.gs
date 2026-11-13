@@ -619,7 +619,7 @@ function apiReport(token, r) {
 function apiMyReports(token) {
   auth_(token);
   return rptRows_().reverse().slice(0, 20).map(o => ({ id: o['id'], at: o['時間'], who: o['誰'], text: o['內容'],
-    status: o['狀態'] || '待處理', reply: o['Claude 回覆'] || '' }));
+    status: o['狀態'] || '待處理', reply: o['Claude 回覆'] || '', doneAt: o['處理時間'] || '' }));
 }
 // Claude 用的：要帶 Script Properties 的 CLAUDE_KEY（用選單「MIZU → 設定 Claude 回報金鑰」設定，不寫進 repo）
 function claudeAuth_(key) {
