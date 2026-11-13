@@ -1,0 +1,707 @@
+[
+ {
+  "id": "wzkjm5mk",
+  "title": "示範・火鍋湯底",
+  "brand": "",
+  "owner": "00",
+  "lead": "00",
+  "specs": [
+   "Reels",
+   "配音",
+   "素材授權"
+  ],
+  "status": "剪輯中",
+  "amount": 3500,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "2026-10-17",
+    "done": true
+   },
+   "script": {
+    "date": "",
+    "done": true
+   },
+   "review": {
+    "date": "",
+    "done": false
+   },
+   "approve": {
+    "date": "",
+    "done": false
+   },
+   "publish": {
+    "date": "",
+    "done": false
+   },
+   "payment": {
+    "date": "",
+    "done": false
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ },
+ {
+  "id": "mrhuxrc6",
+  "title": "示範・保養精華",
+  "brand": "",
+  "owner": "00",
+  "lead": "00",
+  "specs": [
+   "Reels",
+   "配音"
+  ],
+  "status": "待匯款",
+  "amount": 3000,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "2026-09-12",
+    "done": true
+   },
+   "script": {
+    "date": "",
+    "done": true
+   },
+   "review": {
+    "date": "2026-09-18",
+    "done": true
+   },
+   "approve": {
+    "date": "",
+    "done": true
+   },
+   "publish": {
+    "date": "2026-10-06",
+    "done": true
+   },
+   "payment": {
+    "date": "2026-01-05",
+    "done": false
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ },
+ {
+  "id": "56erkje4",
+  "title": "示範・咖啡快閃",
+  "brand": "",
+  "owner": "00",
+  "lead": "00",
+  "specs": [
+   "Reels"
+  ],
+  "status": "待匯款",
+  "amount": 4000,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "",
+    "done": true
+   },
+   "script": {
+    "date": "",
+    "done": true
+   },
+   "review": {
+    "date": "",
+    "done": true
+   },
+   "approve": {
+    "date": "",
+    "done": true
+   },
+   "publish": {
+    "date": "",
+    "done": true
+   },
+   "payment": {
+    "date": "2026-11-30",
+    "done": false
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ },
+ {
+  "id": "uowbktog",
+  "title": "示範・手遊推廣",
+  "brand": "",
+  "owner": "00",
+  "lead": "00",
+  "specs": [],
+  "status": "待匯款",
+  "amount": 5000,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "",
+    "done": true
+   },
+   "script": {
+    "date": "",
+    "done": true
+   },
+   "review": {
+    "date": "",
+    "done": true
+   },
+   "approve": {
+    "date": "",
+    "done": true
+   },
+   "publish": {
+    "date": "",
+    "done": true
+   },
+   "payment": {
+    "date": "2026-11-30",
+    "done": false
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ },
+ {
+  "id": "wopr0o98",
+  "title": "示範・唇釉新品",
+  "brand": "",
+  "owner": "mimi",
+  "lead": "mimi",
+  "specs": [
+   "Reels",
+   "Threads",
+   "限動",
+   "配音"
+  ],
+  "status": "已結案",
+  "amount": 2000,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "2026-09-20",
+    "done": true
+   },
+   "script": {
+    "date": "2026-09-18",
+    "done": true
+   },
+   "review": {
+    "date": "2026-09-24",
+    "done": true
+   },
+   "approve": {
+    "date": "",
+    "done": true
+   },
+   "publish": {
+    "date": "2026-10-12",
+    "done": true
+   },
+   "payment": {
+    "date": "2026-10-30",
+    "done": true
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ },
+ {
+  "id": "djh0zr0s",
+  "title": "示範・氣泡飲",
+  "brand": "",
+  "owner": "00",
+  "lead": "00",
+  "specs": [],
+  "status": "已結案",
+  "amount": 2000,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "",
+    "done": true
+   },
+   "script": {
+    "date": "",
+    "done": true
+   },
+   "review": {
+    "date": "",
+    "done": true
+   },
+   "approve": {
+    "date": "",
+    "done": true
+   },
+   "publish": {
+    "date": "",
+    "done": true
+   },
+   "payment": {
+    "date": "2026-10-15",
+    "done": true
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ },
+ {
+  "id": "8h6hdyg8",
+  "title": "示範・展覽媒體日",
+  "brand": "",
+  "owner": "00",
+  "lead": "00",
+  "specs": [],
+  "status": "已結案",
+  "amount": 4500,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "",
+    "done": true
+   },
+   "script": {
+    "date": "",
+    "done": true
+   },
+   "review": {
+    "date": "",
+    "done": true
+   },
+   "approve": {
+    "date": "",
+    "done": true
+   },
+   "publish": {
+    "date": "",
+    "done": true
+   },
+   "payment": {
+    "date": "2026-09-30",
+    "done": true
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ },
+ {
+  "id": "1bw63yu9",
+  "title": "示範・洗臉機",
+  "brand": "",
+  "owner": "00",
+  "lead": "00",
+  "specs": [],
+  "status": "已結案",
+  "amount": 2000,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "",
+    "done": true
+   },
+   "script": {
+    "date": "",
+    "done": true
+   },
+   "review": {
+    "date": "",
+    "done": true
+   },
+   "approve": {
+    "date": "",
+    "done": true
+   },
+   "publish": {
+    "date": "",
+    "done": true
+   },
+   "payment": {
+    "date": "2026-10-31",
+    "done": true
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ },
+ {
+  "id": "trgj6ivg",
+  "title": "示範・零食開箱",
+  "brand": "",
+  "owner": "00",
+  "lead": "00",
+  "specs": [],
+  "status": "已結案",
+  "amount": 3500,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "",
+    "done": true
+   },
+   "script": {
+    "date": "",
+    "done": true
+   },
+   "review": {
+    "date": "",
+    "done": true
+   },
+   "approve": {
+    "date": "",
+    "done": true
+   },
+   "publish": {
+    "date": "",
+    "done": true
+   },
+   "payment": {
+    "date": "2026-10-30",
+    "done": true
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ },
+ {
+  "id": "cdyenze1",
+  "title": "示範・鐵板燒",
+  "brand": "",
+  "owner": "00",
+  "lead": "00",
+  "specs": [
+   "Reels",
+   "配音"
+  ],
+  "status": "已結案",
+  "amount": 4500,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "2026-09-21",
+    "done": true
+   },
+   "script": {
+    "date": "",
+    "done": true
+   },
+   "review": {
+    "date": "2026-09-28",
+    "done": true
+   },
+   "approve": {
+    "date": "",
+    "done": true
+   },
+   "publish": {
+    "date": "2026-10-15",
+    "done": true
+   },
+   "payment": {
+    "date": "2026-10-15",
+    "done": true
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ },
+ {
+  "id": "fpv8vjqj",
+  "title": "示範・面膜",
+  "brand": "",
+  "owner": "00",
+  "lead": "00",
+  "specs": [
+   "Reels",
+   "配音",
+   "Threads"
+  ],
+  "status": "已結案",
+  "amount": 2000,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "2026-09-26",
+    "done": true
+   },
+   "script": {
+    "date": "",
+    "done": true
+   },
+   "review": {
+    "date": "2026-09-28",
+    "done": true
+   },
+   "approve": {
+    "date": "",
+    "done": true
+   },
+   "publish": {
+    "date": "2026-09-29",
+    "done": true
+   },
+   "payment": {
+    "date": "2026-10-15",
+    "done": true
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ },
+ {
+  "id": "u7dcnb77",
+  "title": "示範・飯店體驗",
+  "brand": "",
+  "owner": "00",
+  "lead": "00",
+  "specs": [],
+  "status": "已結案",
+  "amount": 4500,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "",
+    "done": true
+   },
+   "script": {
+    "date": "",
+    "done": true
+   },
+   "review": {
+    "date": "",
+    "done": true
+   },
+   "approve": {
+    "date": "",
+    "done": true
+   },
+   "publish": {
+    "date": "",
+    "done": true
+   },
+   "payment": {
+    "date": "",
+    "done": true
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ },
+ {
+  "id": "uv0logwc",
+  "title": "示範・雪糕",
+  "brand": "",
+  "owner": "00",
+  "lead": "00",
+  "specs": [
+   "Reels",
+   "配音"
+  ],
+  "status": "已結案",
+  "amount": 3000,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "2026-10-16",
+    "done": true
+   },
+   "script": {
+    "date": "",
+    "done": true
+   },
+   "review": {
+    "date": "",
+    "done": true
+   },
+   "approve": {
+    "date": "",
+    "done": true
+   },
+   "publish": {
+    "date": "2026-11-10",
+    "done": true
+   },
+   "payment": {
+    "date": "",
+    "done": true
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ },
+ {
+  "id": "2kvnenxq",
+  "title": "示範・身體乳",
+  "brand": "",
+  "owner": "00",
+  "lead": "00",
+  "specs": [
+   "Reels",
+   "廣告主"
+  ],
+  "status": "待發布",
+  "amount": 2000,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "2026-10-17",
+    "done": true
+   },
+   "script": {
+    "date": "2026-10-06",
+    "done": true
+   },
+   "review": {
+    "date": "2026-10-24",
+    "done": true
+   },
+   "approve": {
+    "date": "",
+    "done": true
+   },
+   "publish": {
+    "date": "2026-11-19",
+    "done": false
+   },
+   "payment": {
+    "date": "",
+    "done": false
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ },
+ {
+  "id": "ldhe8jlr",
+  "title": "示範・耳機",
+  "brand": "",
+  "owner": "mizu",
+  "lead": "00",
+  "specs": [
+   "Reels",
+   "配音"
+  ],
+  "status": "剪輯中",
+  "amount": 2000,
+  "split": "half",
+  "fixed": {
+   "00": 0,
+   "mimi": 0
+  },
+  "ms": {
+   "shoot": {
+    "date": "2026-10-29",
+    "done": true
+   },
+   "script": {
+    "date": "2026-10-12",
+    "done": true
+   },
+   "review": {
+    "date": "",
+    "done": false
+   },
+   "approve": {
+    "date": "",
+    "done": false
+   },
+   "publish": {
+    "date": "",
+    "done": false
+   },
+   "payment": {
+    "date": "",
+    "done": false
+   }
+  },
+  "contact": "",
+  "link": "",
+  "note": "",
+  "updatedBy": ""
+ }
+]
