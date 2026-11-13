@@ -877,7 +877,9 @@ const Data={
     Data.cache();
     await Data.flush();
   },
-  flush(){if(!GAS||!token)return Promise.resolve();return Data._fl||(Data._fl=(async()=>{
+  // 注意：一定要先 await 一下，不然佇列是空的時候 finally 會在 _fl 設定之前跑完，_fl 永遠卡住、之後的修改都送不出去
+  flush(){if(!GAS||!token)return Promise.resolve();if(Data._fl)return Data._fl;let p;p=Data._fl=(async()=>{
+    await null;
     try{
       while(Data.outbox().length){
         const it=Data.outbox()[0];syncState='busy';renderSync();
@@ -894,8 +896,8 @@ const Data={
         Data.outbox().shift();Data._saveQ();Data._warned=false;
       }
       Data.cache();
-    }finally{Data._fl=null;renderSync()}
-  })())}
+    }finally{if(Data._fl===p)Data._fl=null;renderSync()}
+  })();return p}
 };
 // 存檔失敗：跳出明顯的提示（不只是一閃而過的 toast）
 function saveFailBox(msg){
@@ -1479,6 +1481,7 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
+{id:'2026-11-14-1100',date:'11/14',title:'改了馬上存到 Google',items:[['即時存檔','改完按儲存，幾秒內 Google Sheet 和日曆就會更新，不用重新整理網頁']]},
 {id:'2026-11-14-1030',date:'11/14',title:'修好：改了日期沒存到 Google',items:[['存檔','改完會確實送到 Google，不會再因為這台電腦的暫存空間滿了而沒送出去'],['沒存到會講','萬一真的沒存到，會跳出明顯的提示，也會自動回報給 Claude']]},
 ...(EDT?[{id:'2026-11-14-1031',date:'11/14',title:'編輯按鈕移到上面',items:[['電腦版','案件詳情的「編輯案件」移到標題下面，不用再往下滑']]}]:[]),
 {id:'2026-11-14-0930',date:'11/14',title:'修好：改了日期又跳回去',items:[['存檔更穩','改完拍攝日後，網頁剛好在背景跟 Google 同步時，會把舊日期蓋回畫面上。現在改成：還在存檔時不會用舊資料蓋掉你剛改的內容']]},
