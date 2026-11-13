@@ -16,9 +16,9 @@ t = open(P('mizu/src/index.tpl.html'), encoding='utf-8').read().replace('__VER__
 # 開關：正式版／預覽版
 FLAGS = {
     'gh': {'__D2__': 'true', '__UXD__': 'false', '__HDEMO__': 'false', '__HMODE__': '1', '__MDEMO__': 'false',
-           '__MMODE__': 'A', '__NEWF__': 'true', '__CHAT__': 'false'},
+           '__MMODE__': 'A', '__NEWF__': 'true', '__CHAT__': 'false', '__RPT__': 'false'},
     'pv': {'__D2__': 'true', '__UXD__': 'true', '__HDEMO__': 'false', '__HMODE__': '1', '__MDEMO__': 'false',
-           '__MMODE__': 'A', '__NEWF__': 'true', '__CHAT__': 'false'},
+           '__MMODE__': 'A', '__NEWF__': 'true', '__CHAT__': 'false', '__RPT__': 'true'},
 }
 
 def fill(h, flags):

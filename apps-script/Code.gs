@@ -29,6 +29,8 @@ function onOpen() {
     .addSeparator()
     .addItem('設定 LINE 官方帳號', 'setupLine')
     .addItem('現在傳一次 LINE 通知（測試）', 'lineDaily')
+    .addSeparator()
+    .addItem('設定 Claude 回報金鑰', 'setupClaude')
     .addToUi();
 }
 
@@ -57,7 +59,8 @@ function doPost(e) {
 }
 function api_(b) {
   const fns = { apiPublic, apiLogin, apiLogout, apiLoad, apiSaveCase, apiDeleteCase, apiSaveExpense, apiDeleteExpense,
-    apiSetSettlement, apiSaveUser, apiSetPassword, apiLineCode, apiCalendar, apiChat, apiChatSend };
+    apiSetSettlement, apiSaveUser, apiSetPassword, apiLineCode, apiCalendar, apiChat, apiChatSend,
+    apiReport, apiMyReports, apiClaudeReports, apiClaudeReply, apiClaudeLoad };
   let res;
   if (!fns[b.fn]) res = { ok: false, error: '不支援的操作' };
   else {
@@ -587,4 +590,69 @@ function lineReply_(replyToken, text) {
     headers: { Authorization: 'Bearer ' + PROPS().getProperty('LINE_TOKEN') },
     payload: JSON.stringify({ replyToken: replyToken, messages: [{ type: 'text', text: text }] })
   });
+}
+
+/* ---------- 問題回報：網頁送進「回報」分頁，Claude 定期來讀、自己修，再把結果寫回來 ---------- */
+const RPT_COLS = ['id', '時間', '誰', '內容', '頁面', '版本', '裝置', '錯誤紀錄', '未存變更', '狀態', 'Claude 回覆', '處理時間'];
+function rptSheet_() {
+  let s = sh_('回報');
+  if (!s) { s = SpreadsheetApp.getActive().insertSheet('回報'); s.appendRow(RPT_COLS); s.setFrozenRows(1); }
+  return s;
+}
+function rptRows_() {
+  const s = rptSheet_(), v = s.getDataRange().getDisplayValues(), h = v[0];
+  return v.slice(1).map((r, i) => { const o = { row: i + 2 }; h.forEach((k, j) => o[k] = r[j]); return o; });
+}
+function apiReport(token, r) {
+  const me = auth_(token);
+  r = r || {};
+  const text = String(r.text || '').trim().slice(0, 3000);
+  if (!text) throw new Error('請寫一下發生什麼事');
+  return withLock_(() => {
+    const s = rptSheet_(), id = Utilities.getUuid().slice(0, 8);
+    const row = [id, now_(), TO_LABEL[me], text, String(r.page || '').slice(0, 100), String(r.ver || '').slice(0, 40),
+      String(r.ua || '').slice(0, 300), String(r.errors || '').slice(0, 3000), String(Number(r.pending) || 0), '待處理', '', ''];
+    s.getRange(s.getLastRow() + 1, 1, 1, row.length).setNumberFormat('@').setValues([row]);
+    return id;
+  });
+}
+function apiMyReports(token) {
+  auth_(token);
+  return rptRows_().reverse().slice(0, 20).map(o => ({ id: o['id'], at: o['時間'], who: o['誰'], text: o['內容'],
+    status: o['狀態'] || '待處理', reply: o['Claude 回覆'] || '' }));
+}
+// Claude 用的：要帶 Script Properties 的 CLAUDE_KEY（用選單「MIZU → 設定 Claude 回報金鑰」設定，不寫進 repo）
+function claudeAuth_(key) {
+  const k = PROPS().getProperty('CLAUDE_KEY');
+  if (!k || String(key) !== k) throw new Error('金鑰不對');
+}
+function apiClaudeReports(key, all) {
+  claudeAuth_(key);
+  return rptRows_().filter(o => all || ['待處理', '處理中', ''].indexOf(o['狀態']) >= 0);
+}
+function apiClaudeReply(key, id, status, reply) {
+  claudeAuth_(key);
+  return withLock_(() => {
+    const s = rptSheet_(), o = rptRows_().find(x => x['id'] === String(id));
+    if (!o) throw new Error('找不到這則回報');
+    const h = s.getRange(1, 1, 1, s.getLastColumn()).getValues()[0].map(String);
+    const set = (k, v) => s.getRange(o.row, h.indexOf(k) + 1).setNumberFormat('@').setValue(v);
+    if (status) set('狀態', String(status));
+    if (reply != null) set('Claude 回覆', String(reply).slice(0, 2000));
+    set('處理時間', now_());
+    return true;
+  });
+}
+// 讓 Claude 查資料找原因（只讀）
+function apiClaudeLoad(key) {
+  claudeAuth_(key);
+  return { cases: casesFromSheet_() };
+}
+function setupClaude() {
+  const ui = SpreadsheetApp.getUi();
+  const t = ui.prompt('設定 Claude 回報金鑰', '貼上 Claude 給你的金鑰（⌘V），按確定', ui.ButtonSet.OK_CANCEL);
+  if (t.getSelectedButton() !== ui.Button.OK || !t.getResponseText().trim()) return;
+  PROPS().setProperty('CLAUDE_KEY', t.getResponseText().trim());
+  rptSheet_();
+  ui.alert('設定完成！Claude 之後會自己來看「回報」分頁。');
 }

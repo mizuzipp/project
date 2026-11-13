@@ -736,6 +736,11 @@ td.mgroup{display:table-cell}
 <div id="modalRoot"></div>
 
 <script>
+// 最近的 JS 錯誤，回報問題時一起附上給 Claude 看
+const RPT=false;
+const ERRS=[];const errLog=t=>{ERRS.push(new Date().toTimeString().slice(0,8)+' '+t);if(ERRS.length>10)ERRS.shift()};
+window.addEventListener('error',e=>errLog(`${e.message} @${String(e.filename||'').split('/').pop()}:${e.lineno}:${e.colno}`));
+window.addEventListener('unhandledrejection',e=>errLog('promise: '+String(e.reason&&e.reason.message||e.reason)));
 const LOGO=document.querySelector('.sider .brand img').src;
 const DEMO_CASES=[];
 
@@ -817,36 +822,60 @@ const Data={
         // 先用上次存在手機裡的資料秒開，背景再跟 Google 同步
         let c=null;try{c=JSON.parse(LS.get(CACHE_KEY)||'null')}catch(e){}
         if(c&&c.me&&c.users&&c.users[c.me]){S={users:c.users,cases:c.cases,expenses:c.expenses,settlements:c.settlements,chat:null};me=c.me;lastSync=c.at?new Date(c.at):null;
-          setTimeout(Data.refresh,0);return true}
+          setTimeout(async()=>{await Data.flush();Data.refresh()},0);return true}
         try{await Data.reload();return true}catch(e){if(/登入|token|過期/.test(String(e.message)))logoutQuiet();else throw e}
       }
       S={users:await call('apiPublic'),cases:[],expenses:[],settlements:{}};return false}
     const raw=LS.get(DEMO_KEY);S=raw?JSON.parse(raw):demoData();me=LS.get('mizu_demo_me');return !!me;
   },
   async login(u,pw){
-    if(GAS){const t=await call('apiLogin',u,pw);if(!t)return false;token=t;LS.set('mizu_tok',t);await Data.reload();return true}
+    if(GAS){const t=await call('apiLogin',u,pw);if(!t)return false;token=t;LS.set('mizu_tok',t);await Data.flush();await Data.reload();return true}
     if(S.users[u].pw!==pw)return false;me=u;LS.set('mizu_demo_me',u);return true;
   },
-  async logout(){if(GAS){try{await call('apiLogout',token)}catch(e){}LS.del('mizu_tok');LS.del(CACHE_KEY);token=null}else LS.del('mizu_demo_me');me=null},
+  async logout(){if(GAS){try{await call('apiLogout',token)}catch(e){}LS.del('mizu_tok');LS.del(CACHE_KEY);LS.del(OUTBOX_KEY);token=null}else LS.del('mizu_demo_me');me=null},
   async refresh(){syncState='busy';renderSync();
-    try{await Data.reload();renderSync();if(!document.getElementById('modalRoot').innerHTML)route()}
+    try{await Data.flush();if(Data.outbox().length)throw new Error('還有沒存到的變更');await Data.reload();renderSync();if(!document.getElementById('modalRoot').innerHTML)route()}
     catch(e){if(/登入|token|過期/.test(String(e.message))){logoutQuiet();document.getElementById('app').classList.add('hidden');S.users=await call('apiPublic').catch(()=>S.users);renderLogin()}else{syncState='err';renderSync()}}},
   async reload(){if(!GAS)return;const d=await call('apiLoad',token);me=d.me;const ch=S&&S.chat;S={users:d.users,cases:d.cases,expenses:d.expenses,settlements:d.settlements,chat:ch||null};
     LS.set(CACHE_KEY,JSON.stringify({me,users:d.users,cases:d.cases,expenses:d.expenses,settlements:d.settlements,at:Date.now()}));lastSync=new Date();syncState='ok'},
   saveLocal(){if(!GAS)LS.set(DEMO_KEY,JSON.stringify(S))},
+  // 改過的資料先存進這台電腦（重新整理也不會看到舊資料），還沒送到 Google 的變更排在 outbox，送成功才拿掉
+  cache(){if(GAS&&S&&me)LS.set(CACHE_KEY,JSON.stringify({me,users:S.users,cases:S.cases,expenses:S.expenses,settlements:S.settlements,at:lastSync?lastSync.getTime():Date.now()}))},
+  outbox(){try{return JSON.parse(LS.get(OUTBOX_KEY)||'[]')}catch(e){return []}},
   async run(fn,...a){
     if(!GAS){Data.saveLocal();return}
-    syncState='busy';renderSync();
-    try{await call(fn,token,...a);syncState='ok';lastSync=new Date();if(fn==='apiSaveCase'||fn==='apiDeleteCase')for(const k in gcal)delete gcal[k]}
-    catch(e){syncState='err';toast(String(e.message||e).replace(/^Error:\s+/,''),true);await Data.reload().catch(()=>{});route()}
-    renderSync();
-  }
+    const ob=Data.outbox();ob.push({fn,a:JSON.parse(JSON.stringify(a))});LS.set(OUTBOX_KEY,JSON.stringify(ob));
+    Data.cache();
+    await Data.flush();
+  },
+  flush(){if(!GAS||!token)return Promise.resolve();return Data._fl||(Data._fl=(async()=>{
+    try{
+      let ob;
+      while((ob=Data.outbox()).length){
+        const it=ob[0];syncState='busy';renderSync();
+        try{await call(it.fn,token,...it.a);syncState='ok';lastSync=new Date();if(it.fn==='apiSaveCase'||it.fn==='apiDeleteCase')for(const k in gcal)delete gcal[k]}
+        catch(e){
+          const msg=String(e.message||e).replace(/^Error:\s+/,'');
+          if(/登入|token|過期/.test(msg)){syncState='err';break}
+          if(/連不上|怪怪的|lock|timeout|逾時|service|稍後/i.test(msg)){syncState='err';if(!Data._warned)toast('還沒存到 Google，變更先留在這台電腦，等一下會自動補存',true);Data._warned=true;setTimeout(()=>Data.flush(),15000);break}
+          syncState='err';toast(msg,true);
+          LS.set(OUTBOX_KEY,JSON.stringify(Data.outbox().slice(1)));
+          if(!Data.outbox().length){await Data.reload().catch(()=>{});route()}
+          continue}
+        LS.set(OUTBOX_KEY,JSON.stringify(Data.outbox().slice(1)));Data._warned=false;
+      }
+      Data.cache();
+    }finally{Data._fl=null;renderSync()}
+  })())}
 };
+const OUTBOX_KEY='mizu_outbox_v1';
+window.addEventListener('beforeunload',e=>{if(GAS&&Data.outbox().length){e.preventDefault();e.returnValue=''}});
+window.addEventListener('online',()=>{if(GAS&&token&&Data.outbox().length)Data.flush()});
 function renderSync(){
   const el=document.getElementById('sync');if(!el)return;
   if(!GAS){el.className='sync demo';el.innerHTML='<i></i>預覽模式・資料不會寫回 Google Sheet';return}
   el.className='sync '+(syncState==='busy'?'busy':syncState==='err'?'err':'');
-  el.innerHTML=syncState==='busy'?'<i></i>儲存中…':syncState==='err'?'<i></i>同步失敗':`<i></i>已同步 Google Sheet${lastSync?' · '+pad(lastSync.getHours())+':'+pad(lastSync.getMinutes()):''}`;
+  el.innerHTML=syncState==='busy'?'<i></i>儲存中…':syncState==='err'?(Data.outbox().length?`<i></i>還有 ${Data.outbox().length} 筆沒存到 Google，會自動補存`:'<i></i>同步失敗'):`<i></i>已同步 Google Sheet${lastSync?' · '+pad(lastSync.getHours())+':'+pad(lastSync.getMinutes()):''}`;
 }
 
 
@@ -1405,6 +1434,7 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
+{id:'2026-11-13-2200',date:'11/13',title:RPT?'改了會確實存好＋回報問題':'改了會確實存好',items:[['存檔更穩','改完案件馬上重新整理，也不會再跳回舊資料；網路不穩時變更會先留在這台電腦，連上後自動補存，還沒存完就關網頁會提醒你'],...(RPT?[['回報問題','個人設定裡多了「回報問題」，寫下哪裡怪怪的就好，Claude 會自己去看、自己修，處理結果會寫在下面']]:[])]},
   {id:'2026-11-12-0205',date:'11/12',title:'Mizu 案改放 mizu.zipp 預設日曆',items:[['日曆','Mizu 的案子不再放「mizu 米事」，改放進 mizu.zipp@gmail.com 的預設日曆'],['清重複','順便清掉日曆裡同一天同名的重複行程']]},
 {id:'2026-11-12-0155',date:'11/12',title:'Brief、腳本一鍵打開',items:[['連結按鈕','案件可以分別填 Brief（PDF）和腳本（Google 試算表）連結，清單上會出現小圖示，點了直接打開'],['電腦版左右分欄','案件頁點左邊的案子，右邊直接顯示詳情、連結和時程，點圓圈就能打勾']]},
 {id:'2026-11-12-0150',date:'11/12',title:'防止重複新增案件',items:[['重複提醒','新增案件時，如果已經有同名的案子，會先跳出提醒，可以直接打開原本那筆，避免收入和月結算錯'],['已清理','之前重複的 3 筆（711元進莊、ARIH POP UP、Glad2Glow唇部精華）已經刪掉，11 月月結恢復正確']]},
@@ -1869,6 +1899,30 @@ function openExp(id){
 }
 
 
+const RPT_TAG={'待處理':'tg-default','處理中':'tg-blue','已修好':'tg-green','等你確認':'tg-orange','需要你幫忙':'tg-gold','不用處理':'tg-default'};
+async function loadReports(){
+  const el=document.getElementById('rpList');if(!el)return;
+  let list=[];try{list=GAS?await call('apiMyReports',token):(S.reports||[])}catch(e){return}
+  if(!document.getElementById('rpList'))return;
+  el.innerHTML=list.length?`<div style="margin-top:16px;border-top:1px solid var(--border,#f0f0f0)">`+list.map(r=>`<div style="padding:10px 0;border-bottom:1px solid var(--border,#f0f0f0)">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="tag ${RPT_TAG[r.status]||'tg-default'}">${esc(r.status)}</span><span class="muted small">${esc(r.who||'')}・${esc(r.at)}</span></div>
+    <div style="margin-top:4px;white-space:pre-wrap">${esc(r.text)}</div>${r.reply?`<div class="small" style="margin-top:4px;white-space:pre-wrap;color:var(--text2,#595959)">🤖 ${esc(r.reply)}</div>`:''}</div>`).join('')+'</div>':'';
+}
+function bindReports(){
+  const b=document.getElementById('rpSend'),inp=document.getElementById('rpIn');if(!b)return;
+  b.onclick=async()=>{
+    const t=inp.value.trim();if(!t){toast('請寫一下發生什麼事',true);return}
+    const r={text:t,page:page,ver:'11/13 21:38',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n'),pending:Data.outbox?Data.outbox().length:0};
+    b.disabled=true;
+    try{
+      if(GAS)await call('apiReport',token,r);
+      else{(S.reports||(S.reports=[])).unshift({id:uid(),at:TODAY+' '+pad(new Date().getHours())+':'+pad(new Date().getMinutes()),who:NAMES[me],text:t,status:'待處理',reply:''});Data.saveLocal()}
+      inp.value='';toast('收到了！Claude 會去看');loadReports();
+    }catch(e){toast(String(e.message||e).replace(/^Error:\s+/,''),true)}
+    finally{b.disabled=false}
+  };
+  loadReports();
+}
 const THEMES=['#9254DE','#722ED1','#2F54EB','#1677FF','#13C2C2','#52C41A','#FA8C16','#FA541C','#F5222D','#EB2F96','#F759AB','#A0522D','#595959'];
 const GREETS=['今天也要元氣滿滿 ✨','慢慢來比較快 🌱','拍好拍滿 📸','今天也是可愛的一天 🎀'];
 const prefs=()=>(S.users[me].prefs||(S.users[me].prefs={}));
@@ -1908,13 +1962,18 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/13 21:18</div>
+  ${RPT?`<div class="card" style="margin-bottom:16px" id="rpCard"><div class="card-h"><h3>回報問題</h3><span class="muted small">Claude 會自己去看、自己修，處理結果會寫在下面</span></div><div class="card-b">
+    <textarea class="inp" id="rpIn" rows="3" style="width:100%;resize:vertical" placeholder="哪裡怪怪的？例如：在電腦改了拍攝日期，重新整理後又變回原本的日期"></textarea>
+    <div style="margin-top:10px;display:flex;gap:12px;align-items:center"><button class="btn primary" id="rpSend">送出</button><span class="muted small">會自動附上你在哪一頁、用什麼裝置</span></div>
+    <div id="rpList"></div></div></div>`:''}
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/13 21:38</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
     <div><button class="btn primary" id="sp">更新密碼</button></div></div></div></div>`;
   const $=i=>document.getElementById(i);
   $('lo').onclick=logout;
+  bindReports();
   const saveU=async f=>{Object.assign(u,f);Data.saveLocal();route();await Data.run('apiSaveUser',f)};
   $('nmIn').onchange=()=>{const v=$('nmIn').value.trim();if(v){saveU({name:v});toast('名稱已更新')}};
   M().querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>saveU({emoji:b.dataset.e,photo:''}));
