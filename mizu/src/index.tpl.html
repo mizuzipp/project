@@ -929,9 +929,8 @@ const other=u=>u==='00'?'mimi':'00';
 const canEdit=c=>c.owner===me||c.owner==='mizu';
 function mine(c){
   if(c.owner===me)return true;
-  if(c.owner!=='mizu')return false;
-  if(c.lead===me)return true;
-  return c.status!=='已結案'&&MS.some(([k])=>responsible(c,k).includes(me)&&!c.ms[k].done);
+  // Mizu 案是兩個人一起的，不管自己那段做完沒，「我的」都看得到
+  return c.owner==='mizu';
 }
 function responsible(c,k){
   if(c.owner!=='mizu')return [c.owner];
@@ -1481,6 +1480,7 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
+{id:'2026-11-16-1200',date:'11/16',title:'Mizu 案兩個人都看得到',items:[['我的案件','Mizu 的案子不管自己那段做完沒，都會一直出現在「我的」裡，不會再不見']]},
 {id:'2026-11-14-1100',date:'11/14',title:'改了馬上存到 Google',items:[['即時存檔','改完按儲存，幾秒內 Google Sheet 和日曆就會更新，不用重新整理網頁']]},
 {id:'2026-11-14-1030',date:'11/14',title:'修好：改了日期沒存到 Google',items:[['存檔','改完會確實送到 Google，不會再因為這台電腦的暫存空間滿了而沒送出去'],['沒存到會講','萬一真的沒存到，會跳出明顯的提示，也會自動回報給 Claude']]},
 ...(EDT?[{id:'2026-11-14-1031',date:'11/14',title:'編輯按鈕移到上面',items:[['電腦版','案件詳情的「編輯案件」移到標題下面，不用再往下滑']]}]:[]),
