@@ -486,6 +486,10 @@ td.mgroup{display:table-cell}
 .mc-n span{font-size:14px;font-weight:400;color:var(--text3)}
 .mc-bar{height:6px;background:var(--fill);border-radius:3px;margin:10px 0 4px;overflow:hidden}
 .mc-bar i{display:block;height:100%;background:var(--success);border-radius:3px}
+.calf{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px}
+.calf-b{border:1px solid var(--border,#d9d9d9);background:#fff;color:var(--text2);border-radius:14px;height:28px;padding:0 12px;font-size:13px;cursor:pointer}
+.calf-b:hover{border-color:var(--primary);color:var(--primary)}
+.calf-b.on{background:var(--primary);border-color:var(--primary);color:#fff}
 .dp-top{margin:-4px 0 14px}
 .dp-top .btn{width:100%}
 .rpt-btn{display:none;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid color-mix(in srgb,var(--primary) 35%,transparent);border-radius:16px;background:color-mix(in srgb,var(--primary) 8%,#fff);color:var(--primary);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
@@ -749,7 +753,8 @@ td.mgroup{display:table-cell}
 <script>
 // 最近的 JS 錯誤，回報問題時一起附上給 Claude 看
 const RPT=true;
-const EDT=true;   // 電腦版詳情：編輯按鈕放上面
+const EDT=true;
+const CALF=false;  // 日曆依時程種類篩選   // 電腦版詳情：編輯按鈕放上面
 const ERRS=[];const errLog=t=>{ERRS.push(new Date().toTimeString().slice(0,8)+' '+t);if(ERRS.length>10)ERRS.shift()};
 window.addEventListener('error',e=>errLog(`${e.message} @${String(e.filename||'').split('/').pop()}:${e.lineno}:${e.colno}`));
 window.addEventListener('unhandledrejection',e=>errLog('promise: '+String(e.reason&&e.reason.message||e.reason)));
@@ -912,7 +917,7 @@ function lsInfo(){try{let t=0;const ks=Object.keys(localStorage).map(k=>{const n
 function autoReport(text,it){
   if(!GAS||!RPT||!token)return;
   const extra=it&&it.a&&it.a[0]&&it.a[0].id?`\n案件 id：${it.a[0].id}`+(it.a[0].ms?`，拍攝日送出 ${it.a[0].ms.shoot.date||'（空白）'}`:''):'';
-  call('apiReport',token,{text:'（自動回報）'+text+extra,page:page,ver:'11/16 20:41',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n')+'\n'+lsInfo(),pending:Data.outbox().length}).catch(()=>{});
+  call('apiReport',token,{text:'（自動回報）'+text+extra,page:page,ver:'11/20 00:19',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n')+'\n'+lsInfo(),pending:Data.outbox().length}).catch(()=>{});
 }
 const OUTBOX_KEY='mizu_outbox_v1';
 window.addEventListener('beforeunload',e=>{if(GAS&&Data.outbox().length){e.preventDefault();e.returnValue=''}});
@@ -1480,6 +1485,7 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
+...(CALF?[{id:'2026-11-20-1200',date:'11/20',title:'日曆可以篩選了 📅',items:[['篩選','日曆上方可以選只看拍攝、腳本、AC、過稿、上線或匯款，可以一次選好幾種，按「全部」就回來'],['會記住','選好的篩選會記在這台電腦，下次打開還是一樣']]}]:[]),
 {id:'2026-11-16-1200',date:'11/16',title:'Mizu 案兩個人都看得到',items:[['我的案件','Mizu 的案子不管自己那段做完沒，都會一直出現在「我的」裡，不會再不見']]},
 {id:'2026-11-14-1100',date:'11/14',title:'改了馬上存到 Google',items:[['即時存檔','改完按儲存，幾秒內 Google Sheet 和日曆就會更新，不用重新整理網頁']]},
 {id:'2026-11-14-1030',date:'11/14',title:'修好：改了日期沒存到 Google',items:[['存檔','改完會確實送到 Google，不會再因為這台電腦的暫存空間滿了而沒送出去'],['沒存到會講','萬一真的沒存到，會跳出明顯的提示，也會自動回報給 Claude']]},
@@ -1692,6 +1698,13 @@ function confirmBox(msg,ok){
 
 
 const gcal={};
+// 日曆篩選：記在這台電腦，空的＝全部
+const calKinds=()=>{if(!CALF)return null;if(!ui.calK){let v=null;try{v=JSON.parse(LS.get('mizu_calk_'+me)||'null')}catch(e){}ui.calK=Array.isArray(v)?v:[]}return ui.calK};
+function calKindBar(){
+  const ks=calKinds();if(!ks)return '';
+  const on=k=>!ks.length||ks.includes(k);
+  return `<div class="calf"><button class="calf-b ${!ks.length?'on':''}" data-ck="">全部</button>${MS.map(([k,l])=>`<button class="calf-b ${ks.length&&ks.includes(k)?'on':''}" data-ck="${k}">${k==='approve'?'過稿':l}</button>`).join('')}</div>`;
+}
 function renderCalendar(){
   newBtn();
   const [y,mm]=ui.calM.split('-').map(Number);
@@ -1702,11 +1715,13 @@ function renderCalendar(){
   const from=cells[0],to=cells[cells.length-1],gk=from+'_'+to;
   if(GAS&&!gcal[gk]){gcal[gk]='loading';call('apiCalendar',token,from,to).then(r=>{gcal[gk]=r;if(page==='calendar')renderCalendar()}).catch(()=>{gcal[gk]=[]})}
   const gev=Array.isArray(gcal[gk])?gcal[gk]:[];
-  const evs=d=>{const o=[];S.cases.forEach(c=>{if(ui.calScope==='mine'&&!mine(c))return;MS.forEach(([k])=>{if(c.ms[k].date===d){if(ui.calScope==='mine'&&!responsible(c,k).includes(me))return;o.push({c,k,done:c.ms[k].done})}})});return o.sort((a,b)=>(tm(a.c,a.k)||'99').localeCompare(tm(b.c,b.k)||'99'))};
-  const gevs=d=>gev.filter(e=>e.date===d&&(ui.calScope==='all'||e.who===me||e.who==='mizu')).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+  const kf=calKinds()||[];
+  const evs=d=>{const o=[];S.cases.forEach(c=>{if(ui.calScope==='mine'&&!mine(c))return;MS.forEach(([k])=>{if(kf.length&&!kf.includes(k))return;if(c.ms[k].date===d){if(ui.calScope==='mine'&&!responsible(c,k).includes(me))return;o.push({c,k,done:c.ms[k].done})}})});return o.sort((a,b)=>(tm(a.c,a.k)||'99').localeCompare(tm(b.c,b.k)||'99'))};
+  const gevs=d=>kf.length?[]:gev.filter(e=>e.date===d&&(ui.calScope==='all'||e.who===me||e.who==='mizu')).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
   M().innerHTML=`<div class="toolbar"><div class="seg"><button data-sc="mine" class="${ui.calScope==='mine'?'on':''}">我的</button><button data-sc="all" class="${ui.calScope==='all'?'on':''}">全部</button></div>
     <div class="legend" style="margin-left:8px"><span><span class="dot" style="background:var(--c00)"></span>${esc(NAMES['00'])}</span><span><span class="dot" style="background:var(--cmimi)"></span>${esc(NAMES['mimi'])}</span><span><span class="dot" style="background:var(--cmizu)"></span>Mizu</span><span class="gev"><span class="dot" style="border-color:var(--text3)"></span>Google 日曆其他行程</span>${gcal[gk]==='loading'?'<span class="muted small">讀取 Google 日曆中…</span>':''}</div>
     <span class="spacer"></span>${monthPicker(ui.calM,'cm')}</div>
+  ${calKindBar()}
   <div class="card"><div class="cal">${[...WK].map(w=>`<div class="wh">${w}</div>`).join('')}
   ${cells.map(d=>`<div class="dc ${ym(d)!==ui.calM?'out':''} ${d===TODAY?'today':''} ${d===ui.calDay?'sel':''}" data-d="${d}"><div class="dn"><span>${+d.slice(8)}</span></div><div class="dots">${evs(d).slice(0,4).map(x=>`<i style="background:${ocol(x.c.owner)};${x.done?'opacity:.35':''}"></i>`).join('')}${gevs(d).slice(0,2).map(e=>`<i style="border:1.5px solid ${ocol(e.who)};width:4px;height:4px"></i>`).join('')}</div>${evs(d).map(x=>`<div class="ev ${x.done?'done':''}" data-open="${x.c.id}" title="${esc((tm(x.c,x.k)?tm(x.c,x.k)+' ':'')+MSL[x.k]+'・'+x.c.title)}"><span class="dot" style="background:${ocol(x.c.owner)}"></span>${tpre(x.c,x.k)}${esc(MSL[x.k])}・${esc(x.c.title)}</div>`).join('')}${gevs(d).map(e=>`<div class="ev gev" title="${esc(e.title)}"><span class="dot" style="border-color:${ocol(e.who)}"></span>${e.time?e.time+' ':''}${esc(e.title)}</div>`).join('')}</div>`).join('')}</div></div>
   <div class="card only-mob" style="margin-top:10px"><div class="card-h"><h3>${md(ui.calDay||TODAY)}</h3></div>
@@ -1714,6 +1729,11 @@ function renderCalendar(){
   <div class="muted small" style="margin-top:10px">${GAS?'案件時程會自動寫進 Google 日曆：'+esc(NAMES['00'])+' 的個人案 → TZU、'+esc(NAMES['mimi'])+' 的個人案 → Miranda、Mizu 案 → mizu.zipp 的預設日曆':'預覽模式不會讀寫 Google 日曆'}</div>`;
   bindOpen(M());
   M().querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{ui.calScope=b.dataset.sc;renderCalendar()});
+  // 點一個＝只看那一種；再點別的＝加進來；再點一次已選的＝拿掉；「全部」＝清掉篩選
+  M().querySelectorAll('[data-ck]').forEach(b=>b.onclick=()=>{const k=b.dataset.ck,ks=calKinds();
+    ui.calK=!k?[]:ks.includes(k)?ks.filter(x=>x!==k):[...ks,k];
+    if(ui.calK.length===MS.length)ui.calK=[];
+    LS.set('mizu_calk_'+me,JSON.stringify(ui.calK));renderCalendar()});
   M().querySelectorAll('.dc[data-d]').forEach(c=>c.addEventListener('click',e=>{if(window.innerWidth>768&&e.target.closest('.ev'))return;if(window.innerWidth<=768){e.stopPropagation();ui.calDay=c.dataset.d;renderCalendar()}}));
   bindMonth('cm',()=>ui.calM,v=>ui.calM=v);
 }
@@ -1984,7 +2004,7 @@ function openReport(){
     LS.set('mizu_rpt_seen',list.reduce((a,r)=>((r.doneAt||r.at)>a?(r.doneAt||r.at):a),LS.get('mizu_rpt_seen')||''))};
   b.onclick=async()=>{
     const t=inp.value.trim();if(!t){toast('請寫一下發生什麼事',true);return}
-    const r={text:t,page:page,ver:'11/16 20:41',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n')+'\n'+lsInfo(),pending:Data.outbox?Data.outbox().length:0};
+    const r={text:t,page:page,ver:'11/20 00:19',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n')+'\n'+lsInfo(),pending:Data.outbox?Data.outbox().length:0};
     b.disabled=true;
     try{
       if(GAS)await call('apiReport',token,r);
@@ -2035,7 +2055,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/16 20:41</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/20 00:19</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>
