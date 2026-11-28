@@ -768,7 +768,7 @@ function flowDate(c){const ks=MS.map(([k])=>k);
 const STATUSES=['確定合作','On hold','過腳本中','剪輯中','過稿中','待發布','未發布已結帳','待匯款','已結案'];
 const ST_COLOR={'確定合作':'blue','On hold':'default','過腳本中':'cyan','剪輯中':'geekblue','過稿中':'purple','待發布':'orange','待匯款':'gold','未發布已結帳':'lime','已結案':'green'};
 const RANK={'確定合作':0,'On hold':0,'過腳本中':1,'剪輯中':2,'過稿中':3,'待發布':4,'待匯款':5,'未發布已結帳':5,'已結案':6};
-const SPECS=['Reels','配音','Threads','抖音','限動','廣告主','素材授權','圖文'];
+const SPECS=['Reels','配音','Threads','抖音','限動','廣告主','素材授權','圖文','與廠商協作','指定米米協作','指定00協作'];
 const MS=[['shoot','拍攝'],['script','腳本'],['review','AC'],['approve','廠商過稿'],['publish','上線'],['payment','匯款']];
 const MSL=Object.fromEntries(MS);
 const EXP_CATS=['交通','道具 / 服裝','餐飲','場地 / 其他'];
@@ -917,7 +917,7 @@ function lsInfo(){try{let t=0;const ks=Object.keys(localStorage).map(k=>{const n
 function autoReport(text,it){
   if(!GAS||!RPT||!token)return;
   const extra=it&&it.a&&it.a[0]&&it.a[0].id?`\n案件 id：${it.a[0].id}`+(it.a[0].ms?`，拍攝日送出 ${it.a[0].ms.shoot.date||'（空白）'}`:''):'';
-  call('apiReport',token,{text:'（自動回報）'+text+extra,page:page,ver:'11/20 00:47',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n')+'\n'+lsInfo(),pending:Data.outbox().length}).catch(()=>{});
+  call('apiReport',token,{text:'（自動回報）'+text+extra,page:page,ver:'11/28 18:11',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n')+'\n'+lsInfo(),pending:Data.outbox().length}).catch(()=>{});
 }
 const OUTBOX_KEY='mizu_outbox_v1';
 window.addEventListener('beforeunload',e=>{if(GAS&&Data.outbox().length){e.preventDefault();e.returnValue=''}});
@@ -1485,6 +1485,7 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
+{id:'2026-11-28-1200',date:'11/28',title:'規格多三個選項',items:[['規格','新增「與廠商協作」「指定米米協作」「指定00協作」，編輯案件時可以勾']]},
 ...(CALF?[{id:'2026-11-20-1200',date:'11/20',title:'日曆可以篩選了 📅',items:[['篩選','日曆上方可以選只看拍攝、腳本、AC、過稿、上線或匯款，可以一次選好幾種，按「全部」就回來'],['會記住','選好的篩選會記在這台電腦，下次打開還是一樣']]}]:[]),
 {id:'2026-11-16-1200',date:'11/16',title:'Mizu 案兩個人都看得到',items:[['我的案件','Mizu 的案子不管自己那段做完沒，都會一直出現在「我的」裡，不會再不見']]},
 {id:'2026-11-14-1100',date:'11/14',title:'改了馬上存到 Google',items:[['即時存檔','改完按儲存，幾秒內 Google Sheet 和日曆就會更新，不用重新整理網頁']]},
@@ -2004,7 +2005,7 @@ function openReport(){
     LS.set('mizu_rpt_seen',list.reduce((a,r)=>((r.doneAt||r.at)>a?(r.doneAt||r.at):a),LS.get('mizu_rpt_seen')||''))};
   b.onclick=async()=>{
     const t=inp.value.trim();if(!t){toast('請寫一下發生什麼事',true);return}
-    const r={text:t,page:page,ver:'11/20 00:47',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n')+'\n'+lsInfo(),pending:Data.outbox?Data.outbox().length:0};
+    const r={text:t,page:page,ver:'11/28 18:11',ua:navigator.userAgent+' '+innerWidth+'x'+innerHeight,errors:ERRS.join('\n')+'\n'+lsInfo(),pending:Data.outbox?Data.outbox().length:0};
     b.disabled=true;
     try{
       if(GAS)await call('apiReport',token,r);
@@ -2055,7 +2056,7 @@ function renderProfile(){
     ${u.lineBound?`<div>每天晚上 9 點，會把你隔天要做的事和逾期項目傳到 LINE。</div><div class="hint">換手機或想重新綁定，再按一次下面的按鈕就好。</div>`:
       `<div>綁定之後，每天晚上 9 點會把你隔天要做的事傳到 LINE。</div>`}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn${u.lineBound?'':' primary'}" id="lineCode">產生綁定碼</button><span id="lineOut"></span></div></div></div>
-  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/20 00:47</div>
+  <div class="muted small" style="text-align:center;margin:-4px 0 12px">MIZU 版本 11/28 18:11</div>
   <div class="card"><div class="card-h"><h3>修改密碼</h3><button class="btn" id="lo">登出</button></div><div class="card-b"><div class="form" style="max-width:640px">
     <div class="fi"><label>目前密碼</label><input class="inp" id="op" type="password" autocomplete="current-password"></div>
     <div class="fi"><label>新密碼（至少 6 個字，英文數字都可以）</label><input class="inp" id="np" type="password" autocomplete="new-password"></div>

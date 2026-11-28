@@ -768,7 +768,7 @@ function flowDate(c){const ks=MS.map(([k])=>k);
 const STATUSES=['確定合作','On hold','過腳本中','剪輯中','過稿中','待發布','未發布已結帳','待匯款','已結案'];
 const ST_COLOR={'確定合作':'blue','On hold':'default','過腳本中':'cyan','剪輯中':'geekblue','過稿中':'purple','待發布':'orange','待匯款':'gold','未發布已結帳':'lime','已結案':'green'};
 const RANK={'確定合作':0,'On hold':0,'過腳本中':1,'剪輯中':2,'過稿中':3,'待發布':4,'待匯款':5,'未發布已結帳':5,'已結案':6};
-const SPECS=['Reels','配音','Threads','抖音','限動','廣告主','素材授權','圖文'];
+const SPECS=['Reels','配音','Threads','抖音','限動','廣告主','素材授權','圖文','與廠商協作','指定米米協作','指定00協作'];
 const MS=[['shoot','拍攝'],['script','腳本'],['review','AC'],['approve','廠商過稿'],['publish','上線'],['payment','匯款']];
 const MSL=Object.fromEntries(MS);
 const EXP_CATS=['交通','道具 / 服裝','餐飲','場地 / 其他'];
@@ -1485,6 +1485,7 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
+{id:'2026-11-28-1200',date:'11/28',title:'規格多三個選項',items:[['規格','新增「與廠商協作」「指定米米協作」「指定00協作」，編輯案件時可以勾']]},
 ...(CALF?[{id:'2026-11-20-1200',date:'11/20',title:'日曆可以篩選了 📅',items:[['篩選','日曆上方可以選只看拍攝、腳本、AC、過稿、上線或匯款，可以一次選好幾種，按「全部」就回來'],['會記住','選好的篩選會記在這台電腦，下次打開還是一樣']]}]:[]),
 {id:'2026-11-16-1200',date:'11/16',title:'Mizu 案兩個人都看得到',items:[['我的案件','Mizu 的案子不管自己那段做完沒，都會一直出現在「我的」裡，不會再不見']]},
 {id:'2026-11-14-1100',date:'11/14',title:'改了馬上存到 Google',items:[['即時存檔','改完按儲存，幾秒內 Google Sheet 和日曆就會更新，不用重新整理網頁']]},
