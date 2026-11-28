@@ -51,6 +51,7 @@
 
 ## 預覽版 demo 開關（模板裡的 placeholder）
 - `__UXD__`：UX 改版 demo（首頁今天最急卡片、復原 toast、月結轉帳圖、標題列、時程兩行、下拉同步）— 只在預覽版開，還沒正式上線
+- `__IGD__`：IG 數據面板（左邊「數據」頁）— 只在預覽版開，等 00 確認；後台 `igSync` 每天 6 點抓，權杖在 Script Properties `IG_TOKEN_<帳號>`，帳號清單 `IG_ACCOUNTS`，用選單「MIZU → 設定 IG 數據」設定
 - `__CALF__`：日曆依時程種類篩選（拍攝／腳本／AC／過稿／上線／匯款）— 已正式上線（true）
 - `__EDT__`：電腦版詳情的「編輯案件」移到標題下面 — 已正式上線（true）
 - `__RPT__`：回報問題（右上角按鈕）— 已正式上線（true）
@@ -67,6 +68,11 @@
 ## 回報問題（Claude 自己處理）
 - 網頁送到 Sheet「回報」分頁；Claude 用 `mizu/tools/claude_reports.py` 讀寫（金鑰在本機 `~/.mizu/claude_key`，Apps Script 那邊是 Script Properties `CLAUDE_KEY`，用選單「MIZU → 設定 Claude 回報金鑰」設定）
 - 本機排程「MIZU 回報問題自動處理」（每天 9～23 點，每 2 小時）會自動跑
+
+## IG 數據（11/28）
+- 用 Instagram API with Instagram Login 的權杖（EAA 開頭），要打 graph.facebook.com/v27.0（打 graph.instagram.com 會失敗）
+- 網站要用另一組只有 instagram_basic＋instagram_manage_insights 的權杖，不要共用「分析 @tzu.dailyy」那組（那組有發文／私訊權限、永不過期，存在本機鑰匙圈 ig-graph-token）
+- 粉絲數沒有歷史，只能每天記一筆（IG帳號分頁）
 
 ## 待辦／注意
 - 11/13 已部署含回報 API 的 Code.gs，也設好 CLAUDE_KEY。是否執行過 `moveMizuToMain` 不確定

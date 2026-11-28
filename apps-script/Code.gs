@@ -31,6 +31,9 @@ function onOpen() {
     .addItem('現在傳一次 LINE 通知（測試）', 'lineDaily')
     .addSeparator()
     .addItem('設定 Claude 回報金鑰', 'setupClaude')
+    .addSeparator()
+    .addItem('設定 IG 數據（新增／更新帳號）', 'setupIG')
+    .addItem('現在抓一次 IG 數據', 'igSyncNow')
     .addToUi();
 }
 
@@ -60,7 +63,7 @@ function doPost(e) {
 function api_(b) {
   const fns = { apiPublic, apiLogin, apiLogout, apiLoad, apiSaveCase, apiDeleteCase, apiSaveExpense, apiDeleteExpense,
     apiSetSettlement, apiSaveUser, apiSetPassword, apiLineCode, apiCalendar, apiChat, apiChatSend,
-    apiReport, apiMyReports, apiClaudeReports, apiClaudeReply, apiClaudeLoad };
+    apiReport, apiMyReports, apiClaudeReports, apiClaudeReply, apiClaudeLoad, apiIG, apiIGLink };
   let res;
   if (!fns[b.fn]) res = { ok: false, error: '不支援的操作' };
   else {
@@ -656,3 +659,130 @@ function setupClaude() {
   rptSheet_();
   ui.alert('設定完成！Claude 之後會自己來看「回報」分頁。');
 }
+
+/* ---------- IG 數據面板：每天自動抓各帳號的貼文成效，存進「IG貼文」「IG帳號」分頁 ----------
+ * 用 Instagram API with Instagram Login 產生的權杖（EAA 開頭），所以打 graph.facebook.com。
+ * 權杖只放 Script Properties（IG_TOKEN_<帳號>），不寫進 repo；建議只勾 instagram_basic、instagram_manage_insights。
+ */
+const IG_API = 'https://graph.facebook.com/v27.0/';
+const IG_POST_COLS = ['id', '帳號', '發布時間', '類型', '文案', '連結', '縮圖', '瀏覽', '觸及', '讚', '留言', '收藏', '分享', '互動', '平均觀看秒數', '更新時間', '案件id'];
+const IG_ACC_COLS = ['日期', '帳號', '粉絲', '追蹤中', '貼文數'];
+function igAccounts_() { try { return JSON.parse(PROPS().getProperty('IG_ACCOUNTS') || '[]'); } catch (e) { return []; } }
+function igSheet_(name, cols) {
+  let s = sh_(name);
+  if (!s) { s = SpreadsheetApp.getActive().insertSheet(name); s.appendRow(cols); s.setFrozenRows(1); }
+  return s;
+}
+function igGet_(path, params, token) {
+  const q = Object.keys(params || {}).map(k => k + '=' + encodeURIComponent(params[k])).join('&');
+  const url = /^https:/.test(path) ? path : IG_API + path + '?' + q + (q ? '&' : '') + 'access_token=' + encodeURIComponent(token);
+  const r = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+  let j;
+  // 文案裡偶爾有沒跳脫的控制字元，先清掉再解析
+  try { j = JSON.parse(r.getContentText().replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, ' ')); }
+  catch (e) { throw new Error('IG 回應看不懂（HTTP ' + r.getResponseCode() + '）'); }
+  if (j.error) throw new Error(j.error.message || JSON.stringify(j.error));
+  return j;
+}
+// 一次要全部指標；某個指標不支援時，改成一個一個要，拿得到多少算多少
+function igInsights_(m, token) {
+  const reel = m.media_product_type === 'REELS';
+  const ms = ['views', 'reach', 'saved', 'shares', 'total_interactions'].concat(reel ? ['ig_reels_avg_watch_time'] : []);
+  const read = j => { const o = {}; (j.data || []).forEach(d => { o[d.name] = d.total_value ? d.total_value.value : (d.values && d.values[0] ? d.values[0].value : null); }); return o; };
+  try { return read(igGet_(m.id + '/insights', { metric: ms.join(',') }, token)); }
+  catch (e) {
+    const o = {};
+    ms.forEach(x => { try { Object.assign(o, read(igGet_(m.id + '/insights', { metric: x }, token))); } catch (e2) {} });
+    return o;
+  }
+}
+function igSyncAccount_(a) {
+  const token = PROPS().getProperty('IG_TOKEN_' + a.handle);
+  if (!token) throw new Error(a.handle + ' 還沒設定權杖');
+  const info = igGet_(a.id, { fields: 'username,followers_count,follows_count,media_count' }, token);
+  // 粉絲數只抓得到「現在」，每天記一筆自己累積
+  const as = igSheet_('IG帳號', IG_ACC_COLS), today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
+  const av = as.getDataRange().getDisplayValues();
+  const ai = av.findIndex(r => r[0] === today && r[1] === a.handle);
+  const arow = [today, a.handle, info.followers_count || 0, info.follows_count || 0, info.media_count || 0];
+  as.getRange(ai > 0 ? ai + 1 : as.getLastRow() + 1, 1, 1, arow.length).setNumberFormat('@').setValues([arow.map(String)]);
+  // 最近的貼文（最多 150 篇）＋每篇的成效
+  let list = [], page = igGet_(a.id + '/media', { fields: 'id,caption,media_type,media_product_type,permalink,timestamp,thumbnail_url,media_url,like_count,comments_count', limit: 50 }, token);
+  for (let n = 0; n < 3 && page; n++) {
+    list = list.concat(page.data || []);
+    page = page.paging && page.paging.next && n < 2 ? igGet_(page.paging.next, null, token) : null;
+  }
+  const ps = igSheet_('IG貼文', IG_POST_COLS), pv = ps.getDataRange().getValues(), h = pv[0].map(String);
+  const rows = {}; pv.slice(1).forEach(r => { if (r[0]) rows[String(r[0])] = r; });
+  const now = now_();
+  list.forEach(m => {
+    const ins = igInsights_(m, token);
+    const type = m.media_product_type === 'REELS' ? 'Reels' : m.media_type === 'CAROUSEL_ALBUM' ? '輪播' : m.media_type === 'VIDEO' ? '影片' : '貼文';
+    const old = rows[m.id];
+    rows[m.id] = [m.id, a.handle, Utilities.formatDate(new Date(m.timestamp), TZ, 'yyyy-MM-dd HH:mm'), type,
+      String(m.caption || '').slice(0, 500), m.permalink || '', m.thumbnail_url || m.media_url || '',
+      ins.views || 0, ins.reach || 0, m.like_count || 0, m.comments_count || 0, ins.saved || 0, ins.shares || 0,
+      ins.total_interactions || 0, ins.ig_reels_avg_watch_time ? Math.round(ins.ig_reels_avg_watch_time / 100) / 10 : '',
+      now, old ? old[h.indexOf('案件id')] || '' : ''];
+  });
+  const all = Object.keys(rows).map(k => rows[k]).sort((x, y) => String(y[2]).localeCompare(String(x[2])));
+  if (ps.getLastRow() > 1) ps.getRange(2, 1, ps.getLastRow() - 1, IG_POST_COLS.length).clearContent();
+  if (all.length) ps.getRange(2, 1, all.length, IG_POST_COLS.length).setNumberFormat('@').setValues(all.map(r => r.map(String)));
+  return list.length;
+}
+function igSync() {
+  const out = [];
+  igAccounts_().forEach(a => {
+    try { out.push(a.handle + ' ' + igSyncAccount_(a) + ' 篇'); PROPS().deleteProperty('IG_ERR_' + a.handle); }
+    catch (e) { out.push(a.handle + ' 失敗：' + e.message); PROPS().setProperty('IG_ERR_' + a.handle, String(e.message).slice(0, 300)); }
+  });
+  PROPS().setProperty('IG_LAST_SYNC', now_());
+  return out.join('\n');
+}
+function igSyncNow() { SpreadsheetApp.getUi().alert('IG 數據', igSync() || '還沒設定任何 IG 帳號', SpreadsheetApp.getUi().ButtonSet.OK); }
+// 選單：MIZU → 設定 IG 數據
+function setupIG() {
+  const ui = SpreadsheetApp.getUi();
+  const ask = (t, m) => { const r = ui.prompt(t, m, ui.ButtonSet.OK_CANCEL); return r.getSelectedButton() === ui.Button.OK ? r.getResponseText().trim() : null; };
+  const handle = (ask('設定 IG 數據（1/4）', 'IG 帳號名稱，不用加 @（例如 tzu.dailyy）') || '').replace(/^@/, '');
+  if (!handle) return;
+  const id = ask('設定 IG 數據（2/4）', 'IG 帳號 ID（17841 開頭的一串數字）');
+  if (!id) return;
+  const who = ask('設定 IG 數據（3/4）', '這是誰的帳號？輸入 00、米米 或 Mizu') || '00';
+  const token = ask('設定 IG 數據（4/4）', '貼上這個帳號的存取權杖（⌘V）。建議只勾 instagram_basic 和 instagram_manage_insights 兩個權限');
+  if (!token) return;
+  PROPS().setProperty('IG_TOKEN_' + handle, token);
+  const list = igAccounts_().filter(a => a.handle !== handle);
+  list.push({ handle: handle, id: id, owner: key_(who) });
+  PROPS().setProperty('IG_ACCOUNTS', JSON.stringify(list));
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'igSync').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('igSync').timeBased().everyDays(1).atHour(6).inTimezone(TZ).create();
+  ui.alert('設定完成，先抓一次看看：\n\n' + igSync() + '\n\n之後每天早上 6 點會自動更新。');
+}
+function apiIG(token) {
+  auth_(token);
+  const accs = igAccounts_();
+  const av = sh_('IG帳號') ? sh_('IG帳號').getDataRange().getDisplayValues().slice(1) : [];
+  const pv = sh_('IG貼文') ? sh_('IG貼文').getDataRange().getDisplayValues() : [IG_POST_COLS];
+  const h = pv[0], N = k => h.indexOf(k);
+  return {
+    lastSync: PROPS().getProperty('IG_LAST_SYNC') || '',
+    accounts: accs.map(a => ({ handle: a.handle, owner: a.owner || '00', error: PROPS().getProperty('IG_ERR_' + a.handle) || '',
+      history: av.filter(r => r[1] === a.handle).map(r => ({ date: r[0], followers: Number(r[2]) || 0, follows: Number(r[3]) || 0, media: Number(r[4]) || 0 })) })),
+    posts: pv.slice(1).filter(r => r[0]).map(r => ({ id: r[N('id')], handle: r[N('帳號')], at: r[N('發布時間')], type: r[N('類型')], caption: r[N('文案')],
+      url: r[N('連結')], thumb: r[N('縮圖')], views: +r[N('瀏覽')] || 0, reach: +r[N('觸及')] || 0, likes: +r[N('讚')] || 0, comments: +r[N('留言')] || 0,
+      saved: +r[N('收藏')] || 0, shares: +r[N('分享')] || 0, inter: +r[N('互動')] || 0, watch: r[N('平均觀看秒數')] === '' ? null : +r[N('平均觀看秒數')], caseId: r[N('案件id')] || '' }))
+  };
+}
+// 把一篇 IG 貼文連到某個案件（業配成效）
+function apiIGLink(token, mediaId, caseId) {
+  auth_(token);
+  return withLock_(() => {
+    const s = sh_('IG貼文'); if (!s) throw new Error('還沒有 IG 數據');
+    const v = s.getDataRange().getValues(), i = v.findIndex(r => String(r[0]) === String(mediaId));
+    if (i < 1) throw new Error('找不到這篇貼文');
+    s.getRange(i + 1, IG_POST_COLS.indexOf('案件id') + 1).setNumberFormat('@').setValue(caseId || '');
+    return true;
+  });
+}
+

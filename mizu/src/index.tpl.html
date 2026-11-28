@@ -486,6 +486,17 @@ td.mgroup{display:table-cell}
 .mc-n span{font-size:14px;font-weight:400;color:var(--text3)}
 .mc-bar{height:6px;background:var(--fill);border-radius:3px;margin:10px 0 4px;overflow:hidden}
 .mc-bar i{display:block;height:100%;background:var(--success);border-radius:3px}
+.igk{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.igk .card{padding:14px 16px}.igk .t{font-size:12px;color:var(--text3)}.igk .v{font-size:24px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}.igk .s{font-size:12px;color:var(--text3);margin-top:2px}
+.igt{width:100%;border-collapse:collapse;font-size:13px}.igt th{font-weight:500;color:var(--text3);text-align:right;padding:8px 10px;border-bottom:1px solid var(--split);white-space:nowrap;cursor:pointer;user-select:none}
+.igt th:first-child,.igt th:nth-child(2){text-align:left}.igt th.on{color:var(--primary)}
+.igt td{padding:8px 10px;border-bottom:1px solid var(--split);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.igt td.cap{text-align:left;white-space:normal;max-width:340px}.igt tr[data-url]{cursor:pointer}.igt tr[data-url]:hover td{background:rgba(0,0,0,.02)}
+.igth{width:44px;height:56px;border-radius:6px;object-fit:cover;background:var(--fill,#f5f5f5);display:block}
+.igcap{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--text)}
+.igtop td{background:color-mix(in srgb,var(--primary) 5%,#fff)}
+.igm{display:none}.igm .it{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--split)}.igm .nums{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--text2);margin-top:6px}
+@media(max-width:768px){.igk{grid-template-columns:repeat(2,1fr)}.igd{display:none}.igm{display:block}}
 .calf{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px}
 .calf-b{border:1px solid var(--border,#d9d9d9);background:#fff;color:var(--text2);border-radius:14px;height:28px;padding:0 12px;font-size:13px;cursor:pointer}
 .calf-b:hover{border-color:var(--primary);color:var(--primary)}
@@ -754,7 +765,8 @@ td.mgroup{display:table-cell}
 // 最近的 JS 錯誤，回報問題時一起附上給 Claude 看
 const RPT=__RPT__;
 const EDT=__EDT__;
-const CALF=__CALF__;  // 日曆依時程種類篩選   // 電腦版詳情：編輯按鈕放上面
+const CALF=__CALF__;
+const IGD=__IGD__;   // IG 數據面板  // 日曆依時程種類篩選   // 電腦版詳情：編輯按鈕放上面
 const ERRS=[];const errLog=t=>{ERRS.push(new Date().toTimeString().slice(0,8)+' '+t);if(ERRS.length>10)ERRS.shift()};
 window.addEventListener('error',e=>errLog(`${e.message} @${String(e.filename||'').split('/').pop()}:${e.lineno}:${e.colno}`));
 window.addEventListener('unhandledrejection',e=>errLog('promise: '+String(e.reason&&e.reason.message||e.reason)));
@@ -790,8 +802,9 @@ const D2=__D2__;   // 連結按鈕＋左右詳情 demo
 const HOLD_DEMO=__HDEMO__;const HOLD_MODE='__HMODE__';
 const HMODES=[['1','清單底部區塊'],['2','On hold 分頁'],['3','翻到最後一頁'],['4','置頂在本月'],['5','首頁提醒＋一次補']];
 const noShoot=c=>!(c.month||c.ms.shoot.date);
+if(IGD)NAV.push(['ig','數據','<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>']);
 if(CHAT)NAV.splice(4,0,['chat','聊天','<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/>']);
-const PAGES={mail:'信件',chat:'聊天',home:'首頁',cases:'案件',calendar:'日曆',finance:'財務',expenses:'支出',profile:'個人設定'};
+const PAGES={mail:'信件',chat:'聊天',home:'首頁',cases:'案件',calendar:'日曆',finance:'財務',expenses:'支出',profile:'個人設定',ig:'IG 數據'};
 const ico=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 
 
@@ -1101,7 +1114,7 @@ function route(){
   document.getElementById('pageTitle').textContent=PAGES[page];
   document.getElementById('topAct').innerHTML='';
   renderSync();renderBell();renderRptBtn();
-  ({mail:renderMail,home:renderHome,cases:renderCases,calendar:renderCalendar,finance:renderFinance,expenses:renderExpenses,profile:renderProfile,chat:renderChat})[page]();
+  ({mail:renderMail,home:renderHome,cases:renderCases,calendar:renderCalendar,finance:renderFinance,expenses:renderExpenses,profile:renderProfile,chat:renderChat,ig:renderIG})[page]();
   const nb=document.querySelector('#topAct .newbtn'),fab=document.getElementById('fab');
   fab.classList.toggle('show',!!nb);fab.onclick=()=>nb&&nb.click();if(nb)fab.setAttribute('aria-label',nb.textContent.replace('＋','').trim());
   window.scrollTo?.(0,window.scrollY);
@@ -1485,6 +1498,7 @@ function openCropper(file,onDone){
   img.src=url;
 }
 const ANN=[
+...(IGD?[{id:'2026-11-28-1800',date:'11/28',title:'IG 數據面板 📊',items:[['數據','左邊多了「數據」，可以看每篇貼文的瀏覽、觸及、讚、留言、收藏、分享和互動率，每天早上 6 點自動更新'],['排序','點表格上方的欄位就能排序，🏆 是這段期間瀏覽前三名'],['連到案件','可以把業配貼文連到對應的案子']]}]:[]),
 {id:'2026-11-28-1200',date:'11/28',title:'規格多三個選項',items:[['規格','新增「與廠商協作」「指定米米協作」「指定00協作」，編輯案件時可以勾']]},
 ...(CALF?[{id:'2026-11-20-1200',date:'11/20',title:'日曆可以篩選了 📅',items:[['篩選','日曆上方可以選只看拍攝、腳本、AC、過稿、上線或匯款，可以一次選好幾種，按「全部」就回來'],['會記住','選好的篩選會記在這台電腦，下次打開還是一樣']]}]:[]),
 {id:'2026-11-16-1200',date:'11/16',title:'Mizu 案兩個人都看得到',items:[['我的案件','Mizu 的案子不管自己那段做完沒，都會一直出現在「我的」裡，不會再不見']]},
@@ -1705,6 +1719,67 @@ function calKindBar(){
   const ks=calKinds();if(!ks)return '';
   const on=k=>!ks.length||ks.includes(k);
   return `<div class="calf"><button class="calf-b ${!ks.length?'on':''}" data-ck="">全部</button>${MS.map(([k,l])=>`<button class="calf-b ${ks.length&&ks.includes(k)?'on':''}" data-ck="${k}">${k==='approve'?'過稿':l}</button>`).join('')}</div>`;
+}
+// ---------- IG 數據面板 ----------
+function igDemo(){
+  const caps=['你敢相信這間火鍋只要 $399 吃到飽？！🔥','居然發現台北最好拍的聖誕樹 🎄','小熊維尼 100 週年快閃店直接衝 🍯','全聯這個新品我直接囤 10 包 🛒','咖啡廳週末一位難求的原因是這個 ☕','711 元進莊薑母鴨冬天必吃 🦆','三麗鷗快閃店限定周邊整理 🎀','這款冷凍披薩 4 分半就上桌 🍕'];
+  const posts=[];for(let i=0;i<26;i++){const d=addDays(TODAY,-i*3-1),reel=i%3!==2,v=Math.round((reel?8000:2500)*(0.4+((i*37)%17)/7)),r=Math.round(v*0.72);
+    posts.push({id:'d'+i,handle:'tzu.dailyy',at:d+' 19:30',type:reel?'Reels':(i%2?'輪播':'貼文'),caption:caps[i%caps.length],url:'https://www.instagram.com/',thumb:'',
+      views:v,reach:r,likes:Math.round(r*0.06),comments:Math.round(r*0.004),saved:Math.round(r*0.015),shares:Math.round(r*0.01),inter:Math.round(r*0.09),watch:reel?+(5+(i%5)*1.3).toFixed(1):null,caseId:''})}
+  const hist=[...Array(30)].map((_,i)=>({date:addDays(TODAY,i-29),followers:12000+i*18+(i%4)*5}));
+  return {lastSync:TODAY+' 06:00',accounts:[{handle:'tzu.dailyy',owner:'00',error:'',history:hist}],posts};
+}
+async function igLoad(force){
+  if(!GAS){ui.igData=ui.igData||igDemo();return}
+  if(ui.igData&&!force&&Date.now()-ui.igAt<300000)return;
+  try{ui.igData=await call('apiIG',token);ui.igAt=Date.now()}catch(e){ui.igErr=String(e.message||e)}
+}
+const kfmt=n=>n>=10000?(n/10000).toFixed(n>=100000?0:1)+' 萬':Math.round(n).toLocaleString('en-US');
+function renderIG(){
+  const d=ui.igData;
+  if(!d){M().innerHTML='<div class="card"><div class="card-b muted">讀取 IG 數據中…</div></div>';igLoad().then(()=>{if(page==='ig')renderIG()});return}
+  if(!d.accounts.length){M().innerHTML=`<div class="card"><div class="card-h"><h3>還沒接上 IG</h3></div><div class="card-b">在 Google Sheet 的選單「MIZU → 設定 IG 數據」輸入帳號和權杖，設定好之後每天早上 6 點會自動更新。</div></div>`;return}
+  const acc=d.accounts.find(a=>a.handle===ui.igAcc)||d.accounts[0];ui.igAcc=acc.handle;
+  const per=ui.igPer||'30',type=ui.igType||'';
+  const from=per==='all'?'':addDays(TODAY,-(+per));
+  let ps=d.posts.filter(p=>p.handle===acc.handle&&(!from||p.at.slice(0,10)>=from)&&(!type||(type==='Reels'?p.type==='Reels':p.type!=='Reels')));
+  const sk=ui.igSort||'at',dir=ui.igDir||-1;
+  const rate=p=>p.reach?p.inter/p.reach:0;
+  const val=p=>sk==='rate'?rate(p):sk==='at'?p.at:p[sk]||0;
+  ps=ps.slice().sort((a,b)=>(val(a)>val(b)?1:val(a)<val(b)?-1:0)*dir);
+  const top=new Set(ps.slice().sort((a,b)=>b.views-a.views).slice(0,3).map(p=>p.id));
+  const h=acc.history||[],fNow=h.length?h[h.length-1].followers:0,f7=h.length>7?h[h.length-8].followers:null;
+  const avg=k=>ps.length?ps.reduce((s,p)=>s+(k==='rate'?rate(p):p[k]),0)/ps.length:0;
+  const best=ps.slice().sort((a,b)=>b.views-a.views)[0];
+  const cname=id=>{const c=S.cases.find(x=>x.id===id);return c?c.title:''};
+  const th=(k,t)=>`<th data-k="${k}" class="${sk===k?'on':''}">${t}${sk===k?(dir<0?' ↓':' ↑'):''}</th>`;
+  const thumb=p=>p.thumb?`<img class="igth" src="${esc(p.thumb)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.visibility='hidden'">`:`<div class="igth"></div>`;
+  M().innerHTML=`<div class="toolbar">${d.accounts.length>1?`<div class="seg">${d.accounts.map(a=>`<button data-ia="${esc(a.handle)}" class="${a.handle===acc.handle?'on':''}">@${esc(a.handle)}</button>`).join('')}</div>`:`<b>@${esc(acc.handle)}</b>`}
+    ${seg('igPer',[['30','近 30 天'],['90','近 90 天'],['all','全部']],per)}${seg('igType',[['','全部'],['Reels','Reels'],['post','貼文']],type)}
+    <span class="spacer"></span><span class="muted small">每天早上 6 點自動更新・上次 ${esc(d.lastSync||'—')}</span></div>
+  ${acc.error?`<div class="card" style="margin-bottom:12px;border-color:var(--error)"><div class="card-b" style="color:var(--error)">上次抓資料失敗：${esc(acc.error)}</div></div>`:''}
+  <div class="igk">
+    <div class="card"><div class="t">粉絲</div><div class="v">${kfmt(fNow)}</div><div class="s">${f7!==null?`7 天 ${fNow-f7>=0?'+':''}${fNow-f7}`:'每天記一筆，過幾天就看得到變化'}</div></div>
+    <div class="card"><div class="t">平均瀏覽</div><div class="v">${kfmt(avg('views'))}</div><div class="s">${ps.length} 篇</div></div>
+    <div class="card"><div class="t">平均互動率</div><div class="v">${(avg('rate')*100).toFixed(1)}%</div><div class="s">互動 ÷ 觸及</div></div>
+    <div class="card"><div class="t">最高瀏覽</div><div class="v">${best?kfmt(best.views):'—'}</div><div class="s" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${best?esc(best.caption.slice(0,24)):''}</div></div>
+  </div>
+  <div class="card igd" style="overflow-x:auto"><table class="igt"><thead><tr><th></th>${th('at','發布')}${th('views','瀏覽')}${th('reach','觸及')}${th('likes','讚')}${th('comments','留言')}${th('saved','收藏')}${th('shares','分享')}${th('rate','互動率')}${th('watch','平均觀看')}<th style="text-align:left">案件</th></tr></thead><tbody>
+    ${ps.map(p=>`<tr data-url="${esc(p.url)}" class="${top.has(p.id)?'igtop':''}"><td>${thumb(p)}</td><td class="cap"><div class="muted small">${esc(p.at.slice(5,16).replace('-','/'))}・${esc(p.type)}${top.has(p.id)?' 🏆':''}</div><div class="igcap">${esc(p.caption)}</div></td>
+      <td>${kfmt(p.views)}</td><td>${kfmt(p.reach)}</td><td>${kfmt(p.likes)}</td><td>${p.comments}</td><td>${p.saved}</td><td>${p.shares}</td><td>${(rate(p)*100).toFixed(1)}%</td><td>${p.watch!=null?p.watch+' 秒':'—'}</td>
+      <td style="text-align:left"><select class="inp" data-lk="${esc(p.id)}" style="height:28px;font-size:12px;max-width:150px"><option value="">—</option>${S.cases.filter(c=>c.owner===acc.owner||c.owner==='mizu').map(c=>`<option value="${c.id}" ${p.caseId===c.id?'selected':''}>${esc(c.title)}</option>`).join('')}</select></td></tr>`).join('')||'<tr><td colspan="11" class="empty">這段期間沒有貼文</td></tr>'}
+  </tbody></table></div>
+  <div class="card igm"><div class="card-b" style="padding-top:0;padding-bottom:0">${ps.map(p=>`<div class="it" data-url="${esc(p.url)}">${thumb(p)}<div style="flex:1;min-width:0"><div class="muted small">${esc(p.at.slice(5,16).replace('-','/'))}・${esc(p.type)}${top.has(p.id)?' 🏆':''}${p.caseId?'・'+esc(cname(p.caseId)):''}</div><div class="igcap">${esc(p.caption)}</div>
+    <div class="nums"><span>瀏覽 <b>${kfmt(p.views)}</b></span><span>觸及 ${kfmt(p.reach)}</span><span>讚 ${kfmt(p.likes)}</span><span>收藏 ${p.saved}</span><span>分享 ${p.shares}</span><span>互動率 ${(rate(p)*100).toFixed(1)}%</span></div></div></div>`).join('')||'<div class="empty">這段期間沒有貼文</div>'}</div></div>
+  <div class="muted small" style="margin-top:10px">點貼文會打開 IG。🏆＝這段期間瀏覽前三名。「案件」可以把業配貼文連到對應的案子。</div>`;
+  M().querySelectorAll('[data-ia]').forEach(b=>b.onclick=()=>{ui.igAcc=b.dataset.ia;renderIG()});
+  const bs=(id,f)=>document.getElementById(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{f(b.dataset.v);renderIG()});
+  bs('igPer',v=>ui.igPer=v);bs('igType',v=>ui.igType=v);
+  M().querySelectorAll('.igt th[data-k]').forEach(t=>t.onclick=()=>{const k=t.dataset.k;if(ui.igSort===k||(k==='at'&&!ui.igSort))ui.igDir=-(ui.igDir||-1);else{ui.igSort=k;ui.igDir=-1}renderIG()});
+  M().querySelectorAll('[data-url]').forEach(r=>r.onclick=e=>{if(e.target.closest('select'))return;const u=r.dataset.url;if(u)window.open(u,'_blank','noopener')});
+  M().querySelectorAll('[data-lk]').forEach(sel=>sel.onchange=async()=>{const p=d.posts.find(x=>x.id===sel.dataset.lk);p.caseId=sel.value;toast(sel.value?'已連到案件':'已取消連結');
+    if(GAS){try{await call('apiIGLink',token,p.id,sel.value)}catch(e){toast(String(e.message||e),true)}}});
+  igLoad().then(()=>{if(page==='ig'&&ui.igData!==d)renderIG()});
 }
 function renderCalendar(){
   newBtn();
